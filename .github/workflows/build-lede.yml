@@ -18,8 +18,6 @@ on:
         description: 'SSH connection to Actions'
         required: false
         default: 'false'
-        
-  push:
   
   schedule:
     - cron: 0 0 * * *
@@ -82,8 +80,8 @@ jobs:
     - name: Cache
       uses: klever1988/cachewrtbuild@main
       with:
-          ccache: true
-          prefix: ${{ github.workspace }}/openwrt
+        ccache: true
+        prefix: ${{ github.workspace }}/openwrt
         
     - name: Load custom feeds
       run: |
