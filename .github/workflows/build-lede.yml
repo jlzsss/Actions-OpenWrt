@@ -47,7 +47,7 @@ jobs:
     steps:
     - name: Checkout
       uses: actions/checkout@v2
-      with: |
+      with:
         ref: master
         fetch-depth: 0
 
@@ -81,7 +81,7 @@ jobs:
 
     - name: Cache
       uses: klever1988/cachewrtbuild@main
-      with: |
+      with:
         ccache: 'true'
 
     - name: Load custom feeds
