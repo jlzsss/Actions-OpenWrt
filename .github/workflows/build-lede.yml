@@ -27,10 +27,10 @@ on:
 env:
   REPO_URL: https://github.com/coolsnowwolf/lede.git
   REPO_BRANCH: master
-  FEEDS_CONF: feeds.conf.default-lede
-  CONFIG_FILE: .config-diff
-  DIY_P1_SH: diy-part1-lede.sh
-  DIY_P2_SH: diy-part2-lede.sh
+  FEEDS_CONF: feeds.conf.default
+  CONFIG_FILE: .config
+  DIY_P1_SH: diy-part1.sh
+  DIY_P2_SH: diy-part2.sh
   SCKEY: ${{ secrets.SCKEY }}
   UPLOAD_FILES: true
   UPLOAD_COWTRANSFER: false
