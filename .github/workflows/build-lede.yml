@@ -47,7 +47,7 @@ jobs:
     steps:
     - name: Checkout
       uses: actions/checkout@main
-      with: |
+      with:
         ref: master
         fetch-depth: 0
 
