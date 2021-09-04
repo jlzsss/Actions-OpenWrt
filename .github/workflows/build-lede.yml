@@ -8,7 +8,7 @@
 # Description: Build OpenWrt using GitHub Actions
 #
 
-name: OpenWrt-CI
+name: Build-lede
 
 on:
   repository_dispatch:
@@ -79,7 +79,7 @@ jobs:
 
     - name: Cache
       uses: klever1988/cachewrtbuild@main
-      with:
+      with: |
         ccache: true
         prefix: ${{ github.workspace }}/openwrt
         
