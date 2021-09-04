@@ -26,7 +26,7 @@ git clone https://github.com/frainzy1477/luci-app-trojan.git package/luci-app-tr
 git clone -b test https://github.com/frainzy1477/luci-app-clash.git package/luci-app-clash
 git clone -b master https://github.com/vernesong/OpenClash.git package/OpenClash
 git clone https://github.com/project-openwrt/luci-app-koolproxyR.git package/luci-app-koolproxyR
-git clone https://github.com/fw876/helloworld.git package/helloworld
+# git clone https://github.com/fw876/helloworld.git package/helloworld
 # git clone https://github.com/jlzsss/luci-app-ssr-plus-Jo.git package/luci-app-ssr-plus-Jo
 # git clone https://github.com/jlzsss/luci-app-ssr-plus-jo-depend.git package/luci-app-ssr-plus-jo-depend
 # svn co https://github.com/openwrt/packages/trunk/libs/libcap package/feeds/packages/libcap
