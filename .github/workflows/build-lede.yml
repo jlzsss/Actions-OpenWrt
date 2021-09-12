@@ -19,10 +19,10 @@ on:
         required: false
         default: 'false'
   
- # push:
+  push:
   
- # schedule:
- #   - cron: 0 17 * * *
+  schedule:
+    - cron: 0 17 */2 * *
 
 env:
   REPO_URL: https://github.com/coolsnowwolf/lede.git
@@ -42,7 +42,6 @@ jobs:
 
   build:
     runs-on: ubuntu-20.04
-    timeout-minutes: 400
     
     steps:
 
