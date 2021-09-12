@@ -2,9 +2,9 @@ src-git packages https://github.com/coolsnowwolf/packages.git
 src-git luci https://github.com/coolsnowwolf/luci
 src-git routing https://git.openwrt.org/feed/routing.git
 src-git telephony https://git.openwrt.org/feed/telephony.git
-# src-git diy1 https://github.com/xiaorouji/openwrt-passwall.git;main
-# src-git kenzo https://github.com/kenzok8/openwrt-packages;master
-# src-git lienol https://github.com/Lienol/openwrt-package.git;main
-# src-git kiddin https://github.com/kiddin9/openwrt-packages.git;master
+src-git diy1 https://github.com/xiaorouji/openwrt-passwall.git;main
+src-git kenzo https://github.com/kenzok8/openwrt-packages;master
+src-git lienol https://github.com/Lienol/openwrt-package.git;main
+src-git kiddin https://github.com/kiddin9/openwrt-packages.git;master
 # src-git lede https://github.com/project-lede/openwrt-app;luci18
-# src-git darkmatter https://github.com/apollo-ng/luci-theme-darkmatter.git;master
+src-git darkmatter https://github.com/apollo-ng/luci-theme-darkmatter.git;master
