@@ -125,8 +125,8 @@ jobs:
       id: Multi-thread
       run: |
         cd openwrt
-        echo -e "$(($(nproc) + 1)) thread compile"
-        make -j$(($(nproc) + 1))
+        echo -e "$(($(nproc) + 2)) thread compile"
+        make -j$(($(nproc) + 2))
         # make package/compile -j$(($(nproc) + 2))
         # make package/index -j$(($(nproc) + 2))
         echo "::set-output name=status::success"
