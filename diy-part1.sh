@@ -39,7 +39,7 @@
 # git clone https://github.com/jlzsss/dnscrypt-proxy2.git package/feeds/packages/dnscrypt-proxy2
 # git clone https://github.com/jlzsss/smartdns.git package/feeds/packages/smartdns
 # git clone https://github.com/jlzsss/luci-app-smartdns.git package/feeds/luci/luci-app-smartdns
-
+ 
 # git clone https://github.com/fw876/helloworld.git package/helloworld
 # svn co https://github.com/coolsnowwolf/luci/trunk/applications/luci-app-transmission package/feeds/luci/luci-app-transmission
 # svn co https://github.com/Lienol/openwrt-packages/trunk/lang/python package/feeds/packages/python
