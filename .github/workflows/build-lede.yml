@@ -21,8 +21,8 @@ on:
   
   push:
   
-  schedule:
-    - cron: 0 0 */3 * *
+ # schedule:
+ #   - cron: 0 0 */3 * *
 
 env:
   REPO_URL: https://github.com/coolsnowwolf/lede.git
