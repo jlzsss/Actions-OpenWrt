@@ -33,13 +33,14 @@
 # git clone -b master --depth 1 https://github.com/kuoruan/openwrt-upx.git package/openwrt-upx
 # git clone -b 18.06 https://github.com/jerrykuku/luci-theme-argon.git package/luci-theme-argon
 # git clone https://github.com/destan19/OpenAppFilter.git package/OpenAppFilter
-# git clone https://github.com/jlzsss/php7.git package/feeds/packages/php7
 # git clone https://github.com/lisaac/luci-app-dockerman.git package/luci-app-dockerman
 # git clone https://github.com/NateLol/luci-app-oled.git package/luci-app-oled
 # git clone https://github.com/jlzsss/dnscrypt-proxy2.git package/feeds/packages/dnscrypt-proxy2
 # git clone https://github.com/jlzsss/smartdns.git package/feeds/packages/smartdns
 # git clone https://github.com/jlzsss/luci-app-smartdns.git package/feeds/luci/luci-app-smartdns
- 
+git clone https://github.com/jlzsss/libgd.git package/feeds/packages/libgd
+git clone https://github.com/jlzsss/php7.git package/feeds/packages/php7
+
 # git clone https://github.com/fw876/helloworld.git package/helloworld
 # svn co https://github.com/coolsnowwolf/luci/trunk/applications/luci-app-transmission package/feeds/luci/luci-app-transmission
 # svn co https://github.com/Lienol/openwrt-packages/trunk/lang/python package/feeds/packages/python
