@@ -18,6 +18,8 @@
 # git clone https://github.com/tty228/luci-app-serverchan.git package/luci-app-serverchan
 # git clone https://github.com/jlzsss/project-lede.git package/lede
 
+rm -rf package/feeds/packages/php8
+
 # git clone https://github.com/jlzsss/luci-app-passwall.git package/luci-app-passwall
 # git clone https://github.com/jlzsss/openwrt-ssr-libev-full.git package/openwrt-ssr-libev-full
 # git clone https://github.com/jlzsss/openwrt-ssr.git package/openwrt-ssr
