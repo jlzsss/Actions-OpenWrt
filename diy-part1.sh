@@ -40,6 +40,7 @@
 # git clone https://github.com/jlzsss/luci-app-smartdns.git package/feeds/luci/luci-app-smartdns
 git clone https://github.com/jlzsss/libgd.git package/feeds/packages/libgd
 git clone https://github.com/jlzsss/php7.git package/feeds/packages/php7
+svn co https://github.com/openwrt/packages/trunk/libs/libcap package/feeds/packages/libcap
 
 # git clone https://github.com/fw876/helloworld.git package/helloworld
 # svn co https://github.com/coolsnowwolf/luci/trunk/applications/luci-app-transmission package/feeds/luci/luci-app-transmission
@@ -50,5 +51,4 @@ git clone https://github.com/jlzsss/php7.git package/feeds/packages/php7
 # svn co https://github.com/Lienol/openwrt-packages/trunk/utils/dockerd package/diy/dockerd
 # git clone https://github.com/jlzsss/luci-app-ssr-plus-Jo.git package/luci-app-ssr-plus-Jo
 # git clone https://github.com/jlzsss/luci-app-ssr-plus-jo-depend.git package/luci-app-ssr-plus-jo-depend
-# svn co https://github.com/openwrt/packages/trunk/libs/libcap package/feeds/packages/libcap
 # git clone https://github.com/jlzsss/proxychains-ng.git package/proxychains-ng
