@@ -48,6 +48,7 @@ jobs:
     - name: Checkout
       uses: actions/checkout@main
       with:
+        ref: master
         fetch-depth: 0
 
     - name: Initialization environment
@@ -116,7 +117,8 @@ jobs:
       id: package
       run: |
         cd openwrt
-        echo -e 'CONFIG_DEVEL=y\nCONFIG_CCACHE=y' >> .config; make defconfig
+        echo -e 'CONFIG_DEVEL=y\nCONFIG_CCACHE=y' >> .config
+        make defconfig
         make download -j8
         find dl -size -1024c -exec ls -l {} \;
         find dl -size -1024c -exec rm -f {} \;
@@ -125,8 +127,8 @@ jobs:
       id: Multi-thread
       run: |
         cd openwrt
-        echo -e "$(($(nproc) + 2)) thread compile"
-        make -j$(($(nproc) + 2))
+        echo -e "$(($(nproc) + 1)) thread compile"
+        make -j$(($(nproc) + 1)
         # make package/compile -j$(($(nproc) + 2))
         # make package/index -j$(($(nproc) + 2))
         echo "::set-output name=status::success"
@@ -219,7 +221,7 @@ jobs:
     - name: Delete workflow runs
       uses: GitRML/delete-workflow-runs@main
       with:
-        retain_days: 1
+        retain_days: 30
         keep_minimum_runs: 30
 
     - name: Remove old Releases
