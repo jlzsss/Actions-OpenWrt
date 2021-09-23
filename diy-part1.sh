@@ -40,7 +40,7 @@
 # git clone https://github.com/jlzsss/luci-app-smartdns.git package/feeds/luci/luci-app-smartdns
 git clone https://github.com/jlzsss/libgd.git package/feeds/packages/libgd
 git clone https://github.com/jlzsss/php7.git package/feeds/packages/php7
- 
+
 # git clone https://github.com/fw876/helloworld.git package/helloworld
 # svn co https://github.com/coolsnowwolf/luci/trunk/applications/luci-app-transmission package/feeds/luci/luci-app-transmission
 # svn co https://github.com/Lienol/openwrt-packages/trunk/lang/python package/feeds/packages/python
