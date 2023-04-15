@@ -43,7 +43,7 @@ jobs:
  prepare:
    runs-on: ubuntu-latest
    container:
-      image: p3terx/openwrt-build-env:20.04
+      image: docker://p3terx/openwrt-build-env:20.04
    steps:
     - name: Checkout
       uses: actions/checkout@main
@@ -60,46 +60,46 @@ jobs:
       run: |
        curl https://sc.ftqq.com/${{ secrets.SCKEY }}.send?text=开始编译OpenWrt        
     
-    - name: Clone source code
-      run: |
-        git clone -b $REPO_BRANCH --single-branch $REPO_URL  openwrt
-        ln -sf /openwrt ${{ github.workspace }}/openwrt
+    # - name: Clone source code
+    #   run: |
+    #     git clone -b $REPO_BRANCH --single-branch $REPO_URL  openwrt
+    #     ln -sf /openwrt ${{ github.workspace }}/openwrt
               
     - name: Load custom feeds
       run: |
         [ -e $FEEDS_CONF ] && mv $FEEDS_CONF openwrt/feeds.conf.default
         chmod +x $DIY_P1_SH
-        cd openwrt
+        cd $GITHUB_WORKSPACE/openwrt
         $GITHUB_WORKSPACE/$DIY_P1_SH
         
     - name: Update feeds
       run: |
-        cd openwrt && ./scripts/feeds update -a 
+        cd $GITHUB_WORKSPACE/openwrt && ./scripts/feeds update -a 
       
     - name: Install feeds
       run: |
-        cd openwrt && ./scripts/feeds install -a
+        cd $GITHUB_WORKSPACE/openwrt && ./scripts/feeds install -a
 
     - name: Load custom configuration
       run: |
         [ -e files ] && mv files openwrt/files
         [ -e $CONFIG_FILE ] && mv $CONFIG_FILE openwrt/.config
         chmod +x $DIY_P2_SH
-        cd openwrt
+        cd $GITHUB_WORKSPACE/openwrt
         $GITHUB_WORKSPACE/$DIY_P2_SH
         find "${GITHUB_WORKSPACE}/patches" -type f -name '*.patch' -print0 | sort -z | xargs -I % -t -0 -n 1 sh -c "cat '%'  | patch -d '${GITHUB_WORKSPACE}/openwrt' -p1 --forward"
         
     - name: SSH connection to Actions
       uses: P3TERX/ssh2actions@v1.0.0
-      # if: (github.event.inputs.ssh == 'true' && github.event.inputs.ssh  != 'false') || contains(github.event.action, 'ssh')
-      # env:
-      #  TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
-      #  TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}    
+      if: (github.event.inputs.ssh == 'true' && github.event.inputs.ssh  != 'false') || contains(github.event.action, 'ssh')
+       env:
+        TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+        TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}    
         
     - name: Download package
       id: package
       run: |
-        cd openwrt
+        cd $GITHUB_WORKSPACE/openwrt
         make defconfig
         make download -j8
         find dl -size -1024c -exec ls -l {} \;
@@ -112,7 +112,7 @@ jobs:
     - name: Multi-thread compile
       id: Multi-thread
       run: |
-        cd openwrt
+        cd $GITHUB_WORKSPACE/openwrt
         echo -e "$(($(nproc) + 1)) thread compile"
         make -j$(($(nproc) + 1)) tools/compile
         make -j$(($(nproc) + 1)) toolchain/compile
@@ -124,7 +124,7 @@ jobs:
       id: Single-thread
       if: failure() 
       run: |
-       cd openwrt
+       cd $GITHUB_WORKSPACE/openwrt
        make -j1 tools/compile V=s
        make -j1 toolchain/compile V=s
        make -j1 target/linux/compile V=s
@@ -137,7 +137,7 @@ jobs:
       
     - name: Compress directory
       run: |
-       bsdtar -czf openwrt.tar.gz /openwrt && sudo rm -rf /openwrt
+       bsdtar -czf openwrt.tar.gz $GITHUB_WORKSPACE/openwrt && sudo rm -rf cd $GITHUB_WORKSPACE/openwrt
       
     - name: Store build artifacts
       uses: actions/upload-artifact@v3
