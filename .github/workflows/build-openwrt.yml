@@ -43,13 +43,13 @@ jobs:
 
  prepare:
    runs-on: ubuntu-20.04
+   
    container:
-      image: jlzsss/openwrt-buildenv
+      image: jlzsss/openwrt-buildenv:latest
+      
    steps:
     - name: Checkout
-      uses: actions/checkout@main
-      with:
-        fetch-depth: 0 
+      uses: actions/checkout@v2
                     
     - name: WeChat notification
       run: |
