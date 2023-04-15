@@ -1,0 +1,29 @@
+--- a/feeds/NueXini/cpolar/Makefile
++++ b/feeds/NueXini/cpolar/Makefile
+@@ -6,7 +6,7 @@
+ include $(TOPDIR)/rules.mk
+ 
+ PKG_NAME:=cpolar
+-PKG_VERSION:=3.2.86.16
++PKG_VERSION:=3.2.92
+ PKG_RELEASE:=$(AUTORELEASE)
+ 
+ PKG_LICENSE:=MIT
+@@ -28,7 +28,7 @@ endef
+ 
+ ifeq ($(ARCH),x86_64)
+ 	CPOLAR_ARCH:=amd64
+-	PKG_HASH:=4cb87f092ac5a34d0715d518008b415d9383265e4f0e1fb14cbff69228315eba
++	PKG_HASH:=skip
+ endif
+ 
+ ifeq ($(ARCH),mipsel)
+@@ -51,7 +51,7 @@ ifeq ($(ARCH),aarch64)
+ 	PKG_HASH:=3ad4b1c9615ffda079cf699bc037e88543c75e7746ab7c35e273a5a2068e6357
+ endif
+ 
+-PKG_SOURCE_URL:=https://www.cpolar.com/static/downloads/releases/$(PKG_VERSION)/
++PKG_SOURCE_URL:=https://static.cpolar.com/downloads/releases/$(PKG_VERSION)/
+ PKG_SOURCE:=$(PKG_NAME)-stable-linux-$(CPOLAR_ARCH).tar.gz
+ 
+ define Build/Prepare
