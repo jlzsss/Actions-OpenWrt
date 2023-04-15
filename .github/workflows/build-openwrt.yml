@@ -55,7 +55,27 @@ jobs:
     
     - name: Pull Docker image
       run: docker pull jlzsss/openwrt-buildenv:latest
-          
+
+    - name: Enable experimental features
+      run: |
+        echo '{
+          "experimental": true
+        }' | sudo tee /etc/docker/daemon.json
+        sudo systemctl daemon-reload
+        sudo service docker restart
+        
+    - name: Disk Free Spaces
+      run: |
+        sudo sed -i "/ExecStart/d" /usr/lib/systemd/system/docker.service
+        sudo sed -i "/ExecReload/i ExecStart=/usr/bin/dockerd --storage-driver devicemapper -H fd:// --containerd=/var/run/containerd/containerd.sock \
+        --storage-opt dm.basesize=100G \
+        --storage-opt dm.loopdatasize=150G \
+        --storage-opt dm.loopmetadatasize=100G \
+        --storage-opt dm.fs=ext4" /usr/lib/systemd/system/docker.service
+        sudo cat /usr/lib/systemd/system/docker.service
+        sudo systemctl daemon-reload
+        sudo systemctl restart docker.service
+
     - name: Clone source code
       run: |
         # sudo mkdir -p -m 777 /workdir/openwrt
