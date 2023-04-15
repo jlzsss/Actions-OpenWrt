@@ -54,7 +54,7 @@ jobs:
        curl https://sc.ftqq.com/${{ secrets.SCKEY }}.send?text=开始编译OpenWrt        
     
     - name: Download docker image
-      uses: docker://${DOCKER_IMAGE_NAME}
+      uses: docker://jlzsss/openwrt-buildenv:latest
           
     - name: Clone source code
       run: |
