@@ -27,8 +27,6 @@ on:
 env:
   REPO_URL: https://github.com/openwrt/openwrt
   REPO_BRANCH: openwrt-22.03
-  DOCKER_IMAGE_NAME: jlzsss/openwrt-buildenv:latest
-  OPENWRT_DIR: /openwrt
   FEEDS_CONF: feeds.conf.default-openwrt
   CONFIG_FILE: .config-final
   DIY_P1_SH: diy-part1-openwrt.sh
@@ -43,7 +41,7 @@ env:
 jobs:
 
  prepare:
-   runs-on: ubuntu-20.04
+   runs-on: ubuntu-latest
    container:
       image: p3terx/openwrt-build-env:20.04
    steps:
@@ -64,7 +62,6 @@ jobs:
     
     - name: Clone source code
       run: |
-        # sudo mkdir -p -m 777 /openwrt
         git clone -b $REPO_BRANCH --single-branch $REPO_URL  openwrt
         ln -sf /openwrt ${{ github.workspace }}/openwrt
               
