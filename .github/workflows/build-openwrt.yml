@@ -8,7 +8,7 @@
 # Description: Build OpenWrt using GitHub Actions
 #
 
-name: Build OpenWrt
+name: Build-Openwrt
 
 on:
   repository_dispatch:
@@ -18,59 +18,59 @@ on:
         description: 'SSH connection to Actions'
         required: false
         default: 'false'
+  
+  push:
+  
+  # schedule:
+  #   - cron: 0 17 * * *
 
 env:
-  REPO_URL: https://github.com/coolsnowwolf/lede
-  REPO_BRANCH: master
-  FEEDS_CONF: feeds.conf.default
-  CONFIG_FILE: .config
-  DIY_P1_SH: diy-part1.sh
-  DIY_P2_SH: diy-part2.sh
-  UPLOAD_BIN_DIR: false
-  UPLOAD_FIRMWARE: true
+  REPO_URL: https://github.com/openwrt/openwrt
+  REPO_BRANCH: openwrt-22.03
+  FEEDS_CONF: feeds.conf.default-openwrt
+  CONFIG_FILE: .config-final
+  DIY_P1_SH: diy-part1-openwrt.sh
+  DIY_P2_SH: diy-part2-openwrt.sh
+  SCKEY: ${{ secrets.SCKEY }}
+  FREE_UP_DISK: true
+  UPLOAD_FILES: false
   UPLOAD_COWTRANSFER: false
   UPLOAD_WETRANSFER: false
-  UPLOAD_RELEASE: false
+  UPLOAD_RELEASE: true
   TZ: Asia/Shanghai
 
 jobs:
-  build:
-    runs-on: ubuntu-20.04
 
-    steps:
+ prepare:
+   runs-on: ubuntu-20.04
+   container:
+      image: jlzsss/openwrt-buildenv
+   steps:
     - name: Checkout
       uses: actions/checkout@main
-
-    - name: Initialization environment
-      env:
-        DEBIAN_FRONTEND: noninteractive
+      with:
+        fetch-depth: 0 
+                    
+    - name: WeChat notification
       run: |
-        sudo rm -rf /etc/apt/sources.list.d/* /usr/share/dotnet /usr/local/lib/android /opt/ghc
-        sudo -E apt-get -qq update
-        sudo -E apt-get -qq install $(curl -fsSL git.io/depends-ubuntu-2004)
-        sudo -E apt-get -qq autoremove --purge
-        sudo -E apt-get -qq clean
-        sudo timedatectl set-timezone "$TZ"
-        sudo mkdir -p /workdir
-        sudo chown $USER:$GROUPS /workdir
-
+       curl https://sc.ftqq.com/${{ secrets.SCKEY }}.send?text=开始编译OpenWrt        
+        
     - name: Clone source code
       working-directory: /workdir
       run: |
-        df -hT $PWD
-        git clone $REPO_URL -b $REPO_BRANCH openwrt
-        ln -sf /workdir/openwrt $GITHUB_WORKSPACE/openwrt
-
+        git clone -b $REPO_BRANCH --single-branch $REPO_URL  openwrt
+        ln -sf /workdir/openwrt ${{ github.workspace }}/openwrt
+              
     - name: Load custom feeds
       run: |
         [ -e $FEEDS_CONF ] && mv $FEEDS_CONF openwrt/feeds.conf.default
         chmod +x $DIY_P1_SH
         cd openwrt
         $GITHUB_WORKSPACE/$DIY_P1_SH
-
+        
     - name: Update feeds
-      run: cd openwrt && ./scripts/feeds update -a
-
+      run: cd openwrt && ./scripts/feeds update -a 
+      
     - name: Install feeds
       run: cd openwrt && ./scripts/feeds install -a
 
@@ -81,14 +81,15 @@ jobs:
         chmod +x $DIY_P2_SH
         cd openwrt
         $GITHUB_WORKSPACE/$DIY_P2_SH
-
+        find "${GITHUB_WORKSPACE}/patches" -type f -name '*.patch' -print0 | sort -z | xargs -I % -t -0 -n 1 sh -c "cat '%'  | patch -d '${GITHUB_WORKSPACE}/openwrt' -p1 --forward"
+        
     - name: SSH connection to Actions
       uses: P3TERX/ssh2actions@v1.0.0
       if: (github.event.inputs.ssh == 'true' && github.event.inputs.ssh  != 'false') || contains(github.event.action, 'ssh')
       env:
         TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
-        TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
-
+        TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}    
+        
     - name: Download package
       id: package
       run: |
@@ -97,94 +98,420 @@ jobs:
         make download -j8
         find dl -size -1024c -exec ls -l {} \;
         find dl -size -1024c -exec rm -f {} \;
-
-    - name: Compile the firmware
-      id: compile
-      run: |
-        cd openwrt
-        echo -e "$(nproc) thread compile"
-        make -j$(nproc) || make -j1 || make -j1 V=s
-        echo "::set-output name=status::success"
-        grep '^CONFIG_TARGET.*DEVICE.*=y' .config | sed -r 's/.*DEVICE_(.*)=y/\1/' > DEVICE_NAME
-        [ -s DEVICE_NAME ] && echo "DEVICE_NAME=_$(cat DEVICE_NAME)" >> $GITHUB_ENV
-        echo "FILE_DATE=_$(date +"%Y%m%d%H%M")" >> $GITHUB_ENV
-
+        
     - name: Check space usage
       if: (!cancelled())
       run: df -hT
-
-    - name: Upload bin directory
-      uses: actions/upload-artifact@main
-      if: steps.compile.outputs.status == 'success' && env.UPLOAD_BIN_DIR == 'true'
-      with:
-        name: OpenWrt_bin${{ env.DEVICE_NAME }}${{ env.FILE_DATE }}
-        path: openwrt/bin
-
-    - name: Organize files
-      id: organize
-      if: env.UPLOAD_FIRMWARE == 'true' && !cancelled()
+      
+    - name: Multi-thread compile
+      id: Multi-thread
       run: |
-        cd openwrt/bin/targets/*/*
-        rm -rf packages
-        echo "FIRMWARE=$PWD" >> $GITHUB_ENV
+        cd openwrt
+        echo -e "$(($(nproc) + 1)) thread compile"
+        make -j$(($(nproc) + 1)) tools/compile
+        make -j$(($(nproc) + 1)) toolchain/compile
+        make -j$(($(nproc) + 1)) target/linux/compile
+        make -j$(($(nproc) + 1)) package/{node,golang,php8,ruby,perl,squid,jq,docker}/compile
         echo "::set-output name=status::success"
-
-    - name: Upload firmware directory
-      uses: actions/upload-artifact@main
-      if: steps.organize.outputs.status == 'success' && !cancelled()
-      with:
-        name: OpenWrt_firmware${{ env.DEVICE_NAME }}${{ env.FILE_DATE }}
-        path: ${{ env.FIRMWARE }}
-
-    - name: Upload firmware to cowtransfer
-      id: cowtransfer
-      if: steps.organize.outputs.status == 'success' && env.UPLOAD_COWTRANSFER == 'true' && !cancelled()
+        
+    - name: Single-thread compile
+      id: Single-thread
+      if: failure() 
       run: |
-        curl -fsSL git.io/file-transfer | sh
-        ./transfer cow --block 2621440 -s -p 64 --no-progress ${FIRMWARE} 2>&1 | tee cowtransfer.log
-        echo "::warning file=cowtransfer.com::$(cat cowtransfer.log | grep https)"
-        echo "::set-output name=url::$(cat cowtransfer.log | grep https | cut -f3 -d" ")"
-
-    - name: Upload firmware to WeTransfer
-      id: wetransfer
-      if: steps.organize.outputs.status == 'success' && env.UPLOAD_WETRANSFER == 'true' && !cancelled()
+       cd openwrt
+       make -j1 tools/compile V=s
+       make -j1 toolchain/compile V=s
+       make -j1 target/linux/compile V=s
+       make -j1 package/{node,golang,php8,ruby,perl,squid.jq,docker}/compile V=s
+       echo "::set-output name=status::success"
+       
+    - name: Check space usage
+      if: (!cancelled())
+      run: df -hT
+      
+    - name: Compress directory
       run: |
-        curl -fsSL git.io/file-transfer | sh
-        ./transfer wet -s -p 16 --no-progress ${FIRMWARE} 2>&1 | tee wetransfer.log
-        echo "::warning file=wetransfer.com::$(cat wetransfer.log | grep https)"
-        echo "::set-output name=url::$(cat wetransfer.log | grep https | cut -f3 -d" ")"
-
-    - name: Generate release tag
-      id: tag
-      if: env.UPLOAD_RELEASE == 'true' && !cancelled()
+       bsdtar -czf openwrt.tar.gz /workdir/openwrt && sudo rm -rf /workdir/openwrt
+      
+    - name: Store build artifacts
+      uses: actions/upload-artifact@v3
+      with:
+       name: build-output
+       path: |
+          openwrt.tar.gz
+          
+    - name: WeChat notification
+      if: steps.Multi-thread.outputs.status == 'success' || steps.Single-thread.outputs.status == 'success' && !cancelled() && job.status == 'success'
       run: |
-        echo "::set-output name=release_tag::$(date +"%Y.%m.%d-%H%M")"
-        touch release.txt
-        [ $UPLOAD_COWTRANSFER = true ] && echo "🔗 [Cowtransfer](${{ steps.cowtransfer.outputs.url }})" >> release.txt
-        [ $UPLOAD_WETRANSFER = true ] && echo "🔗 [WeTransfer](${{ steps.wetransfer.outputs.url }})" >> release.txt
-        echo "::set-output name=status::success"
+       curl https://sc.ftqq.com/${{ secrets.SCKEY }}.send?text=OpenWrt第一部分编译成功
+       
+    - name: WeChat notification
+      if: failure() && !cancelled()
+      run: |
+       curl https://sc.ftqq.com/${{ secrets.SCKEY }}.send?text=OpenWrt第一部分编译失败
+      
+ build1:
+     needs: prepare
+     runs-on: ubuntu-20.04
+     container:
+        image: jlzsss/openwrt-buildenv
+     steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+        with:
+          fetch-depth: 0
+                    
+      - name: Download artifacts
+        uses: actions/download-artifact@v3
+        with:
+          name: build-output
+          path: /workdir
 
-    - name: Upload firmware to release
-      uses: softprops/action-gh-release@v1
-      if: steps.tag.outputs.status == 'success' && !cancelled()
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      with:
-        tag_name: ${{ steps.tag.outputs.release_tag }}
-        body_path: release.txt
-        files: ${{ env.FIRMWARE }}/*
+      - name: WeChat notification
+        working-directory: /workdir
+        run: |
+         bsdtar -xzf openwrt.tar.gz -C /workdir/openwrt --strip-components=2 && rm openwrt.tar.gz
+         ln -sf /workdir/openwrt ${{ github.workspace }}/openwrt
+         curl https://sc.ftqq.com/${{ secrets.SCKEY }}.send?text=OpenWrt开始编译第二部分
+                   
+      - name: Check space usage
+        if: (!cancelled())
+        run: df -hT   
+                  
+      - name: Multi-thread compile
+        id: Multi-thread
+        run: |
+          cd openwrt
+          echo -e "$(($(nproc) + 1)) thread compile"
+          make -j$(($(nproc) + 1)) package/luci/compile
+          make -j$(($(nproc) + 1)) package/{luci-app-airconnect,luci-app-aliyundrive-fuse,luci-app-aliyundrive-webdav,luci-app-webd,luci-app-passwall,luci-app-qbittorrent,luci-app-shadowsocksr,luci-app-vssr,luci-app-adblock,luci-app-adbyby-plus,luci-app-adguardhome,luci-app-transmission,luci-app-amule,luci-app-aria2,luci-app-bypass,luci-app-gost,luci-app-homeproxy,luci-app-kcptun,luci-app-minidlna,luci-app-openclash,luci-app-passwall2,luci-app-smartdns,luci-app-ssr-plus,luci-app-store,luci-app-trojan,luci-app-v2ray,luci-app-wireguard,luci-app-v2raya,luci-app-xray}/compile
+          echo "::set-output name=status::success"
+        
+      - name: Single-thread compile
+        id: Single-thread
+        if: failure() 
+        run: |
+         cd openwrt
+         make -j1 package/luci/compile V=s
+         make -j1 package/{luci-app-airconnect,luci-app-aliyundrive-fuse,luci-app-aliyundrive-webdav,luci-app-webd,luci-app-passwall,luci-app-qbittorrent,luci-app-shadowsocksr,luci-app-vssr,luci-app-adblock,luci-app-adbyby-plus,luci-app-adguardhome,luci-app-transmission,luci-app-amule,luci-app-aria2,luci-app-bypass,luci-app-gost,luci-app-homeproxy,luci-app-kcptun,luci-app-minidlna,luci-app-openclash,luci-app-passwall2,luci-app-smartdns,luci-app-ssr-plus,luci-app-store,luci-app-trojan,luci-app-v2ray,luci-app-wireguard,luci-app-v2raya,luci-app-xray}/compile V=s
+         echo "::set-output name=status::success"
+         
+      - name: Check space usage
+        if: (!cancelled())
+        run: df -hT
+     
+      - name: Compress directory
+        run: |
+         bsdtar -czf openwrt.tar.gz /workdir/openwrt && sudo rm -rf /workdir/openwrt
+       
+         df -hT
+      
+      - name: Store build artifacts
+        uses: actions/upload-artifact@v3
+        with:
+         name: build-output
+         path: |
+            openwrt.tar.gz
+     
+      - name: WeChat notification
+        if: steps.Multi-thread.outputs.status == 'success' || steps.Single-thread.outputs.status == 'success' && !cancelled() && job.status == 'success'
+        run: |
+         curl https://sc.ftqq.com/${{ secrets.SCKEY }}.send?text=OpenWrt第二部分编译成功
+       
+      - name: WeChat notification
+        if: failure() && !cancelled()
+        run: |
+         curl https://sc.ftqq.com/${{ secrets.SCKEY }}.send?text=OpenWrt第二部分编译失败  
+         
+ build2:
+     needs: build1
+     runs-on: ubuntu-20.04
+     container:
+        image: jlzsss/openwrt-buildenv
+     steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+        with:
+          fetch-depth: 0
+                  
+      - name: Download artifacts
+        uses: actions/download-artifact@v3
+        with:
+          name: build-output
+          path: /workdir
 
-    - name: Delete workflow runs
-      uses: GitRML/delete-workflow-runs@main
-      with:
-        retain_days: 1
-        keep_minimum_runs: 3
+      - name: WeChat notification
+        working-directory: /workdir
+        run: |
+         bsdtar -xzf openwrt.tar.gz -C /workdir/openwrt --strip-components=2 && rm openwrt.tar.gz
+         ln -sf /workdir/openwrt ${{ github.workspace }}/openwrt
+         curl https://sc.ftqq.com/${{ secrets.SCKEY }}.send?text=OpenWrt开始编译第三部分
+                    
+      - name: Check space usage
+        if: (!cancelled())
+        run: df -hT   
+                  
+      - name: Multi-thread compile
+        id: Multi-thread
+        run: |
+          cd openwrt
+          echo -e "$(($(nproc) + 1)) thread compile"
+          make -j$(($(nproc) + 1)) package/{luci-app-diskman,luci-app-dockerman,luci-app-filerun,luci-app-homebox,luci-app-lucky,luci-app-mosdns,luci-app-netspeedtest,luci-app-rclone,luci-app-softethervpn5,luci-app-syncthing,luci-app-turboacc,luci-app-unblockmusic}/compile
+          echo "::set-output name=status::success"
+        
+      - name: Single-thread compile
+        id: Single-thread
+        if: failure() 
+        run: |
+         cd openwrt
+         make -j1 package/{luci-app-diskman,luci-app-dockerman,luci-app-filerun,luci-app-homebox,luci-app-lucky,luci-app-mosdns,luci-app-netspeedtest,luci-app-rclone,luci-app-softethervpn5,luci-app-syncthing,luci-app-turboacc,luci-app-unblockmusic}/compile V=s
+         echo "::set-output name=status::success"
+         
+      - name: Check space usage
+        if: (!cancelled())
+        run: df -hT
+     
+      - name: Compress directory
+        run: |
+         bsdtar -czf openwrt.tar.gz /workdir/openwrt && sudo rm -rf /workdir/openwrt
+       
+         df -hT
+            
+      - name: Store build artifacts
+        uses: actions/upload-artifact@v3
+        with:
+         name: build-output
+         path: |
+            openwrt.tar.gz
 
-    - name: Remove old Releases
-      uses: dev-drprasad/delete-older-releases@v0.1.0
-      if: env.UPLOAD_RELEASE == 'true' && !cancelled()
-      with:
-        keep_latest: 3
-        delete_tags: true
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+     
+      - name: WeChat notification
+        if: steps.Multi-thread.outputs.status == 'success' || steps.Single-thread.outputs.status == 'success' && !cancelled() && job.status == 'success'
+        run: |
+         curl https://sc.ftqq.com/${{ secrets.SCKEY }}.send?text=OpenWrt第三部分编译成功
+       
+      - name: WeChat notification
+        if: failure() && !cancelled()
+        run: |
+         curl https://sc.ftqq.com/${{ secrets.SCKEY }}.send?text=OpenWrt第三部分编译失败  
+         
+ build3:
+     needs: build2
+     runs-on: ubuntu-20.04
+     container:
+        image: jlzsss/openwrt-buildenv
+     steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+        with:
+          fetch-depth: 0
+         
+      - name: Download artifacts
+        uses: actions/download-artifact@v3
+        with:
+          name: build-output
+          path: /workdir
+
+      - name: WeChat notification
+        working-directory: /workdir
+        run: |
+         bsdtar -xzf openwrt.tar.gz -C /workdir/openwrt --strip-components=2 && rm openwrt.tar.gz
+         ln -sf /workdir/openwrt ${{ github.workspace }}/openwrt
+         curl https://sc.ftqq.com/${{ secrets.SCKEY }}.send?text=OpenWrt开始编译第四部分
+                     
+      - name: Check space usage
+        if: (!cancelled())
+        run: df -hT   
+         
+      - name: Multi-thread compile
+        id: Multi-thread
+        run: |
+          cd openwrt
+          echo -e "$(($(nproc) + 1)) thread compile"
+          make -j$(($(nproc) + 1)) package/compile
+          echo "::set-output name=status::success"
+        
+      - name: Single-thread compile
+        id: Single-thread
+        if: failure() 
+        run: |
+         cd openwrt
+         make -j1 package/compile V=s
+         echo "::set-output name=status::success"
+         
+      - name: Check space usage
+        if: (!cancelled())
+        run: df -hT
+        
+      - name: Compress directory
+        run: |
+         bsdtar -czf openwrt.tar.gz /workdir/openwrt && sudo rm -rf /workdir/openwrt
+       
+         df -hT
+            
+      - name: Store build artifacts
+        uses: actions/upload-artifact@v3
+        with:
+         name: build-output
+         path: |
+            openwrt.tar.gz
+          
+      - name: WeChat notification
+        if: steps.Multi-thread.outputs.status == 'success' || steps.Single-thread.outputs.status == 'success' && !cancelled() && job.status == 'success'
+        run: |
+         curl https://sc.ftqq.com/${{ secrets.SCKEY }}.send?text=OpenWrt第四部分编译成功
+       
+      - name: WeChat notification
+        if: failure() && !cancelled()
+        run: |
+         curl https://sc.ftqq.com/${{ secrets.SCKEY }}.send?text=OpenWrt第四部分编译失败          
+        
+ uploads:
+     needs: build3
+     runs-on: ubuntu-20.04
+     container:
+        image: jlzsss/openwrt-buildenv
+     steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+        with:
+          fetch-depth: 0
+           
+      - name: Download artifacts
+        uses: actions/download-artifact@v3
+        with:
+          name: build-output
+          path: /workdir
+
+      - name: WeChat notification
+        working-directory: /workdir
+        run: |
+         bsdtar -xzf openwrt.tar.gz -C /workdir/openwrt --strip-components=2 && rm openwrt.tar.gz
+         ln -sf /workdir/openwrt ${{ github.workspace }}/openwrt
+         curl https://sc.ftqq.com/${{ secrets.SCKEY }}.send?text=OpenWrt开始编译第五部分
+                            
+      - name: Check space usage
+        if: (!cancelled())
+        run: df -hT      
+         
+      - name: Multi-thread compile
+        id: Multi-thread
+        run: |
+          cd openwrt
+          echo -e "$(($(nproc) + 1)) thread compile"
+          make -j$(($(nproc) + 1))
+          echo "::set-output name=status::success"
+        
+      - name: Single-thread compile
+        id: Single-thread
+        if: failure() 
+        run: |
+         cd openwrt
+         make -j1 V=s
+         echo "::set-output name=status::success"
+         
+      - name: Check space usage
+        if: (!cancelled())
+        run: df -hT      
+         
+      - name: Upload bin directory
+        uses: actions/upload-artifact@v2
+        if: steps.Multi-thread.outputs.status == 'success' || steps.Single-thread.outputs.status == 'success'
+        with:
+          name: OpenWrt_bin${{ env.DEVICE_NAME }}${{ env.FILE_DATE }}
+          path: openwrt/bin
+
+      - name: Upload packages
+        uses: actions/upload-artifact@master
+        if: steps.Multi-thread.outputs.status == 'success' || steps.Single-thread.outputs.status == 'success'
+        with:
+          name: OpenWrt_packages${{ env.DEVICE_NAME }}${{ env.FILE_DATE }}
+          path: openwrt/bin/packages
+
+      - name: Upload targets
+        uses: actions/upload-artifact@master
+        if: steps.Multi-thread.outputs.status == 'success' || steps.Single-thread.outputs.status == 'success'
+        with:
+          name: OpenWrt_firmware${{ env.DEVICE_NAME }}${{ env.FILE_DATE }}
+          path: openwrt/bin/targets
+
+      - name: Organize files
+        id: organize
+        if: env.UPLOAD_FILES == 'true' && !cancelled()
+        shell: pwsh
+        run: |
+          rm -rf openwrt/bin/targets/x86/64/packages
+          echo "::set-output name=status::success"
+          Compress-Archive -Path /workdir/openwrt/bin/packages OpenWrt_packages${{ env.DEVICE_NAME }}${{ env.FILE_DATE }}.zip
+          Compress-Archive -Path /workdir/openwrt/bin/targets OpenWrt_targets${{ env.DEVICE_NAME }}${{ env.FILE_DATE }}.zip       
+          Compress-Archive -Path /workdir/openwrt/bin OpenWrt_bin${{ env.DEVICE_NAME }}${{ env.FILE_DATE }}.tar.gz
+        
+      - name: Check space usage
+        if: (!cancelled())
+        run: df -hT
+      
+      - name: Upload files to cowtransfer
+        id: cowtransfer
+        if: steps.organize.outputs.status == 'success' && env.UPLOAD_COWTRANSFER == 'true' && !cancelled()
+        run: |
+          curl -fsSL git.io/file-transfer | sh
+          ./transfer cow --block 2621440 -s -p 99 --hash --no-progress *.zip 2>&1 | tee cowtransfer.log
+          echo "::warning file=cowtransfer.com::$(cat cowtransfer.log | grep https)"
+          echo "::set-output name=url::$(cat cowtransfer.log | grep https | cut -f3 -d" ")"
+          
+      - name: Upload files to WeTransfer
+        id: wetransfer
+        if: steps.organize.outputs.status == 'success' && env.UPLOAD_WETRANSFER == 'true' && !cancelled()
+        run: |
+          curl -fsSL git.io/file-transfer | sh
+          ./transfer wet -s -p 16 --no-progress *.zip 2>&1 | tee wetransfer.log
+          echo "::warning file=wetransfer.com::$(cat wetransfer.log | grep https)"
+          echo "::set-output name=url::$(cat wetransfer.log | grep https | cut -f3 -d" ")"
+ 
+      - name: Generate release tag
+        id: tag
+        if: env.UPLOAD_RELEASE == 'true' && !cancelled()
+        run: |
+          echo "::set-output name=release_tag::$(date +"%Y.%m.%d-%H%M")"
+          touch release.txt
+          [ $UPLOAD_COWTRANSFER = true ] && echo "🔗 [Cowtransfer](${{ steps.cowtransfer.outputs.url }})" >> release.txt
+          [ $UPLOAD_WETRANSFER = true ] && echo "🔗 [WeTransfer](${{ steps.wetransfer.outputs.url }})" >> release.txt
+          echo "::set-output name=status::success"
+   
+      - name: Upload files to release
+        uses: softprops/action-gh-release@v1
+        if: steps.tag.outputs.status == 'success' && !cancelled()
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+         tag_name: ${{ steps.tag.outputs.release_tag }}
+         body_path: release.txt
+         files: |
+            OpenWrt_packages${{ env.DEVICE_NAME }}${{ env.FILE_DATE }}.zip
+            OpenWrt_targets${{ env.DEVICE_NAME }}${{ env.FILE_DATE }}.zip
+            OpenWrt_bin${{ env.DEVICE_NAME }}${{ env.FILE_DATE }}.tar.gz
+            
+      - name: Delete workflow runs
+        uses: GitRML/delete-workflow-runs@main
+        with:
+          retain_days: 5
+          keep_minimum_runs: 10
+
+      - name: Remove old Releases
+        uses: dev-drprasad/delete-older-releases@v0.1.0
+        if: env.UPLOAD_RELEASE == 'true' && !cancelled()
+        with:
+          keep_latest: 5
+          delete_tags: true
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: WeChat notification
+        if: steps.Multi-thread.outputs.status == 'success' || steps.Single-thread.outputs.status == 'success' && !cancelled() && job.status == 'success'
+        run: |
+         curl https://sc.ftqq.com/${{ secrets.SCKEY }}.send?text=OpenWrt第五部分编译成功
+       
+      - name: WeChat notification
+        if: failure() && !cancelled()
+        run: |
+         curl https://sc.ftqq.com/${{ secrets.SCKEY }}.send?text=OpenWrt第五部分编译失败
