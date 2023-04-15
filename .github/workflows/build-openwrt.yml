@@ -45,10 +45,10 @@ jobs:
    runs-on: ubuntu-20.04
    steps:
     - name: Allocate disk space
-      uses: easimon/maximize-build-space@v7
+      uses: easimon/maximize-build-space@master
       with:
-          root-reserve-mb: 0 # Reserve 5 GB for the system
-          swap-size-mb: 0 # Add 1 GB of swap
+          root-reserve-mb: 256 # Reserve 5 GB for the system
+          swap-size-mb: 256 # Add 1 GB of swap
           remove-dotnet: 'true' # Remove .NET SDKs and runtimes
           remove-android: 'true' # Remove Android SDKs
           remove-haskell: 'true' # Remove Haskell
@@ -237,10 +237,10 @@ jobs:
      runs-on: ubuntu-20.04
      steps:
       - name: Allocate disk space
-        uses: easimon/maximize-build-space@v7
+        uses: easimon/maximize-build-space@master
         with:
-          root-reserve-mb: 0 # Reserve 5 GB for the system
-          swap-size-mb: 0 # Add 1 GB of swap
+          root-reserve-mb: 256 # Reserve 5 GB for the system
+          swap-size-mb: 256 # Add 1 GB of swap
           remove-dotnet: 'true' # Remove .NET SDKs and runtimes
           remove-android: 'true' # Remove Android SDKs
           remove-haskell: 'true' # Remove Haskell
@@ -391,10 +391,10 @@ jobs:
      runs-on: ubuntu-20.04
      steps:
       - name: Allocate disk space
-        uses: easimon/maximize-build-space@v7
+        uses: easimon/maximize-build-space@master
         with:
-          root-reserve-mb: 0 # Reserve 5 GB for the system
-          swap-size-mb: 0 # Add 1 GB of swap
+          root-reserve-mb: 256 # Reserve 5 GB for the system
+          swap-size-mb: 256 # Add 1 GB of swap
           remove-dotnet: 'true' # Remove .NET SDKs and runtimes
           remove-android: 'true' # Remove Android SDKs
           remove-haskell: 'true' # Remove Haskell
@@ -550,10 +550,10 @@ jobs:
      runs-on: ubuntu-20.04
      steps:
       - name: Allocate disk space
-        uses: easimon/maximize-build-space@v7
+        uses: easimon/maximize-build-space@master
         with:
-          root-reserve-mb: 0 # Reserve 5 GB for the system
-          swap-size-mb: 0 # Add 1 GB of swap
+          root-reserve-mb: 256 # Reserve 5 GB for the system
+          swap-size-mb: 256 # Add 1 GB of swap
           remove-dotnet: 'true' # Remove .NET SDKs and runtimes
           remove-android: 'true' # Remove Android SDKs
           remove-haskell: 'true' # Remove Haskell
@@ -709,10 +709,10 @@ jobs:
      runs-on: ubuntu-20.04
      steps:
       - name: Allocate disk space
-        uses: easimon/maximize-build-space@v7
+        uses: easimon/maximize-build-space@master
         with:
-          root-reserve-mb: 0 # Reserve 5 GB for the system
-          swap-size-mb: 0 # Add 1 GB of swap
+          root-reserve-mb: 256 # Reserve 5 GB for the system
+          swap-size-mb: 256 # Add 1 GB of swap
           remove-dotnet: 'true' # Remove .NET SDKs and runtimes
           remove-android: 'true' # Remove Android SDKs
           remove-haskell: 'true' # Remove Haskell
