@@ -105,7 +105,7 @@ jobs:
           remove-haskell: 'true' # Remove Haskell
           remove-ghcups: 'true'
           remove-codeql: 'true'
-          remove-docker-images: 'true'   
+          remove-docker-images: 'false'   
      
    # - name: Cache
    #   uses: stupidloud/cachewrtbuild@main
@@ -305,7 +305,7 @@ jobs:
           remove-haskell: 'true' # Remove Haskell
           remove-ghcups: 'true'
           remove-codeql: 'true'
-          remove-docker-images: 'true' 
+          remove-docker-images: 'false' 
        
       - name: Unzip artifact
         run: |
@@ -459,7 +459,7 @@ jobs:
           remove-haskell: 'true' # Remove Haskell
           remove-ghcups: 'true'
           remove-codeql: 'true'
-          remove-docker-images: 'true'
+          remove-docker-images: 'false'
     
       - name: Unzip artifact
         run: |
@@ -618,7 +618,7 @@ jobs:
           remove-haskell: 'true' # Remove Haskell
           remove-ghcups: 'true'
           remove-codeql: 'true'
-          remove-docker-images: 'true'
+          remove-docker-images: 'false'
    
       - name: Unzip artifact
         run: |
@@ -777,7 +777,7 @@ jobs:
           remove-haskell: 'true' # Remove Haskell
           remove-ghcups: 'true'
           remove-codeql: 'true'
-          remove-docker-images: 'true'
+          remove-docker-images: 'false'
   
       - name: Unzip artifact
         run: |
