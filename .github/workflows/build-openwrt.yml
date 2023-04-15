@@ -32,6 +32,7 @@ env:
   DIY_P1_SH: diy-part1-openwrt.sh
   DIY_P2_SH: diy-part2-openwrt.sh
   SCKEY: ${{ secrets.SCKEY }}
+  FREE_UP_DISK: true
   UPLOAD_FILES: false
   UPLOAD_COWTRANSFER: false
   UPLOAD_WETRANSFER: false
@@ -41,51 +42,102 @@ env:
 jobs:
 
  prepare:
-   runs-on: ubuntu-latest
-   container:
-      image: docker://p3terx/openwrt-build-env:20.04
+   runs-on: ubuntu-20.04
    steps:
+    - name: Allocate disk space
+      uses: easimon/maximize-build-space@v7
+      with:
+          # root-reserve-mb: 51200 # Reserve 5 GB for the system
+          # swap-size-mb: 1024 # Add 1 GB of swap
+          remove-dotnet: 'true' # Remove .NET SDKs and runtimes
+          remove-android: 'true' # Remove Android SDKs
+          remove-haskell: 'true' # Remove Haskell
+          remove-ghcups: 'true'
+          remove-codeql: 'true'
+          remove-docker-images: 'true'
+   
     - name: Checkout
       uses: actions/checkout@main
-
-    # - name: Setup environment
-    #  uses: docker://p3terx/openwrt-build-env:20.04
-    #  with:
-    #    args: |
-    #      export REPO_URL=https://github.com/openwrt/openwrt.git
-    #      export REPO_BRANCH=openwrt-22.03
-    #      export TARGET_PROFILE="x86_64"
+      with:
+        fetch-depth: 0 
 
     - name: WeChat notification
       run: |
-       curl https://sc.ftqq.com/${{ secrets.SCKEY }}.send?text=开始编译OpenWrt        
-    
-    # - name: Clone source code
-    #   run: |
-    #     git clone -b $REPO_BRANCH --single-branch $REPO_URL  openwrt
-    #     ln -sf /openwrt ${{ github.workspace }}/openwrt
-              
+       curl https://sc.ftqq.com/${{ secrets.SCKEY }}.send?text=开始编译OpenWrt 
+
+    - name: Initialization environment
+      env:
+        DEBIAN_FRONTEND: noninteractive
+      run: |
+        docker image prune -a -f
+        sudo rm -rf /usr/share/dotnet /etc/apt/sources.list.d/* /var/cache/apt/archives /usr/local/share/boost /usr/local/go* /usr/local/lib/android /opt/ghc
+        sudo -E apt-get -y purge azure-cli ghc* zulu* hhvm llvm* firefox google* dotnet* openjdk* mysql* php* android* adoptopenjdk* mongodb* moby* snapd*
+        sudo -E apt-get -qq update
+        sudo -E apt-get -qq install build-essential asciidoc binutils bzip2 gawk gettext git libncurses5-dev libz-dev patch python3 python2.7 unzip zlib1g-dev lib32gcc1 libc6-dev-i386 subversion flex uglifyjs git-core gcc-multilib p7zip p7zip-full msmtp libssl-dev texinfo libglib2.0-dev xmlto qemu-utils upx libelf-dev autoconf automake libtool autopoint device-tree-compiler g++-multilib antlr3 gperf wget curl swig rsync ccache libarchive-tools 
+        sudo -E apt-get -qq autoremove --purge
+        sudo -E apt-get -qq clean
+        sudo timedatectl set-timezone "$TZ"
+        sudo mkdir -p /workdir
+        sudo chown $USER:$GROUPS /workdir
+        
+        df -hT
+        
+    - name: Clone source code
+      working-directory: /workdir
+      run: |
+        git clone -b $REPO_BRANCH --single-branch $REPO_URL  openwrt
+        ln -sf /workdir/openwrt ${{ github.workspace }}/openwrt
+        
+    - name: Free up disk space
+      if: env.FREE_UP_DISK == 'true'
+      env:
+        DEBIAN_FRONTEND: noninteractive
+      run: |
+        # sudo swapoff /mnt/swapfile
+        sudo rm -rf /mnt/swapfile
+        sudo mkdir -p -m 777 /mnt/openwrt/build_dir/hostpkg /mnt/openwrt/build_dir/host openwrt/build_dir /mnt/openwrt/dl /mnt/openwrt/feeds /mnt/openwrt/staging_dir /mnt/openwrt/build_dir /mnt/openwrt/tmp /mnt/openwrt/bin
+        ln -sf /mnt/openwrt/build_dir/hostpkg openwrt/build_dir/hostpkg
+        # ln -sf /mnt/openwrt/build_dir/host openwrt/build_dir/host
+        # ln -sf /mnt/openwrt/dl openwrt/dl
+        ln -sf /mnt/openwrt/staging_dir openwrt/staging_dir
+        # ln -sf /mnt/openwrt/feeds openwrt/feeds
+        # ln -sf /mnt/openwrt/bin openwrt/bin  
+        # ln -sf /mnt/openwrt/build_dir openwrt/build_dir
+        # ln -sf /mnt/openwrt/tmp openwrt/tmp
+        
+        df -hT
+        
+   # - name: Cache
+   #   uses: stupidloud/cachewrtbuild@main
+   #   with:
+          #是否一并缓存.ccache目录，如果你启用了ccache。这是唯一的常用参数，其他三个用于除错，一般不需要调整
+   #       ccache: true
+          #是否缓存工具链目录
+   #       toolchain: true
+          #是否跳过工具链编译
+   #       skip: true
+          #清空缓存
+   #       clean: true
+   #       prefix: ${{ github.workspace }}/openwrt
+        
     - name: Load custom feeds
       run: |
         [ -e $FEEDS_CONF ] && mv $FEEDS_CONF openwrt/feeds.conf.default
         chmod +x $DIY_P1_SH
-        cd $GITHUB_WORKSPACE/openwrt
+        cd openwrt
         $GITHUB_WORKSPACE/$DIY_P1_SH
         
     - name: Update feeds
-      run: |
-        cd $GITHUB_WORKSPACE/openwrt && ./scripts/feeds update -a 
-      
+      run: cd openwrt && ./scripts/feeds update -a 
     - name: Install feeds
-      run: |
-        cd $GITHUB_WORKSPACE/openwrt && ./scripts/feeds install -a
+      run: cd openwrt && ./scripts/feeds install -a
 
     - name: Load custom configuration
       run: |
         [ -e files ] && mv files openwrt/files
         [ -e $CONFIG_FILE ] && mv $CONFIG_FILE openwrt/.config
         chmod +x $DIY_P2_SH
-        cd $GITHUB_WORKSPACE/openwrt
+        cd openwrt
         $GITHUB_WORKSPACE/$DIY_P2_SH
         find "${GITHUB_WORKSPACE}/patches" -type f -name '*.patch' -print0 | sort -z | xargs -I % -t -0 -n 1 sh -c "cat '%'  | patch -d '${GITHUB_WORKSPACE}/openwrt' -p1 --forward"
         
@@ -99,7 +151,7 @@ jobs:
     - name: Download package
       id: package
       run: |
-        cd $GITHUB_WORKSPACE/openwrt
+        cd openwrt
         make defconfig
         make download -j8
         find dl -size -1024c -exec ls -l {} \;
@@ -112,39 +164,63 @@ jobs:
     - name: Multi-thread compile
       id: Multi-thread
       run: |
-        cd $GITHUB_WORKSPACE/openwrt
+        cd openwrt
         echo -e "$(($(nproc) + 1)) thread compile"
         make -j$(($(nproc) + 1)) tools/compile
         make -j$(($(nproc) + 1)) toolchain/compile
         make -j$(($(nproc) + 1)) target/linux/compile
         make -j$(($(nproc) + 1)) package/{node,golang,php8,ruby,perl,squid,jq,docker}/compile
+        # make package/compile -j$(($(nproc) + 2))
+        # make package/index -j$(($(nproc) + 2))
         echo "::set-output name=status::success"
+        grep '^CONFIG_TARGET.*DEVICE.*=y' .config | sed -r 's/.*DEVICE_(.*)=y/\1/' > DEVICE_NAME
+        [ -s DEVICE_NAME ] && echo "DEVICE_NAME=_$(cat DEVICE_NAME)" >> $GITHUB_ENV
+        echo "FILE_DATE=_$(date +"%Y%m%d%H%M")" >> $GITHUB_ENV
         
     - name: Single-thread compile
       id: Single-thread
       if: failure() 
       run: |
-       cd $GITHUB_WORKSPACE/openwrt
+       cd openwrt
        make -j1 tools/compile V=s
        make -j1 toolchain/compile V=s
        make -j1 target/linux/compile V=s
        make -j1 package/{node,golang,php8,ruby,perl,squid.jq,docker}/compile V=s
        echo "::set-output name=status::success"
+       grep '^CONFIG_TARGET.*DEVICE.*=y' .config | sed -r 's/.*DEVICE_(.*)=y/\1/' > DEVICE_NAME
+       [ -s DEVICE_NAME ] && echo "DEVICE_NAME=_$(cat DEVICE_NAME)" >> $GITHUB_ENV
+       echo "FILE_DATE=_$(date +"%Y%m%d%H%M")" >> $GITHUB_ENV
        
     - name: Check space usage
       if: (!cancelled())
       run: df -hT
       
     - name: Compress directory
+      env:
+       DEBIAN_FRONTEND: noninteractive
       run: |
-       bsdtar -czf openwrt.tar.gz $GITHUB_WORKSPACE/openwrt && sudo rm -rf cd $GITHUB_WORKSPACE/openwrt
+       bsdtar -czf openwrt.tar.gz /workdir/openwrt && sudo rm -rf /workdir/openwrt
+       bsdtar -czf hostpkg.tar.gz /mnt/openwrt/build_dir/hostpkg && sudo rm -rf /mnt/openwrt/build_dir/hostpkg
+       # bsdtar -czf host.tar.gz /mnt/openwrt/build_dir/host && sudo rm -rf /mnt/openwrt/build_dir/host
+       # bsdtar -czf dl.tar.gz /mnt/openwrt/dl && sudo rm -rf /mnt/openwrt/dl
+       bsdtar -czf staging_dir.tar.gz /mnt/openwrt/staging_dir && sudo rm -rf /mnt/openwrt/staging_dir
+       # bsdtar -czf feeds.tar.gz /mnt/openwrt/feeds && sudo rm -rf /mnt/openwrt/feeds
+       
+       df -hT
       
     - name: Store build artifacts
       uses: actions/upload-artifact@v3
+      env:
+       DEBIAN_FRONTEND: noninteractive
       with:
        name: build-output
        path: |
           openwrt.tar.gz
+          hostpkg.tar.gz
+          # host.tar.gz
+          # dl.tar.gz
+          staging_dir.tar.gz
+          # feeds.tar.gz
           
     - name: WeChat notification
       if: steps.Multi-thread.outputs.status == 'success' || steps.Single-thread.outputs.status == 'success' && !cancelled() && job.status == 'success'
@@ -159,16 +235,45 @@ jobs:
  build1:
      needs: prepare
      runs-on: ubuntu-20.04
-     container:
-        image: jlzsss/openwrt-buildenv
      steps:
+      - name: Allocate disk space
+        uses: easimon/maximize-build-space@v7
+        with:
+          # root-reserve-mb: 102400 # Reserve 5 GB for the system
+          # swap-size-mb: 1024 # Add 1 GB of swap
+          remove-dotnet: 'true' # Remove .NET SDKs and runtimes
+          remove-android: 'true' # Remove Android SDKs
+          remove-haskell: 'true' # Remove Haskell
+          remove-ghcups: 'true'
+          remove-codeql: 'true'
+          remove-docker-images: 'true'
+     
       - name: Checkout code
         uses: actions/checkout@v2
         with:
           fetch-depth: 0
-                    
+          
+      - name: Initialization environment
+        env:
+          DEBIAN_FRONTEND: noninteractive
+        run: |
+          docker image prune -a -f
+          sudo rm -rf /usr/share/dotnet /etc/apt/sources.list.d/* /var/cache/apt/archives /usr/local/share/boost /usr/local/go* /usr/local/lib/android /opt/ghc
+          sudo -E apt-get -y purge azure-cli ghc* zulu* hhvm llvm* firefox google* dotnet* openjdk* mysql* php* android* adoptopenjdk* mongodb* moby* snapd*
+          sudo -E apt-get -qq update
+          sudo -E apt-get -qq install build-essential asciidoc binutils bzip2 gawk gettext git libncurses5-dev libz-dev patch python3 python2.7 unzip zlib1g-dev lib32gcc1 libc6-dev-i386 subversion flex uglifyjs git-core gcc-multilib p7zip p7zip-full msmtp libssl-dev texinfo libglib2.0-dev xmlto qemu-utils upx libelf-dev autoconf automake libtool autopoint device-tree-compiler g++-multilib antlr3 gperf wget curl swig rsync ccache libarchive-tools 
+          sudo -E apt-get -qq autoremove --purge
+          sudo -E apt-get -qq clean
+          sudo timedatectl set-timezone "$TZ"
+          sudo mkdir -p /workdir
+          sudo chown $USER:$GROUPS /workdir
+        
+          df -hT
+          
       - name: Download artifacts
         uses: actions/download-artifact@v3
+        env:
+         DEBIAN_FRONTEND: noninteractive
         with:
           name: build-output
           path: /workdir
@@ -176,10 +281,40 @@ jobs:
       - name: WeChat notification
         working-directory: /workdir
         run: |
+         cd /workdir
+         mkdir -p openwrt
          bsdtar -xzf openwrt.tar.gz -C /workdir/openwrt --strip-components=2 && rm openwrt.tar.gz
          ln -sf /workdir/openwrt ${{ github.workspace }}/openwrt
+         rm -rf openwrt/build_dir/hostpkg openwrt/staging_dir
          curl https://sc.ftqq.com/${{ secrets.SCKEY }}.send?text=OpenWrt开始编译第二部分
-                   
+       
+      - name: Free up disk space
+        if: env.FREE_UP_DISK == 'true'
+        env:
+          DEBIAN_FRONTEND: noninteractive
+        run: |
+          # sudo swapoff /mnt/swapfile
+          sudo rm -rf /mnt/swapfile
+          sudo mkdir -p -m 777 /mnt/openwrt/build_dir/hostpkg /mnt/openwrt/build_dir/host openwrt/build_dir/hostpkg openwrt/build_dir/host openwrt/feeds /mnt/openwrt/dl /mnt/openwrt/feeds /mnt/openwrt/staging_dir /mnt/openwrt/build_dir /mnt/openwrt/tmp /mnt/openwrt/bin
+          ln -sf /mnt/openwrt/build_dir/hostpkg openwrt/build_dir/hostpkg
+          # ln -sf /mnt/openwrt/build_dir/host openwrt/build_dir/host
+          # ln -sf /mnt/openwrt/dl openwrt/dl
+          ln -sf /mnt/openwrt/staging_dir openwrt/staging_dir
+          # ln -sf /mnt/openwrt/feeds openwrt/feeds   
+          # ln -sf /mnt/openwrt/bin openwrt/bin
+          # ln -sf /mnt/openwrt/build_dir openwrt/build_dir
+          # ln -sf /mnt/openwrt/tmp openwrt/tmp
+          
+          df -hT      
+              
+      - name: Unzip artifact
+        run: |
+          cd /workdir && bsdtar -xzf hostpkg.tar.gz -C /mnt/openwrt/build_dir/hostpkg --strip-components=4 && rm hostpkg.tar.gz
+          # cd /workdir && bsdtar -xzf host.tar.gz -C /mnt/openwrt/build_dir/host --strip-components=4 && rm host.tar.gz
+          # cd /workdir && bsdtar -xzf dl.tar.gz -C /mnt/openwrt/dl --strip-components=3 && rm dl.tar.gz
+          cd /workdir && bsdtar -xzf staging_dir.tar.gz -C /mnt/openwrt/staging_dir --strip-components=3 && rm staging_dir.tar.gz
+          # cd /workdir && bsdtar -xzf feeds.tar.gz -C /mnt/openwrt/feeds --strip-components=3 && rm feeds.tar.gz
+          
       - name: Check space usage
         if: (!cancelled())
         run: df -hT   
@@ -191,7 +326,12 @@ jobs:
           echo -e "$(($(nproc) + 1)) thread compile"
           make -j$(($(nproc) + 1)) package/luci/compile
           make -j$(($(nproc) + 1)) package/{luci-app-airconnect,luci-app-aliyundrive-fuse,luci-app-aliyundrive-webdav,luci-app-webd,luci-app-passwall,luci-app-qbittorrent,luci-app-shadowsocksr,luci-app-vssr,luci-app-adblock,luci-app-adbyby-plus,luci-app-adguardhome,luci-app-transmission,luci-app-amule,luci-app-aria2,luci-app-bypass,luci-app-gost,luci-app-homeproxy,luci-app-kcptun,luci-app-minidlna,luci-app-openclash,luci-app-passwall2,luci-app-smartdns,luci-app-ssr-plus,luci-app-store,luci-app-trojan,luci-app-v2ray,luci-app-wireguard,luci-app-v2raya,luci-app-xray}/compile
+          # make package/compile -j$(($(nproc) + 2))
+          # make package/index -j$(($(nproc) + 2))
           echo "::set-output name=status::success"
+          grep '^CONFIG_TARGET.*DEVICE.*=y' .config | sed -r 's/.*DEVICE_(.*)=y/\1/' > DEVICE_NAME
+          [ -s DEVICE_NAME ] && echo "DEVICE_NAME=_$(cat DEVICE_NAME)" >> $GITHUB_ENV
+          echo "FILE_DATE=_$(date +"%Y%m%d%H%M")" >> $GITHUB_ENV
         
       - name: Single-thread compile
         id: Single-thread
@@ -201,23 +341,40 @@ jobs:
          make -j1 package/luci/compile V=s
          make -j1 package/{luci-app-airconnect,luci-app-aliyundrive-fuse,luci-app-aliyundrive-webdav,luci-app-webd,luci-app-passwall,luci-app-qbittorrent,luci-app-shadowsocksr,luci-app-vssr,luci-app-adblock,luci-app-adbyby-plus,luci-app-adguardhome,luci-app-transmission,luci-app-amule,luci-app-aria2,luci-app-bypass,luci-app-gost,luci-app-homeproxy,luci-app-kcptun,luci-app-minidlna,luci-app-openclash,luci-app-passwall2,luci-app-smartdns,luci-app-ssr-plus,luci-app-store,luci-app-trojan,luci-app-v2ray,luci-app-wireguard,luci-app-v2raya,luci-app-xray}/compile V=s
          echo "::set-output name=status::success"
+         grep '^CONFIG_TARGET.*DEVICE.*=y' .config | sed -r 's/.*DEVICE_(.*)=y/\1/' > DEVICE_NAME
+         [ -s DEVICE_NAME ] && echo "DEVICE_NAME=_$(cat DEVICE_NAME)" >> $GITHUB_ENV
+         echo "FILE_DATE=_$(date +"%Y%m%d%H%M")" >> $GITHUB_ENV
          
       - name: Check space usage
         if: (!cancelled())
         run: df -hT
      
       - name: Compress directory
+        env:
+         DEBIAN_FRONTEND: noninteractive
         run: |
          bsdtar -czf openwrt.tar.gz /workdir/openwrt && sudo rm -rf /workdir/openwrt
+         bsdtar -czf hostpkg.tar.gz /mnt/openwrt/build_dir/hostpkg && sudo rm -rf /mnt/openwrt/build_dir/hostpkg
+         # bsdtar -czf host.tar.gz /mnt/openwrt/build_dir/host && sudo rm -rf /mnt/openwrt/build_dir/host
+         # bsdtar -czf dl.tar.gz /mnt/openwrt/dl && sudo rm -rf /mnt/openwrt/dl
+         bsdtar -czf staging_dir.tar.gz /mnt/openwrt/staging_dir && sudo rm -rf /mnt/openwrt/staging_dir
+         # bsdtar -czf feeds.tar.gz /mnt/openwrt/feeds && sudo rm -rf /mnt/openwrt/feeds
        
          df -hT
       
       - name: Store build artifacts
         uses: actions/upload-artifact@v3
+        env:
+         DEBIAN_FRONTEND: noninteractive
         with:
          name: build-output
          path: |
             openwrt.tar.gz
+            hostpkg.tar.gz
+            # host.tar.gz
+            # dl.tar.gz
+            staging_dir.tar.gz
+            # feeds.tar.gz
      
       - name: WeChat notification
         if: steps.Multi-thread.outputs.status == 'success' || steps.Single-thread.outputs.status == 'success' && !cancelled() && job.status == 'success'
@@ -232,16 +389,45 @@ jobs:
  build2:
      needs: build1
      runs-on: ubuntu-20.04
-     container:
-        image: jlzsss/openwrt-buildenv
      steps:
+      - name: Allocate disk space
+        uses: easimon/maximize-build-space@v7
+        with:
+          # root-reserve-mb: 102400 # Reserve 5 GB for the system
+          # swap-size-mb: 1024 # Add 1 GB of swap
+          remove-dotnet: 'true' # Remove .NET SDKs and runtimes
+          remove-android: 'true' # Remove Android SDKs
+          remove-haskell: 'true' # Remove Haskell
+          remove-ghcups: 'true'
+          remove-codeql: 'true'
+          remove-docker-images: 'true'
+     
       - name: Checkout code
         uses: actions/checkout@v2
         with:
           fetch-depth: 0
-                  
+     
+      - name: Initialization environment
+        env:
+          DEBIAN_FRONTEND: noninteractive
+        run: |
+          docker image prune -a -f
+          sudo rm -rf /usr/share/dotnet /etc/apt/sources.list.d/* /var/cache/apt/archives /usr/local/share/boost /usr/local/go* /usr/local/lib/android /opt/ghc
+          sudo -E apt-get -y purge azure-cli ghc* zulu* hhvm llvm* firefox google* dotnet* openjdk* mysql* php* android* adoptopenjdk* mongodb* moby* snapd*
+          sudo -E apt-get -qq update
+          sudo -E apt-get -qq install build-essential asciidoc binutils bzip2 gawk gettext git libncurses5-dev libz-dev patch python3 python2.7 unzip zlib1g-dev lib32gcc1 libc6-dev-i386 subversion flex uglifyjs git-core gcc-multilib p7zip p7zip-full msmtp libssl-dev texinfo libglib2.0-dev xmlto qemu-utils upx libelf-dev autoconf automake libtool autopoint device-tree-compiler g++-multilib antlr3 gperf wget curl swig rsync ccache libarchive-tools 
+          sudo -E apt-get -qq autoremove --purge
+          sudo -E apt-get -qq clean
+          sudo timedatectl set-timezone "$TZ"
+          sudo mkdir -p /workdir
+          sudo chown $USER:$GROUPS /workdir
+        
+          df -hT
+          
       - name: Download artifacts
         uses: actions/download-artifact@v3
+        env:
+         DEBIAN_FRONTEND: noninteractive
         with:
           name: build-output
           path: /workdir
@@ -249,10 +435,40 @@ jobs:
       - name: WeChat notification
         working-directory: /workdir
         run: |
+         cd /workdir
+         mkdir -p openwrt
          bsdtar -xzf openwrt.tar.gz -C /workdir/openwrt --strip-components=2 && rm openwrt.tar.gz
          ln -sf /workdir/openwrt ${{ github.workspace }}/openwrt
+         rm -rf openwrt/build_dir/hostpkg openwrt/staging_dir
          curl https://sc.ftqq.com/${{ secrets.SCKEY }}.send?text=OpenWrt开始编译第三部分
-                    
+       
+      - name: Free up disk space
+        if: env.FREE_UP_DISK == 'true'
+        env:
+          DEBIAN_FRONTEND: noninteractive
+        run: |
+          # sudo swapoff /mnt/swapfile
+          sudo rm -rf /mnt/swapfile
+          sudo mkdir -p -m 777 /mnt/openwrt/build_dir/hostpkg /mnt/openwrt/build_dir/host openwrt/build_dir/hostpkg openwrt/build_dir/host openwrt/feeds /mnt/openwrt/dl /mnt/openwrt/feeds /mnt/openwrt/staging_dir /mnt/openwrt/build_dir /mnt/openwrt/tmp /mnt/openwrt/bin
+          ln -sf /mnt/openwrt/build_dir/hostpkg openwrt/build_dir/hostpkg
+          # ln -sf /mnt/openwrt/build_dir/host openwrt/build_dir/host
+          # ln -sf /mnt/openwrt/dl openwrt/dl
+          ln -sf /mnt/openwrt/staging_dir openwrt/staging_dir
+          # ln -sf /mnt/openwrt/feeds openwrt/feeds   
+          # ln -sf /mnt/openwrt/bin openwrt/bin
+          # ln -sf /mnt/openwrt/build_dir openwrt/build_dir
+          # ln -sf /mnt/openwrt/tmp openwrt/tmp
+          
+          df -hT      
+              
+      - name: Unzip artifact
+        run: |
+          cd /workdir && bsdtar -xzf hostpkg.tar.gz -C /mnt/openwrt/build_dir/hostpkg --strip-components=4 && rm hostpkg.tar.gz
+          # cd /workdir && bsdtar -xzf host.tar.gz -C /mnt/openwrt/build_dir/host --strip-components=4 && rm host.tar.gz
+          # cd /workdir && bsdtar -xzf dl.tar.gz -C /mnt/openwrt/dl --strip-components=3 && rm dl.tar.gz
+          cd /workdir && bsdtar -xzf staging_dir.tar.gz -C /mnt/openwrt/staging_dir --strip-components=3 && rm staging_dir.tar.gz
+          # cd /workdir && bsdtar -xzf feeds.tar.gz -C /mnt/openwrt/feeds --strip-components=3 && rm feeds.tar.gz
+          
       - name: Check space usage
         if: (!cancelled())
         run: df -hT   
@@ -263,7 +479,12 @@ jobs:
           cd openwrt
           echo -e "$(($(nproc) + 1)) thread compile"
           make -j$(($(nproc) + 1)) package/{luci-app-diskman,luci-app-dockerman,luci-app-filerun,luci-app-homebox,luci-app-lucky,luci-app-mosdns,luci-app-netspeedtest,luci-app-rclone,luci-app-softethervpn5,luci-app-syncthing,luci-app-turboacc,luci-app-unblockmusic}/compile
+          # make package/compile -j$(($(nproc) + 2))
+          # make package/index -j$(($(nproc) + 2))
           echo "::set-output name=status::success"
+          grep '^CONFIG_TARGET.*DEVICE.*=y' .config | sed -r 's/.*DEVICE_(.*)=y/\1/' > DEVICE_NAME
+          [ -s DEVICE_NAME ] && echo "DEVICE_NAME=_$(cat DEVICE_NAME)" >> $GITHUB_ENV
+          echo "FILE_DATE=_$(date +"%Y%m%d%H%M")" >> $GITHUB_ENV
         
       - name: Single-thread compile
         id: Single-thread
@@ -272,24 +493,47 @@ jobs:
          cd openwrt
          make -j1 package/{luci-app-diskman,luci-app-dockerman,luci-app-filerun,luci-app-homebox,luci-app-lucky,luci-app-mosdns,luci-app-netspeedtest,luci-app-rclone,luci-app-softethervpn5,luci-app-syncthing,luci-app-turboacc,luci-app-unblockmusic}/compile V=s
          echo "::set-output name=status::success"
+         grep '^CONFIG_TARGET.*DEVICE.*=y' .config | sed -r 's/.*DEVICE_(.*)=y/\1/' > DEVICE_NAME
+         [ -s DEVICE_NAME ] && echo "DEVICE_NAME=_$(cat DEVICE_NAME)" >> $GITHUB_ENV
+         echo "FILE_DATE=_$(date +"%Y%m%d%H%M")" >> $GITHUB_ENV
          
       - name: Check space usage
         if: (!cancelled())
         run: df -hT
      
-      - name: Compress directory
+      - name: Compress directory openwrt
+        env:
+         DEBIAN_FRONTEND: noninteractive
         run: |
          bsdtar -czf openwrt.tar.gz /workdir/openwrt && sudo rm -rf /workdir/openwrt
+         # bsdtar -czf host.tar.bz2 /mnt/openwrt/build_dir/host && sudo rm -rf /mnt/openwrt/build_dir/host
+         # bsdtar -czf dl.tar.bz2 /mnt/openwrt/dl && sudo rm -rf /mnt/openwrt/dl
+         # bsdtar -czf feeds.tar.bz2 /mnt/openwrt/feeds && sudo rm -rf /mnt/openwrt/feeds
        
          df -hT
-            
+      
+      - name: Compress directory files
+        env:
+         DEBIAN_FRONTEND: noninteractive
+        run: |
+         bsdtar -czf hostpkg.tar.gz /mnt/openwrt/build_dir/hostpkg && sudo rm -rf /mnt/openwrt/build_dir/hostpkg
+         bsdtar -czf staging_dir.tar.gz /mnt/openwrt/staging_dir && sudo rm -rf /mnt/openwrt/staging_dir
+       
+         df -hT
+      
       - name: Store build artifacts
         uses: actions/upload-artifact@v3
+        env:
+         DEBIAN_FRONTEND: noninteractive
         with:
          name: build-output
          path: |
-            openwrt.tar.gz
-
+            openwrt.tar.bz2
+            hostpkg.tar.gz
+            # host.tar.bz2
+            # dl.tar.bz2
+            staging_dir.tar.gz
+            # feeds.tar.bz2
      
       - name: WeChat notification
         if: steps.Multi-thread.outputs.status == 'success' || steps.Single-thread.outputs.status == 'success' && !cancelled() && job.status == 'success'
@@ -304,16 +548,45 @@ jobs:
  build3:
      needs: build2
      runs-on: ubuntu-20.04
-     container:
-        image: jlzsss/openwrt-buildenv
      steps:
+      - name: Allocate disk space
+        uses: easimon/maximize-build-space@v7
+        with:
+          # root-reserve-mb: 102400 # Reserve 5 GB for the system
+          # swap-size-mb: 1024 # Add 1 GB of swap
+          remove-dotnet: 'true' # Remove .NET SDKs and runtimes
+          remove-android: 'true' # Remove Android SDKs
+          remove-haskell: 'true' # Remove Haskell
+          remove-ghcups: 'true'
+          remove-codeql: 'true'
+          remove-docker-images: 'true'
+     
       - name: Checkout code
         uses: actions/checkout@v2
         with:
           fetch-depth: 0
+
+      - name: Initialization environment
+        env:
+          DEBIAN_FRONTEND: noninteractive
+        run: |
+          docker image prune -a -f
+          sudo rm -rf /usr/share/dotnet /etc/apt/sources.list.d/* /var/cache/apt/archives /usr/local/share/boost /usr/local/go* /usr/local/lib/android /opt/ghc
+          sudo -E apt-get -y purge azure-cli ghc* zulu* hhvm llvm* firefox google* dotnet* openjdk* mysql* php* android* adoptopenjdk* mongodb* moby* snapd*
+          sudo -E apt-get -qq update
+          sudo -E apt-get -qq install build-essential asciidoc binutils bzip2 gawk gettext git libncurses5-dev libz-dev patch python3 python2.7 unzip zlib1g-dev lib32gcc1 libc6-dev-i386 subversion flex uglifyjs git-core gcc-multilib p7zip p7zip-full msmtp libssl-dev texinfo libglib2.0-dev xmlto qemu-utils upx libelf-dev autoconf automake libtool autopoint device-tree-compiler g++-multilib antlr3 gperf wget curl swig rsync ccache libarchive-tools 
+          sudo -E apt-get -qq autoremove --purge
+          sudo -E apt-get -qq clean
+          sudo timedatectl set-timezone "$TZ"
+          sudo mkdir -p /workdir
+          sudo chown $USER:$GROUPS /workdir
+        
+          df -hT
          
       - name: Download artifacts
         uses: actions/download-artifact@v3
+        env:
+         DEBIAN_FRONTEND: noninteractive
         with:
           name: build-output
           path: /workdir
@@ -321,10 +594,40 @@ jobs:
       - name: WeChat notification
         working-directory: /workdir
         run: |
+         cd /workdir
+         mkdir -p openwrt
          bsdtar -xzf openwrt.tar.gz -C /workdir/openwrt --strip-components=2 && rm openwrt.tar.gz
          ln -sf /workdir/openwrt ${{ github.workspace }}/openwrt
+         rm -rf openwrt/build_dir/hostpkg openwrt/staging_dir
          curl https://sc.ftqq.com/${{ secrets.SCKEY }}.send?text=OpenWrt开始编译第四部分
-                     
+       
+      - name: Free up disk space
+        if: env.FREE_UP_DISK == 'true'
+        env:
+          DEBIAN_FRONTEND: noninteractive
+        run: |
+          # sudo swapoff /mnt/swapfile
+          sudo rm -rf /mnt/swapfile
+          sudo mkdir -p -m 777 /mnt/openwrt/build_dir/hostpkg /mnt/openwrt/build_dir/host openwrt/build_dir/hostpkg openwrt/build_dir/host openwrt/feeds /mnt/openwrt/dl /mnt/openwrt/feeds /mnt/openwrt/staging_dir /mnt/openwrt/build_dir /mnt/openwrt/tmp /mnt/openwrt/bin
+          ln -sf /mnt/openwrt/build_dir/hostpkg openwrt/build_dir/hostpkg
+          # ln -sf /mnt/openwrt/build_dir/host openwrt/build_dir/host
+          # ln -sf /mnt/openwrt/dl openwrt/dl
+          ln -sf /mnt/openwrt/staging_dir openwrt/staging_dir
+          # ln -sf /mnt/openwrt/feeds openwrt/feeds   
+          # ln -sf /mnt/openwrt/bin openwrt/bin
+          # ln -sf /mnt/openwrt/build_dir openwrt/build_dir
+          # ln -sf /mnt/openwrt/tmp openwrt/tmp
+          
+          df -hT     
+              
+      - name: Unzip artifact
+        run: |
+          cd /workdir && bsdtar -xzf hostpkg.tar.gz -C /mnt/openwrt/build_dir/hostpkg --strip-components=4 && rm hostpkg.tar.gz
+          # cd /workdir && bsdtar -xzf host.tar.gz -C /mnt/openwrt/build_dir/host --strip-components=4 && rm host.tar.gz
+          # cd /workdir && bsdtar -xzf dl.tar.gz -C /mnt/openwrt/dl --strip-components=3 && rm dl.tar.gz
+          cd /workdir && bsdtar -xzf staging_dir.tar.gz -C /mnt/openwrt/staging_dir --strip-components=3 && rm staging_dir.tar.gz
+          # cd /workdir && bsdtar -xzf feeds.tar.gz -C /mnt/openwrt/feeds --strip-components=3 && rm feeds.tar.gz
+          
       - name: Check space usage
         if: (!cancelled())
         run: df -hT   
@@ -335,7 +638,12 @@ jobs:
           cd openwrt
           echo -e "$(($(nproc) + 1)) thread compile"
           make -j$(($(nproc) + 1)) package/compile
+          # make package/compile -j$(($(nproc) + 2))
+          # make package/index -j$(($(nproc) + 2))
           echo "::set-output name=status::success"
+          grep '^CONFIG_TARGET.*DEVICE.*=y' .config | sed -r 's/.*DEVICE_(.*)=y/\1/' > DEVICE_NAME
+          [ -s DEVICE_NAME ] && echo "DEVICE_NAME=_$(cat DEVICE_NAME)" >> $GITHUB_ENV
+          echo "FILE_DATE=_$(date +"%Y%m%d%H%M")" >> $GITHUB_ENV
         
       - name: Single-thread compile
         id: Single-thread
@@ -344,23 +652,47 @@ jobs:
          cd openwrt
          make -j1 package/compile V=s
          echo "::set-output name=status::success"
+         grep '^CONFIG_TARGET.*DEVICE.*=y' .config | sed -r 's/.*DEVICE_(.*)=y/\1/' > DEVICE_NAME
+         [ -s DEVICE_NAME ] && echo "DEVICE_NAME=_$(cat DEVICE_NAME)" >> $GITHUB_ENV
+         echo "FILE_DATE=_$(date +"%Y%m%d%H%M")" >> $GITHUB_ENV
          
       - name: Check space usage
         if: (!cancelled())
         run: df -hT
         
-      - name: Compress directory
+      - name: Compress directory openwrt
+        env:
+         DEBIAN_FRONTEND: noninteractive
         run: |
          bsdtar -czf openwrt.tar.gz /workdir/openwrt && sudo rm -rf /workdir/openwrt
+         # bsdtar -czf host.tar.gz /mnt/openwrt/build_dir/host && sudo rm -rf /mnt/openwrt/build_dir/host
+         # bsdtar -czf dl.tar.gz /mnt/openwrt/dl && sudo rm -rf /mnt/openwrt/dl
+         # bsdtar -czf feeds.tar.gz /mnt/openwrt/feeds && sudo rm -rf /mnt/openwrt/feeds
        
          df -hT
-            
+      
+      - name: Compress directory files
+        env:
+         DEBIAN_FRONTEND: noninteractive
+        run: |
+         bsdtar -czf hostpkg.tar.gz /mnt/openwrt/build_dir/hostpkg && sudo rm -rf /mnt/openwrt/build_dir/hostpkg
+         bsdtar -czf staging_dir.tar.gz /mnt/openwrt/staging_dir && sudo rm -rf /mnt/openwrt/staging_dir
+       
+         df -hT
+      
       - name: Store build artifacts
         uses: actions/upload-artifact@v3
+        env:
+         DEBIAN_FRONTEND: noninteractive
         with:
          name: build-output
          path: |
             openwrt.tar.gz
+            hostpkg.tar.gz
+            # host.tar.gz
+            # dl.tar.gz
+            staging_dir.tar.gz
+            # feeds.tar.gz
           
       - name: WeChat notification
         if: steps.Multi-thread.outputs.status == 'success' || steps.Single-thread.outputs.status == 'success' && !cancelled() && job.status == 'success'
@@ -375,16 +707,45 @@ jobs:
  uploads:
      needs: build3
      runs-on: ubuntu-20.04
-     container:
-        image: jlzsss/openwrt-buildenv
      steps:
+      - name: Allocate disk space
+        uses: easimon/maximize-build-space@v7
+        with:
+          # root-reserve-mb: 102400 # Reserve 5 GB for the system
+          # swap-size-mb: 1024 # Add 1 GB of swap
+          remove-dotnet: 'true' # Remove .NET SDKs and runtimes
+          remove-android: 'true' # Remove Android SDKs
+          remove-haskell: 'true' # Remove Haskell
+          remove-ghcups: 'true'
+          remove-codeql: 'true'
+          remove-docker-images: 'true'
+     
       - name: Checkout code
         uses: actions/checkout@v2
         with:
           fetch-depth: 0
-           
+
+      - name: Initialization environment
+        env:
+          DEBIAN_FRONTEND: noninteractive
+        run: |
+          docker image prune -a -f
+          sudo rm -rf /usr/share/dotnet /etc/apt/sources.list.d/* /var/cache/apt/archives /usr/local/share/boost /usr/local/go* /usr/local/lib/android /opt/ghc
+          sudo -E apt-get -y purge azure-cli ghc* zulu* hhvm llvm* firefox google* dotnet* openjdk* mysql* php* android* adoptopenjdk* mongodb* moby* snapd*
+          sudo -E apt-get -qq update
+          sudo -E apt-get -qq install build-essential asciidoc binutils bzip2 gawk gettext git libncurses5-dev libz-dev patch python3 python2.7 unzip zlib1g-dev lib32gcc1 libc6-dev-i386 subversion flex uglifyjs git-core gcc-multilib p7zip p7zip-full msmtp libssl-dev texinfo libglib2.0-dev xmlto qemu-utils upx libelf-dev autoconf automake libtool autopoint device-tree-compiler g++-multilib antlr3 gperf wget curl swig rsync ccache libarchive-tools 
+          sudo -E apt-get -qq autoremove --purge
+          sudo -E apt-get -qq clean
+          sudo timedatectl set-timezone "$TZ"
+          sudo mkdir -p /workdir
+          sudo chown $USER:$GROUPS /workdir
+        
+          df -hT
+         
       - name: Download artifacts
         uses: actions/download-artifact@v3
+        env:
+         DEBIAN_FRONTEND: noninteractive
         with:
           name: build-output
           path: /workdir
@@ -392,10 +753,40 @@ jobs:
       - name: WeChat notification
         working-directory: /workdir
         run: |
+         cd /workdir
+         mkdir -p openwrt
          bsdtar -xzf openwrt.tar.gz -C /workdir/openwrt --strip-components=2 && rm openwrt.tar.gz
          ln -sf /workdir/openwrt ${{ github.workspace }}/openwrt
+         rm -rf openwrt/build_dir/hostpkg openwrt/staging_dir
          curl https://sc.ftqq.com/${{ secrets.SCKEY }}.send?text=OpenWrt开始编译第五部分
-                            
+       
+      - name: Free up disk space
+        if: env.FREE_UP_DISK == 'true'
+        env:
+          DEBIAN_FRONTEND: noninteractive
+        run: |
+          # sudo swapoff /mnt/swapfile
+          sudo rm -rf /mnt/swapfile
+          sudo mkdir -p -m 777 /mnt/openwrt/build_dir/hostpkg /mnt/openwrt/build_dir/host openwrt/build_dir/hostpkg openwrt/build_dir/host openwrt/feeds /mnt/openwrt/dl /mnt/openwrt/feeds /mnt/openwrt/staging_dir /mnt/openwrt/build_dir /mnt/openwrt/tmp /mnt/openwrt/bin
+          ln -sf /mnt/openwrt/build_dir/hostpkg openwrt/build_dir/hostpkg
+          # ln -sf /mnt/openwrt/build_dir/host openwrt/build_dir/host
+          # ln -sf /mnt/openwrt/dl openwrt/dl
+          ln -sf /mnt/openwrt/staging_dir openwrt/staging_dir
+          # ln -sf /mnt/openwrt/feeds openwrt/feeds   
+          # ln -sf /mnt/openwrt/bin openwrt/bin
+          # ln -sf /mnt/openwrt/build_dir openwrt/build_dir
+          # ln -sf /mnt/openwrt/tmp openwrt/tmp
+          
+          df -hT
+               
+      - name: Unzip artifact
+        run: |
+          cd /workdir && bsdtar -xzf hostpkg.tar.gz -C /mnt/openwrt/build_dir/hostpkg --strip-components=4 && rm hostpkg.tar.gz
+          # cd /workdir && bsdtar -xzf host.tar.gz -C /mnt/openwrt/build_dir/host --strip-components=4 && rm host.tar.gz
+          # cd /workdir && bsdtar -xzf dl.tar.gz -C /mnt/openwrt/dl --strip-components=3 && rm dl.tar.gz
+          cd /workdir && bsdtar -xzf staging_dir.tar.gz -C /mnt/openwrt/staging_dir --strip-components=3 && rm staging_dir.tar.gz
+          # cd /workdir && bsdtar -xzf feeds.tar.gz -C /mnt/openwrt/feeds --strip-components=3 && rm feeds.tar.gz
+          
       - name: Check space usage
         if: (!cancelled())
         run: df -hT      
@@ -406,7 +797,12 @@ jobs:
           cd openwrt
           echo -e "$(($(nproc) + 1)) thread compile"
           make -j$(($(nproc) + 1))
+          # make package/compile -j$(($(nproc) + 2))
+          # make package/index -j$(($(nproc) + 2))
           echo "::set-output name=status::success"
+          grep '^CONFIG_TARGET.*DEVICE.*=y' .config | sed -r 's/.*DEVICE_(.*)=y/\1/' > DEVICE_NAME
+          [ -s DEVICE_NAME ] && echo "DEVICE_NAME=_$(cat DEVICE_NAME)" >> $GITHUB_ENV
+          echo "FILE_DATE=_$(date +"%Y%m%d%H%M")" >> $GITHUB_ENV
         
       - name: Single-thread compile
         id: Single-thread
@@ -415,6 +811,9 @@ jobs:
          cd openwrt
          make -j1 V=s
          echo "::set-output name=status::success"
+         grep '^CONFIG_TARGET.*DEVICE.*=y' .config | sed -r 's/.*DEVICE_(.*)=y/\1/' > DEVICE_NAME
+         [ -s DEVICE_NAME ] && echo "DEVICE_NAME=_$(cat DEVICE_NAME)" >> $GITHUB_ENV
+         echo "FILE_DATE=_$(date +"%Y%m%d%H%M")" >> $GITHUB_ENV
          
       - name: Check space usage
         if: (!cancelled())
