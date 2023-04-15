@@ -528,7 +528,7 @@ jobs:
         with:
          name: build-output
          path: |
-            openwrt.tar.bz2
+            openwrt.tar.gz
             hostpkg.tar.gz
             # host.tar.bz2
             # dl.tar.bz2
