@@ -27,6 +27,8 @@ on:
 env:
   REPO_URL: https://github.com/openwrt/openwrt
   REPO_BRANCH: openwrt-22.03
+  DOCKER_IMAGE_NAME: jlzsss/openwrt-buildenv:latest
+  OPENWRT_DIR: /workdir/openwrt
   FEEDS_CONF: feeds.conf.default-openwrt
   CONFIG_FILE: .config-final
   DIY_P1_SH: diy-part1-openwrt.sh
@@ -42,40 +44,46 @@ env:
 jobs:
 
  prepare:
-   runs-on: ubuntu-20.04
-   
-   container:
-      image: jlzsss/openwrt-buildenv:latest
-      
+   runs-on: ubuntu-20.04    
    steps:
     - name: Checkout
-      uses: actions/checkout@v2
+      uses: actions/checkout@main
                     
     - name: WeChat notification
       run: |
        curl https://sc.ftqq.com/${{ secrets.SCKEY }}.send?text=开始编译OpenWrt        
-        
-    - name: Clone source code
-      working-directory: /workdir
+    
+    - name: Run docker
       run: |
+        docker run -v ${OPENWRT_DIR}:/openwrt -w /openwrt ${DOCKER_IMAGE_NAME} \
+    
+    - name: Clone source code
+      run: |
+        docker run -v ${OPENWRT_DIR}:/openwrt -w /openwrt ${DOCKER_IMAGE_NAME} \
         git clone -b $REPO_BRANCH --single-branch $REPO_URL  openwrt
         ln -sf /workdir/openwrt ${{ github.workspace }}/openwrt
               
     - name: Load custom feeds
       run: |
+        docker run -v ${OPENWRT_DIR}:/openwrt -w /openwrt ${DOCKER_IMAGE_NAME} \
         [ -e $FEEDS_CONF ] && mv $FEEDS_CONF openwrt/feeds.conf.default
         chmod +x $DIY_P1_SH
         cd openwrt
         $GITHUB_WORKSPACE/$DIY_P1_SH
         
     - name: Update feeds
-      run: cd openwrt && ./scripts/feeds update -a 
+      run: |
+        docker run -v ${OPENWRT_DIR}:/openwrt -w /openwrt ${DOCKER_IMAGE_NAME} \      
+        cd openwrt && ./scripts/feeds update -a 
       
     - name: Install feeds
-      run: cd openwrt && ./scripts/feeds install -a
+      run: |
+        docker run -v ${OPENWRT_DIR}:/openwrt -w /openwrt ${DOCKER_IMAGE_NAME} \ 
+        cd openwrt && ./scripts/feeds install -a
 
     - name: Load custom configuration
       run: |
+        docker run -v ${OPENWRT_DIR}:/openwrt -w /openwrt ${DOCKER_IMAGE_NAME} \ 
         [ -e files ] && mv files openwrt/files
         [ -e $CONFIG_FILE ] && mv $CONFIG_FILE openwrt/.config
         chmod +x $DIY_P2_SH
@@ -93,6 +101,7 @@ jobs:
     - name: Download package
       id: package
       run: |
+        docker run -v ${OPENWRT_DIR}:/openwrt -w /openwrt ${DOCKER_IMAGE_NAME} \ 
         cd openwrt
         make defconfig
         make download -j8
@@ -106,6 +115,7 @@ jobs:
     - name: Multi-thread compile
       id: Multi-thread
       run: |
+        docker run -v ${OPENWRT_DIR}:/openwrt -w /openwrt ${DOCKER_IMAGE_NAME} \ 
         cd openwrt
         echo -e "$(($(nproc) + 1)) thread compile"
         make -j$(($(nproc) + 1)) tools/compile
@@ -118,6 +128,7 @@ jobs:
       id: Single-thread
       if: failure() 
       run: |
+       docker run -v ${OPENWRT_DIR}:/openwrt -w /openwrt ${DOCKER_IMAGE_NAME} \ 
        cd openwrt
        make -j1 tools/compile V=s
        make -j1 toolchain/compile V=s
@@ -131,6 +142,7 @@ jobs:
       
     - name: Compress directory
       run: |
+       docker run -v ${OPENWRT_DIR}:/openwrt -w /openwrt ${DOCKER_IMAGE_NAME} \ 
        bsdtar -czf openwrt.tar.gz /workdir/openwrt && sudo rm -rf /workdir/openwrt
       
     - name: Store build artifacts
