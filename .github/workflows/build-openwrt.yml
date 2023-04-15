@@ -69,13 +69,7 @@ jobs:
         sudo chown $USER:$GROUPS /workdir
         
         df -hT
-        
-    - name: Clone source code
-      working-directory: /workdir
-      run: |
-        git clone -b $REPO_BRANCH --single-branch $REPO_URL  openwrt
-        ln -sf /workdir/openwrt ${{ github.workspace }}/openwrt
-        
+    
     - name: Free up disk space
       if: env.FREE_UP_DISK == 'true'
       env:
@@ -94,19 +88,25 @@ jobs:
         # ln -sf /mnt/openwrt/tmp openwrt/tmp
         
         df -hT
-     
+        
     - name: Allocate disk space
       uses: easimon/maximize-build-space@v7
       with:
-          # root-reserve-mb: 51200 # Reserve 5 GB for the system
-          # swap-size-mb: 1024 # Add 1 GB of swap
+          root-reserve-mb: 0 # Reserve 5 GB for the system
+          swap-size-mb: 0 # Add 1 GB of swap
           remove-dotnet: 'true' # Remove .NET SDKs and runtimes
           remove-android: 'true' # Remove Android SDKs
           remove-haskell: 'true' # Remove Haskell
           remove-ghcups: 'true'
           remove-codeql: 'true'
-          remove-docker-images: 'false'   
-     
+          remove-docker-images: 'false' 
+    
+    - name: Clone source code
+      working-directory: /workdir
+      run: |
+        git clone -b $REPO_BRANCH --single-branch $REPO_URL  openwrt
+        ln -sf /workdir/openwrt ${{ github.workspace }}/openwrt
+                
    # - name: Cache
    #   uses: stupidloud/cachewrtbuild@main
    #   with:
@@ -258,24 +258,6 @@ jobs:
         
           df -hT
           
-      - name: Download artifacts
-        uses: actions/download-artifact@v3
-        env:
-         DEBIAN_FRONTEND: noninteractive
-        with:
-          name: build-output
-          path: /workdir
-
-      - name: WeChat notification
-        working-directory: /workdir
-        run: |
-         cd /workdir
-         mkdir -p openwrt
-         bsdtar -xzf openwrt.tar.gz -C /workdir/openwrt --strip-components=2 && rm openwrt.tar.gz
-         ln -sf /workdir/openwrt ${{ github.workspace }}/openwrt
-         rm -rf openwrt/build_dir/hostpkg openwrt/staging_dir
-         # curl https://sc.ftqq.com/${{ secrets.SCKEY }}.send?text=OpenWrt开始编译第二部分
-       
       - name: Free up disk space
         if: env.FREE_UP_DISK == 'true'
         env:
@@ -298,15 +280,34 @@ jobs:
       - name: Allocate disk space
         uses: easimon/maximize-build-space@v7
         with:
-          # root-reserve-mb: 102400 # Reserve 5 GB for the system
-          # swap-size-mb: 1024 # Add 1 GB of swap
+          root-reserve-mb: 0 # Reserve 5 GB for the system
+          swap-size-mb: 0 # Add 1 GB of swap
           remove-dotnet: 'true' # Remove .NET SDKs and runtimes
           remove-android: 'true' # Remove Android SDKs
           remove-haskell: 'true' # Remove Haskell
           remove-ghcups: 'true'
           remove-codeql: 'true'
           remove-docker-images: 'false' 
-       
+     
+     
+      - name: Download artifacts
+        uses: actions/download-artifact@v3
+        env:
+         DEBIAN_FRONTEND: noninteractive
+        with:
+          name: build-output
+          path: /workdir
+
+      - name: WeChat notification
+        working-directory: /workdir
+        run: |
+         cd /workdir
+         mkdir -p openwrt
+         bsdtar -xzf openwrt.tar.gz -C /workdir/openwrt --strip-components=2 && rm openwrt.tar.gz
+         ln -sf /workdir/openwrt ${{ github.workspace }}/openwrt
+         rm -rf openwrt/build_dir/hostpkg openwrt/staging_dir
+         # curl https://sc.ftqq.com/${{ secrets.SCKEY }}.send?text=OpenWrt开始编译第二部分
+             
       - name: Unzip artifact
         run: |
           cd /workdir && bsdtar -xzf hostpkg.tar.gz -C /mnt/openwrt/build_dir/hostpkg --strip-components=4 && rm hostpkg.tar.gz
@@ -411,25 +412,7 @@ jobs:
           sudo chown $USER:$GROUPS /workdir
         
           df -hT
-          
-      - name: Download artifacts
-        uses: actions/download-artifact@v3
-        env:
-         DEBIAN_FRONTEND: noninteractive
-        with:
-          name: build-output
-          path: /workdir
-
-      - name: WeChat notification
-        working-directory: /workdir
-        run: |
-         cd /workdir
-         mkdir -p openwrt
-         bsdtar -xzf openwrt.tar.gz -C /workdir/openwrt --strip-components=2 && rm openwrt.tar.gz
-         ln -sf /workdir/openwrt ${{ github.workspace }}/openwrt
-         rm -rf openwrt/build_dir/hostpkg openwrt/staging_dir
-        # curl https://sc.ftqq.com/${{ secrets.SCKEY }}.send?text=OpenWrt开始编译第三部分
-       
+      
       - name: Free up disk space
         if: env.FREE_UP_DISK == 'true'
         env:
@@ -452,15 +435,33 @@ jobs:
       - name: Allocate disk space
         uses: easimon/maximize-build-space@v7
         with:
-          # root-reserve-mb: 102400 # Reserve 5 GB for the system
-          # swap-size-mb: 1024 # Add 1 GB of swap
+          root-reserve-mb: 0 # Reserve 5 GB for the system
+          swap-size-mb: 0 # Add 1 GB of swap
           remove-dotnet: 'true' # Remove .NET SDKs and runtimes
           remove-android: 'true' # Remove Android SDKs
           remove-haskell: 'true' # Remove Haskell
           remove-ghcups: 'true'
           remove-codeql: 'true'
           remove-docker-images: 'false'
-    
+      
+      - name: Download artifacts
+        uses: actions/download-artifact@v3
+        env:
+         DEBIAN_FRONTEND: noninteractive
+        with:
+          name: build-output
+          path: /workdir
+
+      - name: WeChat notification
+        working-directory: /workdir
+        run: |
+         cd /workdir
+         mkdir -p openwrt
+         bsdtar -xzf openwrt.tar.gz -C /workdir/openwrt --strip-components=2 && rm openwrt.tar.gz
+         ln -sf /workdir/openwrt ${{ github.workspace }}/openwrt
+         rm -rf openwrt/build_dir/hostpkg openwrt/staging_dir
+        # curl https://sc.ftqq.com/${{ secrets.SCKEY }}.send?text=OpenWrt开始编译第三部分
+           
       - name: Unzip artifact
         run: |
           cd /workdir && bsdtar -xzf hostpkg.tar.gz -C /mnt/openwrt/build_dir/hostpkg --strip-components=4 && rm hostpkg.tar.gz
@@ -570,25 +571,7 @@ jobs:
           sudo chown $USER:$GROUPS /workdir
         
           df -hT
-         
-      - name: Download artifacts
-        uses: actions/download-artifact@v3
-        env:
-         DEBIAN_FRONTEND: noninteractive
-        with:
-          name: build-output
-          path: /workdir
 
-      - name: WeChat notification
-        working-directory: /workdir
-        run: |
-         cd /workdir
-         mkdir -p openwrt
-         bsdtar -xzf openwrt.tar.gz -C /workdir/openwrt --strip-components=2 && rm openwrt.tar.gz
-         ln -sf /workdir/openwrt ${{ github.workspace }}/openwrt
-         rm -rf openwrt/build_dir/hostpkg openwrt/staging_dir
-         # curl https://sc.ftqq.com/${{ secrets.SCKEY }}.send?text=OpenWrt开始编译第四部分
-       
       - name: Free up disk space
         if: env.FREE_UP_DISK == 'true'
         env:
@@ -611,15 +594,33 @@ jobs:
       - name: Allocate disk space
         uses: easimon/maximize-build-space@v7
         with:
-          # root-reserve-mb: 102400 # Reserve 5 GB for the system
-          # swap-size-mb: 1024 # Add 1 GB of swap
+          root-reserve-mb: 0 # Reserve 5 GB for the system
+          swap-size-mb: 0 # Add 1 GB of swap
           remove-dotnet: 'true' # Remove .NET SDKs and runtimes
           remove-android: 'true' # Remove Android SDKs
           remove-haskell: 'true' # Remove Haskell
           remove-ghcups: 'true'
           remove-codeql: 'true'
           remove-docker-images: 'false'
-   
+
+      - name: Download artifacts
+        uses: actions/download-artifact@v3
+        env:
+         DEBIAN_FRONTEND: noninteractive
+        with:
+          name: build-output
+          path: /workdir
+
+      - name: WeChat notification
+        working-directory: /workdir
+        run: |
+         cd /workdir
+         mkdir -p openwrt
+         bsdtar -xzf openwrt.tar.gz -C /workdir/openwrt --strip-components=2 && rm openwrt.tar.gz
+         ln -sf /workdir/openwrt ${{ github.workspace }}/openwrt
+         rm -rf openwrt/build_dir/hostpkg openwrt/staging_dir
+         # curl https://sc.ftqq.com/${{ secrets.SCKEY }}.send?text=OpenWrt开始编译第四部分
+          
       - name: Unzip artifact
         run: |
           cd /workdir && bsdtar -xzf hostpkg.tar.gz -C /mnt/openwrt/build_dir/hostpkg --strip-components=4 && rm hostpkg.tar.gz
@@ -729,25 +730,7 @@ jobs:
           sudo chown $USER:$GROUPS /workdir
         
           df -hT
-         
-      - name: Download artifacts
-        uses: actions/download-artifact@v3
-        env:
-         DEBIAN_FRONTEND: noninteractive
-        with:
-          name: build-output
-          path: /workdir
 
-      - name: WeChat notification
-        working-directory: /workdir
-        run: |
-         cd /workdir
-         mkdir -p openwrt
-         bsdtar -xzf openwrt.tar.gz -C /workdir/openwrt --strip-components=2 && rm openwrt.tar.gz
-         ln -sf /workdir/openwrt ${{ github.workspace }}/openwrt
-         rm -rf openwrt/build_dir/hostpkg openwrt/staging_dir
-         # curl https://sc.ftqq.com/${{ secrets.SCKEY }}.send?text=OpenWrt开始编译第五部分
-       
       - name: Free up disk space
         if: env.FREE_UP_DISK == 'true'
         env:
@@ -770,15 +753,33 @@ jobs:
       - name: Allocate disk space
         uses: easimon/maximize-build-space@v7
         with:
-          # root-reserve-mb: 102400 # Reserve 5 GB for the system
-          # swap-size-mb: 1024 # Add 1 GB of swap
+          root-reserve-mb: 0 # Reserve 5 GB for the system
+          swap-size-mb: 0 # Add 1 GB of swap
           remove-dotnet: 'true' # Remove .NET SDKs and runtimes
           remove-android: 'true' # Remove Android SDKs
           remove-haskell: 'true' # Remove Haskell
           remove-ghcups: 'true'
           remove-codeql: 'true'
           remove-docker-images: 'false'
-  
+
+      - name: Download artifacts
+        uses: actions/download-artifact@v3
+        env:
+         DEBIAN_FRONTEND: noninteractive
+        with:
+          name: build-output
+          path: /workdir
+
+      - name: WeChat notification
+        working-directory: /workdir
+        run: |
+         cd /workdir
+         mkdir -p openwrt
+         bsdtar -xzf openwrt.tar.gz -C /workdir/openwrt --strip-components=2 && rm openwrt.tar.gz
+         ln -sf /workdir/openwrt ${{ github.workspace }}/openwrt
+         rm -rf openwrt/build_dir/hostpkg openwrt/staging_dir
+         # curl https://sc.ftqq.com/${{ secrets.SCKEY }}.send?text=OpenWrt开始编译第五部分
+        
       - name: Unzip artifact
         run: |
           cd /workdir && bsdtar -xzf hostpkg.tar.gz -C /mnt/openwrt/build_dir/hostpkg --strip-components=4 && rm hostpkg.tar.gz
