@@ -44,20 +44,27 @@ jobs:
 
  prepare:
    runs-on: ubuntu-20.04
-   container: immortalwrt/opde:base
-   
+
    steps:
     - name: Checkout
       uses: actions/checkout@main
-                    
+
+    - name: Setup environment
+      uses: docker://p3terx/openwrt-build-env:20.04
+      with:
+        args: |
+          export REPO_URL=https://github.com/openwrt/openwrt.git
+          export REPO_BRANCH=openwrt-22.03
+          export TARGET_PROFILE="x86_64"
+
     - name: WeChat notification
       run: |
        curl https://sc.ftqq.com/${{ secrets.SCKEY }}.send?text=开始编译OpenWrt        
     
     - name: Clone source code
       run: |
-        sudo mkdir -p -m 777 /openwrt
-        git clone -b $REPO_BRANCH --single-branch $REPO_URL  openwrt
+        # sudo mkdir -p -m 777 /openwrt
+        # git clone -b $REPO_BRANCH --single-branch $REPO_URL  openwrt
         ln -sf /openwrt ${{ github.workspace }}/openwrt
               
     - name: Load custom feeds
