@@ -52,7 +52,11 @@ jobs:
     - name: WeChat notification
       run: |
        curl https://sc.ftqq.com/${{ secrets.SCKEY }}.send?text=开始编译OpenWrt        
-       
+    
+    - name: Pull docker
+      run: |
+        docker pull ${DOCKER_IMAGE_NAME}
+    
     - name: Clone source code
       run: |
         sudo mkdir -p -m 777 /workdir/openwrt
