@@ -28,7 +28,7 @@ env:
   REPO_URL: https://github.com/openwrt/openwrt
   REPO_BRANCH: openwrt-22.03
   DOCKER_IMAGE_NAME: jlzsss/openwrt-buildenv:latest
-  OPENWRT_DIR: /workdir/openwrt
+  OPENWRT_DIR: /openwrt
   FEEDS_CONF: feeds.conf.default-openwrt
   CONFIG_FILE: .config-final
   DIY_P1_SH: diy-part1-openwrt.sh
@@ -56,14 +56,12 @@ jobs:
     
     - name: Clone source code
       run: |
-        sudo mkdir -p -m 777 /workdir/openwrt
-        docker run -v ${OPENWRT_DIR}:/openwrt -w /openwrt ${DOCKER_IMAGE_NAME} /bin/bash \
+        sudo mkdir -p -m 777 /openwrt
         git clone -b $REPO_BRANCH --single-branch $REPO_URL  openwrt
-        ln -sf /workdir/openwrt ${{ github.workspace }}/openwrt
+        ln -sf /openwrt ${{ github.workspace }}/openwrt
               
     - name: Load custom feeds
       run: |
-        docker run -v ${OPENWRT_DIR}:/openwrt -w /openwrt ${DOCKER_IMAGE_NAME} /bin/bash \
         [ -e $FEEDS_CONF ] && mv $FEEDS_CONF openwrt/feeds.conf.default
         chmod +x $DIY_P1_SH
         cd openwrt
@@ -71,17 +69,14 @@ jobs:
         
     - name: Update feeds
       run: |
-        docker run -v ${OPENWRT_DIR}:/openwrt -w /openwrt ${DOCKER_IMAGE_NAME} /bin/bash \      
         cd openwrt && ./scripts/feeds update -a 
       
     - name: Install feeds
       run: |
-        docker run -v ${OPENWRT_DIR}:/openwrt -w /openwrt ${DOCKER_IMAGE_NAME} /bin/bash \ 
         cd openwrt && ./scripts/feeds install -a
 
     - name: Load custom configuration
       run: |
-        docker run -v ${OPENWRT_DIR}:/openwrt -w /openwrt ${DOCKER_IMAGE_NAME} /bin/bash \ 
         [ -e files ] && mv files openwrt/files
         [ -e $CONFIG_FILE ] && mv $CONFIG_FILE openwrt/.config
         chmod +x $DIY_P2_SH
@@ -91,15 +86,14 @@ jobs:
         
     - name: SSH connection to Actions
       uses: P3TERX/ssh2actions@v1.0.0
-      # if: (github.event.inputs.ssh == 'true' && github.event.inputs.ssh  != 'false') || contains(github.event.action, 'ssh')
-      # env:
-      #  TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
-      #  TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}    
+      if: (github.event.inputs.ssh == 'true' && github.event.inputs.ssh  != 'false') || contains(github.event.action, 'ssh')
+      env:
+        TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+        TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}    
         
     - name: Download package
       id: package
       run: |
-        docker run -v ${OPENWRT_DIR}:/openwrt -w /openwrt ${DOCKER_IMAGE_NAME} /bin/bash \ 
         cd openwrt
         make defconfig
         make download -j8
@@ -113,7 +107,6 @@ jobs:
     - name: Multi-thread compile
       id: Multi-thread
       run: |
-        docker run -v ${OPENWRT_DIR}:/openwrt -w /openwrt ${DOCKER_IMAGE_NAME} /bin/bash \ 
         cd openwrt
         echo -e "$(($(nproc) + 1)) thread compile"
         make -j$(($(nproc) + 1)) tools/compile
@@ -126,7 +119,6 @@ jobs:
       id: Single-thread
       if: failure() 
       run: |
-       docker run -v ${OPENWRT_DIR}:/openwrt -w /openwrt ${DOCKER_IMAGE_NAME} /bin/bash \ 
        cd openwrt
        make -j1 tools/compile V=s
        make -j1 toolchain/compile V=s
@@ -140,8 +132,7 @@ jobs:
       
     - name: Compress directory
       run: |
-       docker run -v ${OPENWRT_DIR}:/openwrt -w /openwrt ${DOCKER_IMAGE_NAME} /bin/bash \ 
-       bsdtar -czf openwrt.tar.gz /workdir/openwrt && sudo rm -rf /workdir/openwrt
+       bsdtar -czf openwrt.tar.gz /openwrt && sudo rm -rf /openwrt
       
     - name: Store build artifacts
       uses: actions/upload-artifact@v3
