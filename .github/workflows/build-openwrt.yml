@@ -43,19 +43,10 @@ jobs:
 
  prepare:
    runs-on: ubuntu-20.04
+   strategy:
+       matrix:
+         openwrt-version: [openwrt-22.03, snapshots]
    steps:
-    - name: Allocate disk space
-      uses: easimon/maximize-build-space@master
-      with:
-          root-reserve-mb: 256 # Reserve 5 GB for the system
-          swap-size-mb: 256 # Add 1 GB of swap
-          remove-dotnet: 'true' # Remove .NET SDKs and runtimes
-          remove-android: 'true' # Remove Android SDKs
-          remove-haskell: 'true' # Remove Haskell
-          remove-ghcups: 'true'
-          remove-codeql: 'true'
-          remove-docker-images: 'true'
-   
     - name: Checkout
       uses: actions/checkout@main
       with:
@@ -63,7 +54,7 @@ jobs:
 
     - name: WeChat notification
       run: |
-      # curl https://sc.ftqq.com/${{ secrets.SCKEY }}.send?text=开始编译OpenWrt 
+        curl https://sc.ftqq.com/${{ secrets.SCKEY }}.send?text=开始编译OpenWrt 
       
     - name: Initialization environment
       env:
@@ -93,7 +84,7 @@ jobs:
       env:
         DEBIAN_FRONTEND: noninteractive
       run: |
-        # sudo swapoff /mnt/swapfile
+        sudo swapoff /mnt/swapfile
         sudo rm -rf /mnt/swapfile
         sudo mkdir -p -m 777 /mnt/openwrt/build_dir/hostpkg /mnt/openwrt/build_dir/host openwrt/build_dir /mnt/openwrt/dl /mnt/openwrt/feeds /mnt/openwrt/staging_dir /mnt/openwrt/build_dir /mnt/openwrt/tmp /mnt/openwrt/bin
         ln -sf /mnt/openwrt/build_dir/hostpkg openwrt/build_dir/hostpkg
@@ -148,15 +139,21 @@ jobs:
         TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
         TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}    
         
-    - name: Download package
-      id: package
-      run: |
-        cd openwrt
-        make defconfig
-        make download -j8
-        find dl -size -1024c -exec ls -l {} \;
-        find dl -size -1024c -exec rm -f {} \;
-        
+    # - name: Download package
+    #   id: package
+    #   run: |
+    #     cd openwrt
+    #     make defconfig
+    #     make download -j8
+    #     find dl -size -1024c -exec ls -l {} \;
+    #     find dl -size -1024c -exec rm -f {} \;
+    
+    - name: Cache OpenWrt dependencies
+      uses: actions/cache@v2
+      with:
+        path: /workdir/openwrt/dl
+        key: ${{ runner.os }}-openwrt-${{ matrix.openwrt-version }}-${{ hashFiles('dl') }}
+    
     - name: Check space usage
       if: (!cancelled())
       run: df -hT
@@ -225,29 +222,20 @@ jobs:
     - name: WeChat notification
       if: steps.Multi-thread.outputs.status == 'success' || steps.Single-thread.outputs.status == 'success' && !cancelled() && job.status == 'success'
       run: |
-      # curl https://sc.ftqq.com/${{ secrets.SCKEY }}.send?text=OpenWrt第一部分编译成功
+        curl https://sc.ftqq.com/${{ secrets.SCKEY }}.send?text=OpenWrt第一部分编译成功
        
     - name: WeChat notification
       if: failure() && !cancelled()
       run: |
-      # curl https://sc.ftqq.com/${{ secrets.SCKEY }}.send?text=OpenWrt第一部分编译失败
+        curl https://sc.ftqq.com/${{ secrets.SCKEY }}.send?text=OpenWrt第一部分编译失败
       
  build1:
      needs: prepare
      runs-on: ubuntu-20.04
-     steps:
-      - name: Allocate disk space
-        uses: easimon/maximize-build-space@master
-        with:
-          root-reserve-mb: 256 # Reserve 5 GB for the system
-          swap-size-mb: 256 # Add 1 GB of swap
-          remove-dotnet: 'true' # Remove .NET SDKs and runtimes
-          remove-android: 'true' # Remove Android SDKs
-          remove-haskell: 'true' # Remove Haskell
-          remove-ghcups: 'true'
-          remove-codeql: 'true'
-          remove-docker-images: 'true'
-     
+     strategy:
+       matrix:
+        openwrt-version: [openwrt-22.03, snapshots]
+     steps:   
       - name: Checkout code
         uses: actions/checkout@v2
         with:
@@ -286,14 +274,14 @@ jobs:
          bsdtar -xzf openwrt.tar.gz -C /workdir/openwrt --strip-components=2 && rm openwrt.tar.gz
          ln -sf /workdir/openwrt ${{ github.workspace }}/openwrt
          rm -rf openwrt/build_dir/hostpkg openwrt/staging_dir
-         # curl https://sc.ftqq.com/${{ secrets.SCKEY }}.send?text=OpenWrt开始编译第二部分
+         curl https://sc.ftqq.com/${{ secrets.SCKEY }}.send?text=OpenWrt开始编译第二部分
        
       - name: Free up disk space
         if: env.FREE_UP_DISK == 'true'
         env:
           DEBIAN_FRONTEND: noninteractive
         run: |
-          # sudo swapoff /mnt/swapfile
+          sudo swapoff /mnt/swapfile
           sudo rm -rf /mnt/swapfile
           sudo mkdir -p -m 777 /mnt/openwrt/build_dir/hostpkg /mnt/openwrt/build_dir/host openwrt/build_dir/hostpkg openwrt/build_dir/host openwrt/feeds /mnt/openwrt/dl /mnt/openwrt/feeds /mnt/openwrt/staging_dir /mnt/openwrt/build_dir /mnt/openwrt/tmp /mnt/openwrt/bin
           ln -sf /mnt/openwrt/build_dir/hostpkg openwrt/build_dir/hostpkg
@@ -314,7 +302,13 @@ jobs:
           # cd /workdir && bsdtar -xzf dl.tar.gz -C /mnt/openwrt/dl --strip-components=3 && rm dl.tar.gz
           cd /workdir && bsdtar -xzf staging_dir.tar.gz -C /mnt/openwrt/staging_dir --strip-components=3 && rm staging_dir.tar.gz
           # cd /workdir && bsdtar -xzf feeds.tar.gz -C /mnt/openwrt/feeds --strip-components=3 && rm feeds.tar.gz
-          
+ 
+      - name: Cache OpenWrt dependencies
+        uses: actions/cache@v2
+        with:
+          path: /workdir/openwrt/dl
+          key: ${{ runner.os }}-openwrt-${{ matrix.openwrt-version }}-${{ hashFiles('dl') }}
+ 
       - name: Check space usage
         if: (!cancelled())
         run: df -hT   
@@ -379,29 +373,20 @@ jobs:
       - name: WeChat notification
         if: steps.Multi-thread.outputs.status == 'success' || steps.Single-thread.outputs.status == 'success' && !cancelled() && job.status == 'success'
         run: |
-        # curl https://sc.ftqq.com/${{ secrets.SCKEY }}.send?text=OpenWrt第二部分编译成功
+          curl https://sc.ftqq.com/${{ secrets.SCKEY }}.send?text=OpenWrt第二部分编译成功
        
       - name: WeChat notification
         if: failure() && !cancelled()
         run: |
-        # curl https://sc.ftqq.com/${{ secrets.SCKEY }}.send?text=OpenWrt第二部分编译失败  
+          curl https://sc.ftqq.com/${{ secrets.SCKEY }}.send?text=OpenWrt第二部分编译失败  
          
  build2:
      needs: build1
      runs-on: ubuntu-20.04
+     strategy:
+      matrix:
+        openwrt-version: [openwrt-22.03, snapshots]     
      steps:
-      - name: Allocate disk space
-        uses: easimon/maximize-build-space@master
-        with:
-          root-reserve-mb: 256 # Reserve 5 GB for the system
-          swap-size-mb: 256 # Add 1 GB of swap
-          remove-dotnet: 'true' # Remove .NET SDKs and runtimes
-          remove-android: 'true' # Remove Android SDKs
-          remove-haskell: 'true' # Remove Haskell
-          remove-ghcups: 'true'
-          remove-codeql: 'true'
-          remove-docker-images: 'true'
-     
       - name: Checkout code
         uses: actions/checkout@v2
         with:
@@ -440,14 +425,14 @@ jobs:
          bsdtar -xzf openwrt.tar.gz -C /workdir/openwrt --strip-components=2 && rm openwrt.tar.gz
          ln -sf /workdir/openwrt ${{ github.workspace }}/openwrt
          rm -rf openwrt/build_dir/hostpkg openwrt/staging_dir
-         # curl https://sc.ftqq.com/${{ secrets.SCKEY }}.send?text=OpenWrt开始编译第三部分
+         curl https://sc.ftqq.com/${{ secrets.SCKEY }}.send?text=OpenWrt开始编译第三部分
        
       - name: Free up disk space
         if: env.FREE_UP_DISK == 'true'
         env:
           DEBIAN_FRONTEND: noninteractive
         run: |
-          # sudo swapoff /mnt/swapfile
+          sudo swapoff /mnt/swapfile
           sudo rm -rf /mnt/swapfile
           sudo mkdir -p -m 777 /mnt/openwrt/build_dir/hostpkg /mnt/openwrt/build_dir/host openwrt/build_dir/hostpkg openwrt/build_dir/host openwrt/feeds /mnt/openwrt/dl /mnt/openwrt/feeds /mnt/openwrt/staging_dir /mnt/openwrt/build_dir /mnt/openwrt/tmp /mnt/openwrt/bin
           ln -sf /mnt/openwrt/build_dir/hostpkg openwrt/build_dir/hostpkg
@@ -468,7 +453,13 @@ jobs:
           # cd /workdir && bsdtar -xzf dl.tar.gz -C /mnt/openwrt/dl --strip-components=3 && rm dl.tar.gz
           cd /workdir && bsdtar -xzf staging_dir.tar.gz -C /mnt/openwrt/staging_dir --strip-components=3 && rm staging_dir.tar.gz
           # cd /workdir && bsdtar -xzf feeds.tar.gz -C /mnt/openwrt/feeds --strip-components=3 && rm feeds.tar.gz
-          
+ 
+      - name: Cache OpenWrt dependencies
+        uses: actions/cache@v2
+        with:
+          path: /workdir/openwrt/dl
+          key: ${{ runner.os }}-openwrt-${{ matrix.openwrt-version }}-${{ hashFiles('dl') }}
+ 
       - name: Check space usage
         if: (!cancelled())
         run: df -hT   
@@ -538,29 +529,20 @@ jobs:
       - name: WeChat notification
         if: steps.Multi-thread.outputs.status == 'success' || steps.Single-thread.outputs.status == 'success' && !cancelled() && job.status == 'success'
         run: |
-        # curl https://sc.ftqq.com/${{ secrets.SCKEY }}.send?text=OpenWrt第三部分编译成功
+          curl https://sc.ftqq.com/${{ secrets.SCKEY }}.send?text=OpenWrt第三部分编译成功
        
       - name: WeChat notification
         if: failure() && !cancelled()
         run: |
-        # curl https://sc.ftqq.com/${{ secrets.SCKEY }}.send?text=OpenWrt第三部分编译失败  
+          curl https://sc.ftqq.com/${{ secrets.SCKEY }}.send?text=OpenWrt第三部分编译失败  
          
  build3:
      needs: build2
      runs-on: ubuntu-20.04
-     steps:
-      - name: Allocate disk space
-        uses: easimon/maximize-build-space@master
-        with:
-          root-reserve-mb: 256 # Reserve 5 GB for the system
-          swap-size-mb: 256 # Add 1 GB of swap
-          remove-dotnet: 'true' # Remove .NET SDKs and runtimes
-          remove-android: 'true' # Remove Android SDKs
-          remove-haskell: 'true' # Remove Haskell
-          remove-ghcups: 'true'
-          remove-codeql: 'true'
-          remove-docker-images: 'true'
-     
+     strategy:
+      matrix:
+        openwrt-version: [openwrt-22.03, snapshots]     
+     steps:  
       - name: Checkout code
         uses: actions/checkout@v2
         with:
@@ -599,14 +581,14 @@ jobs:
          bsdtar -xzf openwrt.tar.gz -C /workdir/openwrt --strip-components=2 && rm openwrt.tar.gz
          ln -sf /workdir/openwrt ${{ github.workspace }}/openwrt
          rm -rf openwrt/build_dir/hostpkg openwrt/staging_dir
-         # curl https://sc.ftqq.com/${{ secrets.SCKEY }}.send?text=OpenWrt开始编译第四部分
+         curl https://sc.ftqq.com/${{ secrets.SCKEY }}.send?text=OpenWrt开始编译第四部分
        
       - name: Free up disk space
         if: env.FREE_UP_DISK == 'true'
         env:
           DEBIAN_FRONTEND: noninteractive
         run: |
-          # sudo swapoff /mnt/swapfile
+          sudo swapoff /mnt/swapfile
           sudo rm -rf /mnt/swapfile
           sudo mkdir -p -m 777 /mnt/openwrt/build_dir/hostpkg /mnt/openwrt/build_dir/host openwrt/build_dir/hostpkg openwrt/build_dir/host openwrt/feeds /mnt/openwrt/dl /mnt/openwrt/feeds /mnt/openwrt/staging_dir /mnt/openwrt/build_dir /mnt/openwrt/tmp /mnt/openwrt/bin
           ln -sf /mnt/openwrt/build_dir/hostpkg openwrt/build_dir/hostpkg
@@ -627,7 +609,13 @@ jobs:
           # cd /workdir && bsdtar -xzf dl.tar.gz -C /mnt/openwrt/dl --strip-components=3 && rm dl.tar.gz
           cd /workdir && bsdtar -xzf staging_dir.tar.gz -C /mnt/openwrt/staging_dir --strip-components=3 && rm staging_dir.tar.gz
           # cd /workdir && bsdtar -xzf feeds.tar.gz -C /mnt/openwrt/feeds --strip-components=3 && rm feeds.tar.gz
-          
+
+      - name: Cache OpenWrt dependencies
+        uses: actions/cache@v2
+        with:
+          path: /workdir/openwrt/dl
+          key: ${{ runner.os }}-openwrt-${{ matrix.openwrt-version }}-${{ hashFiles('dl') }}
+
       - name: Check space usage
         if: (!cancelled())
         run: df -hT   
@@ -697,29 +685,20 @@ jobs:
       - name: WeChat notification
         if: steps.Multi-thread.outputs.status == 'success' || steps.Single-thread.outputs.status == 'success' && !cancelled() && job.status == 'success'
         run: |
-        # curl https://sc.ftqq.com/${{ secrets.SCKEY }}.send?text=OpenWrt第四部分编译成功
+          curl https://sc.ftqq.com/${{ secrets.SCKEY }}.send?text=OpenWrt第四部分编译成功
        
       - name: WeChat notification
         if: failure() && !cancelled()
         run: |
-        # curl https://sc.ftqq.com/${{ secrets.SCKEY }}.send?text=OpenWrt第四部分编译失败          
+          curl https://sc.ftqq.com/${{ secrets.SCKEY }}.send?text=OpenWrt第四部分编译失败          
         
  uploads:
      needs: build3
      runs-on: ubuntu-20.04
-     steps:
-      - name: Allocate disk space
-        uses: easimon/maximize-build-space@master
-        with:
-          root-reserve-mb: 256 # Reserve 5 GB for the system
-          swap-size-mb: 256 # Add 1 GB of swap
-          remove-dotnet: 'true' # Remove .NET SDKs and runtimes
-          remove-android: 'true' # Remove Android SDKs
-          remove-haskell: 'true' # Remove Haskell
-          remove-ghcups: 'true'
-          remove-codeql: 'true'
-          remove-docker-images: 'true'
-     
+     strategy:
+      matrix:
+        openwrt-version: [openwrt-22.03, snapshots]     
+     steps:  
       - name: Checkout code
         uses: actions/checkout@v2
         with:
@@ -758,14 +737,14 @@ jobs:
          bsdtar -xzf openwrt.tar.gz -C /workdir/openwrt --strip-components=2 && rm openwrt.tar.gz
          ln -sf /workdir/openwrt ${{ github.workspace }}/openwrt
          rm -rf openwrt/build_dir/hostpkg openwrt/staging_dir
-         # curl https://sc.ftqq.com/${{ secrets.SCKEY }}.send?text=OpenWrt开始编译第五部分
+         curl https://sc.ftqq.com/${{ secrets.SCKEY }}.send?text=OpenWrt开始编译第五部分
        
       - name: Free up disk space
         if: env.FREE_UP_DISK == 'true'
         env:
           DEBIAN_FRONTEND: noninteractive
         run: |
-          # sudo swapoff /mnt/swapfile
+          sudo swapoff /mnt/swapfile
           sudo rm -rf /mnt/swapfile
           sudo mkdir -p -m 777 /mnt/openwrt/build_dir/hostpkg /mnt/openwrt/build_dir/host openwrt/build_dir/hostpkg openwrt/build_dir/host openwrt/feeds /mnt/openwrt/dl /mnt/openwrt/feeds /mnt/openwrt/staging_dir /mnt/openwrt/build_dir /mnt/openwrt/tmp /mnt/openwrt/bin
           ln -sf /mnt/openwrt/build_dir/hostpkg openwrt/build_dir/hostpkg
@@ -786,7 +765,13 @@ jobs:
           # cd /workdir && bsdtar -xzf dl.tar.gz -C /mnt/openwrt/dl --strip-components=3 && rm dl.tar.gz
           cd /workdir && bsdtar -xzf staging_dir.tar.gz -C /mnt/openwrt/staging_dir --strip-components=3 && rm staging_dir.tar.gz
           # cd /workdir && bsdtar -xzf feeds.tar.gz -C /mnt/openwrt/feeds --strip-components=3 && rm feeds.tar.gz
-          
+
+      - name: Cache OpenWrt dependencies
+        uses: actions/cache@v2
+        with:
+          path: /workdir/openwrt/dl
+          key: ${{ runner.os }}-openwrt-${{ matrix.openwrt-version }}-${{ hashFiles('dl') }}
+
       - name: Check space usage
         if: (!cancelled())
         run: df -hT      
@@ -914,9 +899,9 @@ jobs:
       - name: WeChat notification
         if: steps.Multi-thread.outputs.status == 'success' || steps.Single-thread.outputs.status == 'success' && !cancelled() && job.status == 'success'
         run: |
-        # curl https://sc.ftqq.com/${{ secrets.SCKEY }}.send?text=OpenWrt第五部分编译成功
+          curl https://sc.ftqq.com/${{ secrets.SCKEY }}.send?text=OpenWrt第五部分编译成功
        
       - name: WeChat notification
         if: failure() && !cancelled()
         run: |
-        # curl https://sc.ftqq.com/${{ secrets.SCKEY }}.send?text=OpenWrt第五部分编译失败
+          curl https://sc.ftqq.com/${{ secrets.SCKEY }}.send?text=OpenWrt第五部分编译失败
