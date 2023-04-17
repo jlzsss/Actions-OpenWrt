@@ -144,8 +144,9 @@ jobs:
         make download -j8
         find dl -size -1024c -exec ls -l {} \;
         find dl -size -1024c -exec rm -f {} \;
+        
     - name: Cache OpenWrt dependencies
-      uses: actions/cache@v2
+      uses: actions/cache@v3
       with:
         path: |
           ${GITHUB_WORKSPACE}/openwrt/dl
@@ -300,7 +301,7 @@ jobs:
           # cd /workdir && bsdtar -xzf feeds.tar.gz -C /mnt/openwrt/feeds --strip-components=3 && rm feeds.tar.gz
  
       - name: Cache OpenWrt dependencies
-        uses: actions/cache@v2
+        uses: actions/cache@v3
         with:
           path: |
             ${GITHUB_WORKSPACE}/openwrt/dl
@@ -451,7 +452,7 @@ jobs:
           # cd /workdir && bsdtar -xzf feeds.tar.gz -C /mnt/openwrt/feeds --strip-components=3 && rm feeds.tar.gz
      
       - name: Cache OpenWrt dependencies
-        uses: actions/cache@v2
+        uses: actions/cache@v3
         with:
           path: |
             ${GITHUB_WORKSPACE}/openwrt/dl
@@ -598,7 +599,7 @@ jobs:
           # cd /workdir && bsdtar -xzf feeds.tar.gz -C /mnt/openwrt/feeds --strip-components=3 && rm feeds.tar.gz
 
       - name: Cache OpenWrt dependencies
-        uses: actions/cache@v2
+        uses: actions/cache@v3
         with:
           path: |
             ${GITHUB_WORKSPACE}/openwrt/dl
@@ -745,7 +746,7 @@ jobs:
           # cd /workdir && bsdtar -xzf feeds.tar.gz -C /mnt/openwrt/feeds --strip-components=3 && rm feeds.tar.gz
 
       - name: Cache OpenWrt dependencies
-        uses: actions/cache@v2
+        uses: actions/cache@v3
         with:
           path: |
             ${GITHUB_WORKSPACE}/openwrt/dl
