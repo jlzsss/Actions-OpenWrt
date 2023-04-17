@@ -301,7 +301,7 @@ jobs:
           # cd /workdir && bsdtar -xzf feeds.tar.gz -C /mnt/openwrt/feeds --strip-components=3 && rm feeds.tar.gz
  
       - name: Cache OpenWrt dependencies
-        uses: actions/cache@v3
+        uses: actions/cache/restore@v3
         with:
           path: |
             ${GITHUB_WORKSPACE}/openwrt/dl
@@ -461,7 +461,7 @@ jobs:
           # cd /workdir && bsdtar -xzf feeds.tar.gz -C /mnt/openwrt/feeds --strip-components=3 && rm feeds.tar.gz
      
       - name: Cache OpenWrt dependencies
-        uses: actions/cache@v3
+        uses: actions/cache/restore@v3
         with:
           path: |
             ${GITHUB_WORKSPACE}/openwrt/dl
@@ -617,7 +617,7 @@ jobs:
           # cd /workdir && bsdtar -xzf feeds.tar.gz -C /mnt/openwrt/feeds --strip-components=3 && rm feeds.tar.gz
 
       - name: Cache OpenWrt dependencies
-        uses: actions/cache@v3
+        uses: actions/cache/restore@v3
         with:
           path: |
             ${GITHUB_WORKSPACE}/openwrt/dl
@@ -773,7 +773,7 @@ jobs:
           # cd /workdir && bsdtar -xzf feeds.tar.gz -C /mnt/openwrt/feeds --strip-components=3 && rm feeds.tar.gz
 
       - name: Cache OpenWrt dependencies
-        uses: actions/cache@v3
+        uses: actions/cache/restore@v3
         with:
           path: |
             ${GITHUB_WORKSPACE}/openwrt/dl
