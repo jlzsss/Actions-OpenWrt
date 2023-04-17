@@ -54,10 +54,11 @@ jobs:
       with:
         path: |
           /workdir/openwrt/dl
-        key: ${{ runner.os }}-openwrt-${{ hashFiles('/workdir/openwrt/.config') }}
+        key: ${{ runner.os }}-openwrt-${{ hashFiles('/workdir/openwrt/.config/SHA256SUMS') }}
         restore-keys: |
           ${{ runner.os }}-openwrt-
-
+          ${{ runner.os }}-
+          
     - name: WeChat notification
       run: |
         curl https://sc.ftqq.com/${{ secrets.SCKEY }}.send?text=开始编译OpenWrt 
@@ -159,7 +160,7 @@ jobs:
       with:
         path: |
           /workdir/openwrt/dl
-        key: ${{ runner.os }}-openwrt-${{ hashFiles('/workdir/openwrt/.config') }}
+        key: ${{ runner.os }}-openwrt-${{ hashFiles('/workdir/openwrt/.config/SHA256SUMS') }}
 
     - name: Check space usage
       if: (!cancelled())
@@ -312,7 +313,7 @@ jobs:
         with:
           path: |
             /workdir/openwrt/dl
-          key: ${{ runner.os }}-openwrt-${{ hashFiles('/workdir/openwrt/.config') }}
+          key: ${{ runner.os }}-openwrt-${{ hashFiles('/workdir/openwrt/.config/SHA256SUMS') }}
  
       - name: Check space usage
         if: (!cancelled())
@@ -461,7 +462,7 @@ jobs:
         with:
           path: |
             /workdir/openwrt/dl
-          key: ${{ runner.os }}-openwrt-${{ hashFiles('/workdir/openwrt/.config') }}
+          key: ${{ runner.os }}-openwrt-${{ hashFiles('/workdir/openwrt/.config/SHA256SUMS') }}
  
       - name: Check space usage
         if: (!cancelled())
@@ -615,7 +616,7 @@ jobs:
         with:
           path: |
             /workdir/openwrt/dl
-          key: ${{ runner.os }}-openwrt-${{ hashFiles('/workdir/openwrt/.config') }}
+          key: ${{ runner.os }}-openwrt-${{ hashFiles('/workdir/openwrt/.config/SHA256SUMS') }}
 
       - name: Check space usage
         if: (!cancelled())
@@ -769,7 +770,7 @@ jobs:
         with:
           path: |
             /workdir/openwrt/dl
-          key: ${{ runner.os }}-openwrt-${{ hashFiles('/workdir/openwrt/.config') }}
+          key: ${{ runner.os }}-openwrt-${{ hashFiles('/workdir/openwrt/.config/SHA256SUMS') }}
 
       - name: Check space usage
         if: (!cancelled())
