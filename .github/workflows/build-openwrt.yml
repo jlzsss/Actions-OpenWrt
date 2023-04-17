@@ -150,7 +150,7 @@ jobs:
       with:
         path: |
           /workdir/openwrt/dl
-        key: ${{ runner.os }}-openwrt-${{ hashFiles('/workdir/openwrt/.config', 'dl/SHA256SUMS') }}
+        key: ${{ runner.os }}-openwrt-${{ hashFiles('/workdir/openwrt/.config/SHA256SUMS') }}
 
     - name: Check space usage
       if: (!cancelled())
@@ -303,7 +303,7 @@ jobs:
         with:
           path: |
             /workdir/openwrt/dl
-          key: ${{ runner.os }}-openwrt-${{ hashFiles('/workdir/openwrt/.config', 'dl/SHA256SUMS') }}
+          key: ${{ runner.os }}-openwrt-${{ hashFiles('/workdir/openwrt/.config/SHA256SUMS') }}
  
       - name: Check space usage
         if: (!cancelled())
@@ -452,7 +452,7 @@ jobs:
         with:
           path: |
             /workdir/openwrt/dl
-          key: ${{ runner.os }}-openwrt-${{ hashFiles('/workdir/openwrt/.config', 'dl/SHA256SUMS') }}
+          key: ${{ runner.os }}-openwrt-${{ hashFiles('/workdir/openwrt/.config/SHA256SUMS') }}
  
       - name: Check space usage
         if: (!cancelled())
@@ -606,7 +606,7 @@ jobs:
         with:
           path: |
             /workdir/openwrt/dl
-          key: ${{ runner.os }}-openwrt-${{ hashFiles('/workdir/openwrt/.config', 'dl/SHA256SUMS') }}
+          key: ${{ runner.os }}-openwrt-${{ hashFiles('/workdir/openwrt/.config/SHA256SUMS') }}
 
       - name: Check space usage
         if: (!cancelled())
@@ -760,7 +760,7 @@ jobs:
         with:
           path: |
             /workdir/openwrt/dl
-          key: ${{ runner.os }}-openwrt-${{ hashFiles('/workdir/openwrt/.config', 'dl/SHA256SUMS') }}
+          key: ${{ runner.os }}-openwrt-${{ hashFiles('/workdir/openwrt/.config/SHA256SUMS') }}
 
       - name: Check space usage
         if: (!cancelled())
