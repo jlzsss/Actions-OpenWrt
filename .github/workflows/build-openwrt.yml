@@ -43,9 +43,6 @@ jobs:
 
  prepare:
    runs-on: ubuntu-20.04
-   strategy:
-       matrix:
-         openwrt-version: [openwrt-22.03, snapshots]
    steps:
     - name: Checkout
       uses: actions/checkout@main
@@ -139,20 +136,20 @@ jobs:
         TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
         TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}    
         
-    # - name: Download package
-    #   id: package
-    #   run: |
-    #     cd openwrt
-    #     make defconfig
-    #     make download -j8
-    #     find dl -size -1024c -exec ls -l {} \;
-    #     find dl -size -1024c -exec rm -f {} \;
+    - name: Download package
+      id: package
+      run: |
+        cd openwrt
+        make defconfig
+        make download -j8
+        find dl -size -1024c -exec ls -l {} \;
+        find dl -size -1024c -exec rm -f {} \;
     
     - name: Cache OpenWrt dependencies
       uses: actions/cache@v2
       with:
         path: /workdir/openwrt/dl
-        key: ${{ runner.os }}-openwrt-${{ matrix.openwrt-version }}-${{ hashFiles('dl') }}
+        key: ${{ runner.os }}-openwrt-${{ hashFiles('**/Makefile') }}
     
     - name: Check space usage
       if: (!cancelled())
@@ -232,9 +229,6 @@ jobs:
  build1:
      needs: prepare
      runs-on: ubuntu-20.04
-     strategy:
-       matrix:
-        openwrt-version: [openwrt-22.03, snapshots]
      steps:   
       - name: Checkout code
         uses: actions/checkout@v2
@@ -273,7 +267,7 @@ jobs:
          mkdir -p openwrt
          bsdtar -xzf openwrt.tar.gz -C /workdir/openwrt --strip-components=2 && rm openwrt.tar.gz
          ln -sf /workdir/openwrt ${{ github.workspace }}/openwrt
-         rm -rf openwrt/build_dir/hostpkg openwrt/staging_dir
+         rm -rf openwrt/build_dir/hostpkg openwrt/staging_dir openwrt/dl
          curl https://sc.ftqq.com/${{ secrets.SCKEY }}.send?text=OpenWrt开始编译第二部分
        
       - name: Free up disk space
@@ -307,7 +301,7 @@ jobs:
         uses: actions/cache@v2
         with:
           path: /workdir/openwrt/dl
-          key: ${{ runner.os }}-openwrt-${{ matrix.openwrt-version }}-${{ hashFiles('dl') }}
+          key: ${{ runner.os }}-openwrt-${{ hashFiles('**/Makefile') }}
  
       - name: Check space usage
         if: (!cancelled())
@@ -383,9 +377,6 @@ jobs:
  build2:
      needs: build1
      runs-on: ubuntu-20.04
-     strategy:
-      matrix:
-        openwrt-version: [openwrt-22.03, snapshots]     
      steps:
       - name: Checkout code
         uses: actions/checkout@v2
@@ -424,7 +415,7 @@ jobs:
          mkdir -p openwrt
          bsdtar -xzf openwrt.tar.gz -C /workdir/openwrt --strip-components=2 && rm openwrt.tar.gz
          ln -sf /workdir/openwrt ${{ github.workspace }}/openwrt
-         rm -rf openwrt/build_dir/hostpkg openwrt/staging_dir
+         rm -rf openwrt/build_dir/hostpkg openwrt/staging_dir openwrt/dl
          curl https://sc.ftqq.com/${{ secrets.SCKEY }}.send?text=OpenWrt开始编译第三部分
        
       - name: Free up disk space
@@ -453,12 +444,12 @@ jobs:
           # cd /workdir && bsdtar -xzf dl.tar.gz -C /mnt/openwrt/dl --strip-components=3 && rm dl.tar.gz
           cd /workdir && bsdtar -xzf staging_dir.tar.gz -C /mnt/openwrt/staging_dir --strip-components=3 && rm staging_dir.tar.gz
           # cd /workdir && bsdtar -xzf feeds.tar.gz -C /mnt/openwrt/feeds --strip-components=3 && rm feeds.tar.gz
- 
+     
       - name: Cache OpenWrt dependencies
         uses: actions/cache@v2
         with:
           path: /workdir/openwrt/dl
-          key: ${{ runner.os }}-openwrt-${{ matrix.openwrt-version }}-${{ hashFiles('dl') }}
+          key: ${{ runner.os }}-openwrt-${{ hashFiles('**/Makefile') }}
  
       - name: Check space usage
         if: (!cancelled())
@@ -539,9 +530,6 @@ jobs:
  build3:
      needs: build2
      runs-on: ubuntu-20.04
-     strategy:
-      matrix:
-        openwrt-version: [openwrt-22.03, snapshots]     
      steps:  
       - name: Checkout code
         uses: actions/checkout@v2
@@ -580,7 +568,7 @@ jobs:
          mkdir -p openwrt
          bsdtar -xzf openwrt.tar.gz -C /workdir/openwrt --strip-components=2 && rm openwrt.tar.gz
          ln -sf /workdir/openwrt ${{ github.workspace }}/openwrt
-         rm -rf openwrt/build_dir/hostpkg openwrt/staging_dir
+         rm -rf openwrt/build_dir/hostpkg openwrt/staging_dir openwrt/dl
          curl https://sc.ftqq.com/${{ secrets.SCKEY }}.send?text=OpenWrt开始编译第四部分
        
       - name: Free up disk space
@@ -614,7 +602,7 @@ jobs:
         uses: actions/cache@v2
         with:
           path: /workdir/openwrt/dl
-          key: ${{ runner.os }}-openwrt-${{ matrix.openwrt-version }}-${{ hashFiles('dl') }}
+          key: ${{ runner.os }}-openwrt-${{ hashFiles('**/Makefile') }}
 
       - name: Check space usage
         if: (!cancelled())
@@ -695,9 +683,6 @@ jobs:
  uploads:
      needs: build3
      runs-on: ubuntu-20.04
-     strategy:
-      matrix:
-        openwrt-version: [openwrt-22.03, snapshots]     
      steps:  
       - name: Checkout code
         uses: actions/checkout@v2
@@ -736,7 +721,7 @@ jobs:
          mkdir -p openwrt
          bsdtar -xzf openwrt.tar.gz -C /workdir/openwrt --strip-components=2 && rm openwrt.tar.gz
          ln -sf /workdir/openwrt ${{ github.workspace }}/openwrt
-         rm -rf openwrt/build_dir/hostpkg openwrt/staging_dir
+         rm -rf openwrt/build_dir/hostpkg openwrt/staging_dir openwrt/dl
          curl https://sc.ftqq.com/${{ secrets.SCKEY }}.send?text=OpenWrt开始编译第五部分
        
       - name: Free up disk space
@@ -770,7 +755,7 @@ jobs:
         uses: actions/cache@v2
         with:
           path: /workdir/openwrt/dl
-          key: ${{ runner.os }}-openwrt-${{ matrix.openwrt-version }}-${{ hashFiles('dl') }}
+          key: ${{ runner.os }}-openwrt-${{ hashFiles('**/Makefile') }}
 
       - name: Check space usage
         if: (!cancelled())
