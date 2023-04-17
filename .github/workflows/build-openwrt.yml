@@ -148,7 +148,7 @@ jobs:
     - name: Cache OpenWrt dependencies
       uses: actions/cache@v2
       with:
-        path: /workdir/openwrt/dl
+        path: dl
         key: ${{ runner.os }}-openwrt-${{ hashFiles('**/Makefile') }}
     
     - name: Check space usage
@@ -300,7 +300,7 @@ jobs:
       - name: Cache OpenWrt dependencies
         uses: actions/cache@v2
         with:
-          path: /workdir/openwrt/dl
+          path: dl
           key: ${{ runner.os }}-openwrt-${{ hashFiles('**/Makefile') }}
  
       - name: Check space usage
@@ -448,7 +448,7 @@ jobs:
       - name: Cache OpenWrt dependencies
         uses: actions/cache@v2
         with:
-          path: /workdir/openwrt/dl
+          path: dl
           key: ${{ runner.os }}-openwrt-${{ hashFiles('**/Makefile') }}
  
       - name: Check space usage
@@ -601,7 +601,7 @@ jobs:
       - name: Cache OpenWrt dependencies
         uses: actions/cache@v2
         with:
-          path: /workdir/openwrt/dl
+          path: dl
           key: ${{ runner.os }}-openwrt-${{ hashFiles('**/Makefile') }}
 
       - name: Check space usage
@@ -754,7 +754,7 @@ jobs:
       - name: Cache OpenWrt dependencies
         uses: actions/cache@v2
         with:
-          path: /workdir/openwrt/dl
+          path: dl
           key: ${{ runner.os }}-openwrt-${{ hashFiles('**/Makefile') }}
 
       - name: Check space usage
