@@ -153,7 +153,8 @@ jobs:
           ${GITHUB_WORKSPACE}/openwrt/build_dir
           ${GITHUB_WORKSPACE}/openwrt/staging_dir
         key: ${{ runner.os }}-openwrt-${{ hashFiles('${GITHUB_WORKSPACE}/openwrt/.config') }}
-
+        max-size: 60GB
+        
     - name: Check space usage
       if: (!cancelled())
       run: df -hT
@@ -308,7 +309,8 @@ jobs:
             ${GITHUB_WORKSPACE}/openwrt/build_dir
             ${GITHUB_WORKSPACE}/openwrt/staging_dir
           key: ${{ runner.os }}-openwrt-${{ hashFiles('${GITHUB_WORKSPACE}/openwrt/.config') }}
- 
+          max-size: 60GB
+          
       - name: Check space usage
         if: (!cancelled())
         run: df -hT   
@@ -459,7 +461,8 @@ jobs:
             ${GITHUB_WORKSPACE}/openwrt/build_dir
             ${GITHUB_WORKSPACE}/openwrt/staging_dir
           key: ${{ runner.os }}-openwrt-${{ hashFiles('${GITHUB_WORKSPACE}/openwrt/.config') }}
- 
+          max-size: 60GB
+           
       - name: Check space usage
         if: (!cancelled())
         run: df -hT   
@@ -606,7 +609,8 @@ jobs:
             ${GITHUB_WORKSPACE}/openwrt/build_dir
             ${GITHUB_WORKSPACE}/openwrt/staging_dir
           key: ${{ runner.os }}-openwrt-${{ hashFiles('${GITHUB_WORKSPACE}/openwrt/.config') }}
-
+          max-size: 60GB
+          
       - name: Check space usage
         if: (!cancelled())
         run: df -hT   
@@ -753,7 +757,8 @@ jobs:
             ${GITHUB_WORKSPACE}/openwrt/build_dir
             ${GITHUB_WORKSPACE}/openwrt/staging_dir
           key: ${{ runner.os }}-openwrt-${{ hashFiles('${GITHUB_WORKSPACE}/openwrt/.config') }}    
-
+          max-size: 60GB
+          
       - name: Check space usage
         if: (!cancelled())
         run: df -hT      
