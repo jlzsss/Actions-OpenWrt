@@ -145,15 +145,6 @@ jobs:
         find dl -size -1024c -exec ls -l {} \;
         find dl -size -1024c -exec rm -f {} \;
         
-    - name: Cache OpenWrt dependencies
-      uses: actions/cache@v3
-      with:
-        path: |
-          ${GITHUB_WORKSPACE}/openwrt/dl
-          ${GITHUB_WORKSPACE}/openwrt/build_dir
-          ${GITHUB_WORKSPACE}/openwrt/staging_dir
-        key: ${{ runner.os }}-openwrt-${{ hashFiles('${GITHUB_WORKSPACE}/openwrt/.config') }}
-
     - name: Check space usage
       if: (!cancelled())
       run: df -hT
@@ -218,7 +209,16 @@ jobs:
           # dl.tar.gz
           # staging_dir.tar.gz
           # feeds.tar.gz
-          
+
+    - name: Cache OpenWrt dependencies
+      uses: actions/cache/save@v3
+      with:
+        path: |
+          ${GITHUB_WORKSPACE}/openwrt/dl
+          ${GITHUB_WORKSPACE}/openwrt/build_dir
+          ${GITHUB_WORKSPACE}/openwrt/staging_dir
+        key: ${{ hashFiles('${GITHUB_WORKSPACE}/openwrt/.config') }}
+
     - name: WeChat notification
       if: steps.Multi-thread.outputs.status == 'success' || steps.Single-thread.outputs.status == 'success' && !cancelled() && job.status == 'success'
       run: |
@@ -307,7 +307,7 @@ jobs:
             ${GITHUB_WORKSPACE}/openwrt/dl
             ${GITHUB_WORKSPACE}/openwrt/build_dir
             ${GITHUB_WORKSPACE}/openwrt/staging_dir
-          key: ${{ runner.os }}-openwrt-${{ hashFiles('${GITHUB_WORKSPACE}/openwrt/.config') }}
+          key: ${{ hashFiles('${GITHUB_WORKSPACE}/openwrt/.config') }}
  
       - name: Check space usage
         if: (!cancelled())
@@ -369,6 +369,15 @@ jobs:
             # dl.tar.gz
             # staging_dir.tar.gz
             # feeds.tar.gz
+     
+      - name: Cache OpenWrt dependencies
+        uses: actions/cache/save@v3
+        with:
+          path: |
+            ${GITHUB_WORKSPACE}/openwrt/dl
+            ${GITHUB_WORKSPACE}/openwrt/build_dir
+            ${GITHUB_WORKSPACE}/openwrt/staging_dir
+          key: ${{ hashFiles('${GITHUB_WORKSPACE}/openwrt/.config') }}    
      
       - name: WeChat notification
         if: steps.Multi-thread.outputs.status == 'success' || steps.Single-thread.outputs.status == 'success' && !cancelled() && job.status == 'success'
@@ -458,7 +467,7 @@ jobs:
             ${GITHUB_WORKSPACE}/openwrt/dl
             ${GITHUB_WORKSPACE}/openwrt/build_dir
             ${GITHUB_WORKSPACE}/openwrt/staging_dir
-          key: ${{ runner.os }}-openwrt-${{ hashFiles('${GITHUB_WORKSPACE}/openwrt/.config') }}
+          key: ${{ hashFiles('${GITHUB_WORKSPACE}/openwrt/.config') }}
  
       - name: Check space usage
         if: (!cancelled())
@@ -516,7 +525,16 @@ jobs:
             # dl.tar.bz2
             # staging_dir.tar.gz
             # feeds.tar.bz2
-     
+  
+      - name: Cache OpenWrt dependencies
+        uses: actions/cache/save@v3
+        with:
+          path: |
+            ${GITHUB_WORKSPACE}/openwrt/dl
+            ${GITHUB_WORKSPACE}/openwrt/build_dir
+            ${GITHUB_WORKSPACE}/openwrt/staging_dir
+          key: ${{ hashFiles('${GITHUB_WORKSPACE}/openwrt/.config') }}  
+  
       - name: WeChat notification
         if: steps.Multi-thread.outputs.status == 'success' || steps.Single-thread.outputs.status == 'success' && !cancelled() && job.status == 'success'
         run: |
@@ -605,7 +623,7 @@ jobs:
             ${GITHUB_WORKSPACE}/openwrt/dl
             ${GITHUB_WORKSPACE}/openwrt/build_dir
             ${GITHUB_WORKSPACE}/openwrt/staging_dir
-          key: ${{ runner.os }}-openwrt-${{ hashFiles('${GITHUB_WORKSPACE}/openwrt/.config') }}
+          key: ${{ hashFiles('${GITHUB_WORKSPACE}/openwrt/.config') }}
 
       - name: Check space usage
         if: (!cancelled())
@@ -663,7 +681,16 @@ jobs:
             # dl.tar.gz
             # staging_dir.tar.gz
             # feeds.tar.gz
-          
+
+      - name: Cache OpenWrt dependencies
+        uses: actions/cache/save@v3
+        with:
+          path: |
+            ${GITHUB_WORKSPACE}/openwrt/dl
+            ${GITHUB_WORKSPACE}/openwrt/build_dir
+            ${GITHUB_WORKSPACE}/openwrt/staging_dir
+          key: ${{ hashFiles('${GITHUB_WORKSPACE}/openwrt/.config') }} 
+
       - name: WeChat notification
         if: steps.Multi-thread.outputs.status == 'success' || steps.Single-thread.outputs.status == 'success' && !cancelled() && job.status == 'success'
         run: |
@@ -752,7 +779,7 @@ jobs:
             ${GITHUB_WORKSPACE}/openwrt/dl
             ${GITHUB_WORKSPACE}/openwrt/build_dir
             ${GITHUB_WORKSPACE}/openwrt/staging_dir
-          key: ${{ runner.os }}-openwrt-${{ hashFiles('${GITHUB_WORKSPACE}/openwrt/.config') }}    
+          key: ${{ hashFiles('${GITHUB_WORKSPACE}/openwrt/.config') }}    
 
       - name: Check space usage
         if: (!cancelled())
