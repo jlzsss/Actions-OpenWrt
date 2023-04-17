@@ -302,8 +302,8 @@ jobs:
         uses: actions/cache@v2
         with:
           path: |
-            /workdir/openwrt/dl
-          key: ${{ runner.os }}-openwrt-${{ hashFiles('/workdir/openwrt/.config/SHA256SUMS') }}
+            ${GITHUB_WORKSPACE}/openwrt/dl
+          key: ${{ runner.os }}-openwrt-${{ hashFiles('${GITHUB_WORKSPACE}/openwrt/.config/SHA256SUMS') }}
  
       - name: Check space usage
         if: (!cancelled())
@@ -451,8 +451,8 @@ jobs:
         uses: actions/cache@v2
         with:
           path: |
-            /workdir/openwrt/dl
-          key: ${{ runner.os }}-openwrt-${{ hashFiles('/workdir/openwrt/.config/SHA256SUMS') }}
+            ${GITHUB_WORKSPACE}/openwrt/dl
+          key: ${{ runner.os }}-openwrt-${{ hashFiles('${GITHUB_WORKSPACE}/openwrt/.config/SHA256SUMS') }}
  
       - name: Check space usage
         if: (!cancelled())
@@ -605,8 +605,8 @@ jobs:
         uses: actions/cache@v2
         with:
           path: |
-            /workdir/openwrt/dl
-          key: ${{ runner.os }}-openwrt-${{ hashFiles('/workdir/openwrt/.config/SHA256SUMS') }}
+            ${GITHUB_WORKSPACE}/openwrt/dl
+          key: ${{ runner.os }}-openwrt-${{ hashFiles('${GITHUB_WORKSPACE}/openwrt/.config/SHA256SUMS') }}
 
       - name: Check space usage
         if: (!cancelled())
@@ -759,8 +759,8 @@ jobs:
         uses: actions/cache@v2
         with:
           path: |
-            /workdir/openwrt/dl
-          key: ${{ runner.os }}-openwrt-${{ hashFiles('/workdir/openwrt/.config/SHA256SUMS') }}
+            ${GITHUB_WORKSPACE}/openwrt/dl
+          key: ${{ runner.os }}-openwrt-${{ hashFiles('${GITHUB_WORKSPACE}/openwrt/.config/SHA256SUMS') }}
 
       - name: Check space usage
         if: (!cancelled())
