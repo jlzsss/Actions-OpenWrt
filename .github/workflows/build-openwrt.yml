@@ -140,7 +140,7 @@ jobs:
       id: package
       run: |
         cd openwrt
-        make defconfig
+        # make defconfig
         make download -j8
         find dl -size -1024c -exec ls -l {} \;
         find dl -size -1024c -exec rm -f {} \;
@@ -148,8 +148,8 @@ jobs:
     - name: Cache OpenWrt dependencies
       uses: actions/cache@v2
       with:
-        path: dl
-        key: ${{ runner.os }}-openwrt-${{ hashFiles('**/Makefile') }}
+        path: /workdir/openwrt/dl
+        key: ${{ runner.os }}-openwrt-${{ hashFiles('.config') }}
     
     - name: Check space usage
       if: (!cancelled())
@@ -300,8 +300,8 @@ jobs:
       - name: Cache OpenWrt dependencies
         uses: actions/cache@v2
         with:
-          path: dl
-          key: ${{ runner.os }}-openwrt-${{ hashFiles('**/Makefile') }}
+          path: /workdir/openwrt/dl
+          key: ${{ runner.os }}-openwrt-${{ hashFiles('.config') }}
  
       - name: Check space usage
         if: (!cancelled())
@@ -448,8 +448,8 @@ jobs:
       - name: Cache OpenWrt dependencies
         uses: actions/cache@v2
         with:
-          path: dl
-          key: ${{ runner.os }}-openwrt-${{ hashFiles('**/Makefile') }}
+          path: /workdir/openwrt/dl
+          key: ${{ runner.os }}-openwrt-${{ hashFiles('.config') }}
  
       - name: Check space usage
         if: (!cancelled())
@@ -601,8 +601,8 @@ jobs:
       - name: Cache OpenWrt dependencies
         uses: actions/cache@v2
         with:
-          path: dl
-          key: ${{ runner.os }}-openwrt-${{ hashFiles('**/Makefile') }}
+          path: /workdir/openwrt/dl
+          key: ${{ runner.os }}-openwrt-${{ hashFiles('.config') }}
 
       - name: Check space usage
         if: (!cancelled())
@@ -754,8 +754,8 @@ jobs:
       - name: Cache OpenWrt dependencies
         uses: actions/cache@v2
         with:
-          path: dl
-          key: ${{ runner.os }}-openwrt-${{ hashFiles('**/Makefile') }}
+          path: /workdir/openwrt/dl
+          key: ${{ runner.os }}-openwrt-${{ hashFiles('.config') }}
 
       - name: Check space usage
         if: (!cancelled())
