@@ -149,7 +149,7 @@ jobs:
       uses: actions/cache@v2
       with:
         path: /workdir/openwrt/dl
-        key: ${{ runner.os }}-openwrt-${{ hashFiles('/workdir/openwrt/.config') }}
+        key: ${{ hashFiles('/workdir/openwrt/.config') }}
     
     - name: Check space usage
       if: (!cancelled())
@@ -301,7 +301,7 @@ jobs:
         uses: actions/cache@v2
         with:
           path: /workdir/openwrt/dl
-          key: ${{ runner.os }}-openwrt-${{ hashFiles('/workdir/openwrt/.config') }}
+          key: ${{ hashFiles('/workdir/openwrt/.config') }}
  
       - name: Check space usage
         if: (!cancelled())
@@ -449,7 +449,7 @@ jobs:
         uses: actions/cache@v2
         with:
           path: /workdir/openwrt/dl
-          key: ${{ runner.os }}-openwrt-${{ hashFiles('/workdir/openwrt/.config') }}
+          key: ${{ hashFiles('/workdir/openwrt/.config') }}
  
       - name: Check space usage
         if: (!cancelled())
@@ -602,7 +602,7 @@ jobs:
         uses: actions/cache@v2
         with:
           path: /workdir/openwrt/dl
-          key: ${{ runner.os }}-openwrt-${{ hashFiles('/workdir/openwrt/.config') }}
+          key: ${{ hashFiles('/workdir/openwrt/.config') }}
 
       - name: Check space usage
         if: (!cancelled())
@@ -755,7 +755,7 @@ jobs:
         uses: actions/cache@v2
         with:
           path: /workdir/openwrt/dl
-          key: ${{ runner.os }}-openwrt-${{ hashFiles('/workdir/openwrt/.config') }}
+          key: ${{ hashFiles('/workdir/openwrt/.config') }}
 
       - name: Check space usage
         if: (!cancelled())
