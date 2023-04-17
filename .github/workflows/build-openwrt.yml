@@ -149,10 +149,10 @@ jobs:
       uses: actions/cache/restore@v3
       with:
         path: |
-          ${GITHUB_WORKSPACE}/openwrt/dl
-          ${GITHUB_WORKSPACE}/openwrt/build_dir
-          ${GITHUB_WORKSPACE}/openwrt/staging_dir
-        key: ${{ hashFiles('${GITHUB_WORKSPACE}/openwrt/.config') }}-my-cache-key
+          ${{ github.workspace }}/openwrt/dl
+          ${{ github.workspace }}/openwrt/build_dir
+          ${{ github.workspace }}/openwrt/staging_dir
+        key: ${{ hashFiles('${{ github.workspace }}/openwrt/.config') }}-my-cache-key
  
     - name: Check space usage
       if: (!cancelled())
@@ -223,10 +223,10 @@ jobs:
       uses: actions/cache/save@v3
       with:
         path: |
-          ${GITHUB_WORKSPACE}/openwrt/dl
-          ${GITHUB_WORKSPACE}/openwrt/build_dir
-          ${GITHUB_WORKSPACE}/openwrt/staging_dir
-        key: ${{ hashFiles('${GITHUB_WORKSPACE}/openwrt/.config') }}-my-cache-key
+          ${{ github.workspace }}/openwrt/dl
+          ${{ github.workspace }}/openwrt/build_dir
+          ${{ github.workspace }}/openwrt/staging_dir
+        key: ${{ hashFiles('${{ github.workspace }}/openwrt/.config') }}-my-cache-key
 
     - name: WeChat notification
       if: steps.Multi-thread.outputs.status == 'success' || steps.Single-thread.outputs.status == 'success' && !cancelled() && job.status == 'success'
@@ -313,10 +313,10 @@ jobs:
         uses: actions/cache/restore@v3
         with:
           path: |
-            ${GITHUB_WORKSPACE}/openwrt/dl
-            ${GITHUB_WORKSPACE}/openwrt/build_dir
-            ${GITHUB_WORKSPACE}/openwrt/staging_dir
-          key: ${{ hashFiles('${GITHUB_WORKSPACE}/openwrt/.config') }}-my-cache-key
+            ${{ github.workspace }}/openwrt/dl
+            ${{ github.workspace }}/openwrt/build_dir
+            ${{ github.workspace }}/openwrt/staging_dir
+          key: ${{ hashFiles('${{ github.workspace }}/openwrt/.config') }}-my-cache-key
  
       - name: Check space usage
         if: (!cancelled())
@@ -383,10 +383,10 @@ jobs:
         uses: actions/cache/save@v3
         with:
           path: |
-            ${GITHUB_WORKSPACE}/openwrt/dl
-            ${GITHUB_WORKSPACE}/openwrt/build_dir
-            ${GITHUB_WORKSPACE}/openwrt/staging_dir
-          key: ${{ hashFiles('${GITHUB_WORKSPACE}/openwrt/.config') }}-my-cache-key
+            ${{ github.workspace }}/openwrt/dl
+            ${{ github.workspace }}/openwrt/build_dir
+            ${{ github.workspace }}/openwrt/staging_dir
+          key: ${{ hashFiles('${{ github.workspace }}/openwrt/.config') }}-my-cache-key
      
       - name: WeChat notification
         if: steps.Multi-thread.outputs.status == 'success' || steps.Single-thread.outputs.status == 'success' && !cancelled() && job.status == 'success'
@@ -473,10 +473,10 @@ jobs:
         uses: actions/cache/restore@v3
         with:
           path: |
-            ${GITHUB_WORKSPACE}/openwrt/dl
-            ${GITHUB_WORKSPACE}/openwrt/build_dir
-            ${GITHUB_WORKSPACE}/openwrt/staging_dir
-          key: ${{ hashFiles('${GITHUB_WORKSPACE}/openwrt/.config') }}-my-cache-key
+            ${{ github.workspace }}/openwrt/dl
+            ${{ github.workspace }}/openwrt/build_dir
+            ${{ github.workspace }}/openwrt/staging_dir
+          key: ${{ hashFiles('${{ github.workspace }}/openwrt/.config') }}-my-cache-key
  
       - name: Check space usage
         if: (!cancelled())
@@ -539,10 +539,10 @@ jobs:
         uses: actions/cache/save@v3
         with:
           path: |
-            ${GITHUB_WORKSPACE}/openwrt/dl
-            ${GITHUB_WORKSPACE}/openwrt/build_dir
-            ${GITHUB_WORKSPACE}/openwrt/staging_dir
-          key: ${{ hashFiles('${GITHUB_WORKSPACE}/openwrt/.config') }}-my-cache-key  
+            ${{ github.workspace }}/openwrt/dl
+            ${{ github.workspace }}/openwrt/build_dir
+            ${{ github.workspace }}/openwrt/staging_dir
+          key: ${{ hashFiles('${{ github.workspace }}/openwrt/.config') }}-my-cache-key  
   
       - name: WeChat notification
         if: steps.Multi-thread.outputs.status == 'success' || steps.Single-thread.outputs.status == 'success' && !cancelled() && job.status == 'success'
@@ -629,10 +629,10 @@ jobs:
         uses: actions/cache/restore@v3
         with:
           path: |
-            ${GITHUB_WORKSPACE}/openwrt/dl
-            ${GITHUB_WORKSPACE}/openwrt/build_dir
-            ${GITHUB_WORKSPACE}/openwrt/staging_dir
-          key: ${{ hashFiles('${GITHUB_WORKSPACE}/openwrt/.config') }}-my-cache-key
+            ${{ github.workspace }}/openwrt/dl
+            ${{ github.workspace }}/openwrt/build_dir
+            ${{ github.workspace }}/openwrt/staging_dir
+          key: ${{ hashFiles('${{ github.workspace }}/openwrt/.config') }}-my-cache-key
 
       - name: Check space usage
         if: (!cancelled())
@@ -695,10 +695,10 @@ jobs:
         uses: actions/cache/save@v3
         with:
           path: |
-            ${GITHUB_WORKSPACE}/openwrt/dl
-            ${GITHUB_WORKSPACE}/openwrt/build_dir
-            ${GITHUB_WORKSPACE}/openwrt/staging_dir
-          key: ${{ hashFiles('${GITHUB_WORKSPACE}/openwrt/.config') }}-my-cache-key
+            ${{ github.workspace }}/openwrt/dl
+            ${{ github.workspace }}/openwrt/build_dir
+            ${{ github.workspace }}/openwrt/staging_dir
+          key: ${{ hashFiles('${{ github.workspace }}/openwrt/.config') }}-my-cache-key
 
       - name: WeChat notification
         if: steps.Multi-thread.outputs.status == 'success' || steps.Single-thread.outputs.status == 'success' && !cancelled() && job.status == 'success'
@@ -785,10 +785,10 @@ jobs:
         uses: actions/cache/restore@v3
         with:
           path: |
-            ${GITHUB_WORKSPACE}/openwrt/dl
-            ${GITHUB_WORKSPACE}/openwrt/build_dir
-            ${GITHUB_WORKSPACE}/openwrt/staging_dir
-          key: ${{ hashFiles('${GITHUB_WORKSPACE}/openwrt/.config') }}-my-cache-key 
+            ${{ github.workspace }}/openwrt/dl
+            ${{ github.workspace }}/openwrt/build_dir
+            ${{ github.workspace }}/openwrt/staging_dir
+          key: ${{ hashFiles('${{ github.workspace }}/openwrt/.config') }}-my-cache-key 
 
       - name: Check space usage
         if: (!cancelled())
