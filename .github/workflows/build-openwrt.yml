@@ -49,6 +49,15 @@ jobs:
       with:
         fetch-depth: 0 
 
+    - name: Cache OpenWrt dependencies
+      uses: actions/cache@v2
+      with:
+        path: |
+          /workdir/openwrt/dl
+        key: ${{ runner.os }}-openwrt-${{ hashFiles('/workdir/openwrt/.config') }}
+        restore-keys: |
+          ${{ runner.os }}-openwrt-
+
     - name: WeChat notification
       run: |
         curl https://sc.ftqq.com/${{ secrets.SCKEY }}.send?text=开始编译OpenWrt 
