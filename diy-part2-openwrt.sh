@@ -35,11 +35,11 @@ rm -rf feeds/kenzok8/3proxy/patches
 
 
 # ./scripts/feeds update -a
-./scripts/feeds install -p kenzok8 luci-app-transmission
-./scripts/feeds install -p kenzok8 transmission
-./scripts/feeds install -p kenzok8 transmission-web-control
-./scripts/feeds install -p kenzok8 smartdns
-./scripts/feeds install -p kenzok8 luci-app-smartdns
-./scripts/feeds install -p Joecaicai luci-app-qbittorrent
-./scripts/feeds install -p Joecaicai qBittorrent-Enhanced-Edition
+# ./scripts/feeds install -p kenzok8 luci-app-transmission
+# ./scripts/feeds install -p kenzok8 transmission
+# ./scripts/feeds install -p kenzok8 transmission-web-control
+# ./scripts/feeds install -p kenzok8 smartdns
+# ./scripts/feeds install -p kenzok8 luci-app-smartdns
+# ./scripts/feeds install -p Joecaicai luci-app-qbittorrent
+# ./scripts/feeds install -p Joecaicai qBittorrent-Enhanced-Edition
 # ./scripts/feeds install -a
