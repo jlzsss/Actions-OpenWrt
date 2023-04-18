@@ -211,13 +211,13 @@ jobs:
           # feeds.tar.gz
           
     - name: Cache OpenWrt save
-      uses: actions/cache/save@v3
+      uses: actions/cache/save@v2
       with:
         path: |
-          /workdir/openwrt/dl
-          # /workdir/openwrt/build_dir
-          /workdir/openwrt/staging_dir
-        key: ${{ hashFiles('/workdir/openwrt/.config') }}-my-cache-key
+          openwrt/dl
+          # openwrt/build_dir
+          openwrt/staging_dir
+        key: ${{ hashFiles('openwrt/.config') }}-my-cache-key
 
     - name: WeChat notification
       if: steps.Multi-thread.outputs.status == 'success' || steps.Single-thread.outputs.status == 'success' && !cancelled() && job.status == 'success'
@@ -301,13 +301,13 @@ jobs:
           # cd /workdir && bsdtar -xzf feeds.tar.gz -C /mnt/openwrt/feeds --strip-components=3 && rm feeds.tar.gz
  
       - name: Cache OpenWrt restore
-        uses: actions/cache/restore@v3
+        uses: actions/cache/restore@v2
         with:
           path: |
-            /workdir/openwrt/dl
-            # /workdir/openwrt/build_dir
-            /workdir/openwrt/staging_dir
-          key: ${{ hashFiles('/workdir/openwrt/.config') }}-my-cache-key
+            openwrt/dl
+            # openwrt/build_dir
+            openwrt/staging_dir
+          key: ${{ hashFiles('openwrt/.config') }}-my-cache-key
  
       - name: Check space usage
         if: (!cancelled())
@@ -371,13 +371,13 @@ jobs:
             # feeds.tar.gz
      
       - name: Cache OpenWrt save
-        uses: actions/cache/save@v3
+        uses: actions/cache/save@v2
         with:
           path: |
-            /workdir/openwrt/dl
-            # /workdir/openwrt/build_dir
-            /workdir/openwrt/staging_dir
-          key: ${{ hashFiles('/workdir/openwrt/.config') }}-my-cache-key
+            openwrt/dl
+            # openwrt/build_dir
+            openwrt/staging_dir
+          key: ${{ hashFiles('openwrt/.config') }}-my-cache-key
      
       - name: WeChat notification
         if: steps.Multi-thread.outputs.status == 'success' || steps.Single-thread.outputs.status == 'success' && !cancelled() && job.status == 'success'
@@ -461,13 +461,13 @@ jobs:
           # cd /workdir && bsdtar -xzf feeds.tar.gz -C /mnt/openwrt/feeds --strip-components=3 && rm feeds.tar.gz
      
       - name: Cache OpenWrt restore
-        uses: actions/cache/restore@v3
+        uses: actions/cache/restore@v2
         with:
           path: |
-            /workdir/openwrt/dl
-            # /workdir/openwrt/build_dir
-            /workdir/openwrt/staging_dir
-          key: ${{ hashFiles('/workdir/openwrt/.config') }}-my-cache-key
+            openwrt/dl
+            # openwrt/build_dir
+            openwrt/staging_dir
+          key: ${{ hashFiles('openwrt/.config') }}-my-cache-key
  
       - name: Check space usage
         if: (!cancelled())
@@ -537,13 +537,13 @@ jobs:
             # feeds.tar.bz2
   
       - name: Cache OpenWrt save
-        uses: actions/cache/save@v3
+        uses: actions/cache/save@v2
         with:
           path: |
-            /workdir/openwrt/dl
-            # /workdir/openwrt/build_dir
-            /workdir/openwrt/staging_dir
-          key: ${{ hashFiles('/workdir/openwrt/.config') }}-my-cache-key  
+            openwrt/dl
+            # openwrt/build_dir
+            openwrt/staging_dir
+          key: ${{ hashFiles('openwrt/.config') }}-my-cache-key  
   
       - name: WeChat notification
         if: steps.Multi-thread.outputs.status == 'success' || steps.Single-thread.outputs.status == 'success' && !cancelled() && job.status == 'success'
@@ -627,13 +627,13 @@ jobs:
          # cd /workdir && bsdtar -xzf feeds.tar.gz -C /mnt/openwrt/feeds --strip-components=3 && rm feeds.tar.gz
 
       - name: Cache OpenWrt restore
-        uses: actions/cache/restore@v3
+        uses: actions/cache/restore@v2
         with:
           path: |
-            /workdir/openwrt/dl
-            # /workdir/openwrt/build_dir
-            /workdir/openwrt/staging_dir
-          key: ${{ hashFiles('/workdir/openwrt/.config') }}-my-cache-key
+            openwrt/dl
+            # openwrt/build_dir
+            openwrt/staging_dir
+          key: ${{ hashFiles('openwrt/.config') }}-my-cache-key
 
       - name: Check space usage
         if: (!cancelled())
@@ -703,13 +703,13 @@ jobs:
             # feeds.tar.gz
             
       - name: Cache OpenWrt save
-        uses: actions/cache/save@v3
+        uses: actions/cache/save@v2
         with:
           path: |
-            /workdir/openwrt/dl
-            # /workdir/openwrt/build_dir
-            /workdir/openwrt/staging_dir
-          key: ${{ hashFiles('/workdir/openwrt/.config') }}-my-cache-key
+            openwrt/dl
+            # openwrt/build_dir
+            openwrt/staging_dir
+          key: ${{ hashFiles('openwrt/.config') }}-my-cache-key
 
       - name: WeChat notification
         if: steps.Multi-thread.outputs.status == 'success' || steps.Single-thread.outputs.status == 'success' && !cancelled() && job.status == 'success'
@@ -793,13 +793,13 @@ jobs:
          # cd /workdir && bsdtar -xzf feeds.tar.gz -C /mnt/openwrt/feeds --strip-components=3 && rm feeds.tar.gz
 
       - name: Cache OpenWrt restore
-        uses: actions/cache/restore@v3
+        uses: actions/cache/restore@v2
         with:
           path: |
-            /workdir/openwrt/dl
-            # /workdir/openwrt/build_dir
-            /workdir/openwrt/staging_dir
-          key: ${{ hashFiles('/workdir/openwrt/.config') }}-my-cache-key 
+            openwrt/dl
+            # openwrt/build_dir
+            openwrt/staging_dir
+          key: ${{ hashFiles('openwrt/.config') }}-my-cache-key 
 
       - name: Check space usage
         if: (!cancelled())
