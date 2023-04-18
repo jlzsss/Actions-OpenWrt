@@ -214,10 +214,10 @@ jobs:
       uses: actions/cache/save@v3
       with:
         path: |
-          openwrt/dl
-          # openwrt/build_dir
-          openwrt/staging_dir
-        key: ${{ hashFiles('openwrt/.config') }}-my-cache-key
+          dl
+          # build_dir
+          staging_dir
+        key: ${{ hashFiles('.config') }}-my-cache-key
 
     - name: WeChat notification
       if: steps.Multi-thread.outputs.status == 'success' || steps.Single-thread.outputs.status == 'success' && !cancelled() && job.status == 'success'
