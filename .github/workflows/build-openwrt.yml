@@ -51,7 +51,7 @@ jobs:
         
     - name: WeChat notification
       run: |
-        curl https://sc.ftqq.com/${{ secrets.SCKEY }}.send?text=开始编译OpenWrt 
+      #  curl https://sc.ftqq.com/${{ secrets.SCKEY }}.send?text=开始编译OpenWrt 
       
     - name: Initialization environment
       env:
@@ -214,20 +214,20 @@ jobs:
       uses: actions/cache/save@v3
       with:
         path: |
-          dl
-          # build_dir
-          staging_dir
+          dl/
+          # build_dir/
+          staging_dir/
         key: ${{ hashFiles('.config') }}-my-cache-key
 
     - name: WeChat notification
       if: steps.Multi-thread.outputs.status == 'success' || steps.Single-thread.outputs.status == 'success' && !cancelled() && job.status == 'success'
       run: |
-        curl https://sc.ftqq.com/${{ secrets.SCKEY }}.send?text=OpenWrt第一部分编译成功
+      #  curl https://sc.ftqq.com/${{ secrets.SCKEY }}.send?text=OpenWrt第一部分编译成功
        
     - name: WeChat notification
       if: failure() && !cancelled()
       run: |
-        curl https://sc.ftqq.com/${{ secrets.SCKEY }}.send?text=OpenWrt第一部分编译失败
+      #  curl https://sc.ftqq.com/${{ secrets.SCKEY }}.send?text=OpenWrt第一部分编译失败
       
  build1:
      needs: prepare
@@ -304,10 +304,10 @@ jobs:
         uses: actions/cache/restore@v3
         with:
           path: |
-            openwrt/dl
-            # openwrt/build_dir
-            openwrt/staging_dir
-          key: ${{ hashFiles('openwrt/.config') }}-my-cache-key
+            dl/
+            # build_dir/
+            staging_dir/
+          key: ${{ hashFiles('.config') }}-my-cache-key
  
       - name: Check space usage
         if: (!cancelled())
@@ -374,10 +374,10 @@ jobs:
         uses: actions/cache/save@v3
         with:
           path: |
-            openwrt/dl
-            # openwrt/build_dir
-            openwrt/staging_dir
-          key: ${{ hashFiles('openwrt/.config') }}-my-cache-key
+            dl/
+            # build_dir/
+            staging_dir/
+          key: ${{ hashFiles('.config') }}-my-cache-key
      
       - name: WeChat notification
         if: steps.Multi-thread.outputs.status == 'success' || steps.Single-thread.outputs.status == 'success' && !cancelled() && job.status == 'success'
