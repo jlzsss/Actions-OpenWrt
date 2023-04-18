@@ -211,7 +211,7 @@ jobs:
           # feeds.tar.gz
           
     - name: Cache OpenWrt save
-      uses: actions/cache/save@v2
+      uses: actions/cache/save@v3
       with:
         path: |
           openwrt/dl
@@ -301,7 +301,7 @@ jobs:
           # cd /workdir && bsdtar -xzf feeds.tar.gz -C /mnt/openwrt/feeds --strip-components=3 && rm feeds.tar.gz
  
       - name: Cache OpenWrt restore
-        uses: actions/cache/restore@v2
+        uses: actions/cache/restore@v3
         with:
           path: |
             openwrt/dl
@@ -371,7 +371,7 @@ jobs:
             # feeds.tar.gz
      
       - name: Cache OpenWrt save
-        uses: actions/cache/save@v2
+        uses: actions/cache/save@v3
         with:
           path: |
             openwrt/dl
@@ -461,7 +461,7 @@ jobs:
           # cd /workdir && bsdtar -xzf feeds.tar.gz -C /mnt/openwrt/feeds --strip-components=3 && rm feeds.tar.gz
      
       - name: Cache OpenWrt restore
-        uses: actions/cache/restore@v2
+        uses: actions/cache/restore@v3
         with:
           path: |
             openwrt/dl
@@ -537,7 +537,7 @@ jobs:
             # feeds.tar.bz2
   
       - name: Cache OpenWrt save
-        uses: actions/cache/save@v2
+        uses: actions/cache/save@v3
         with:
           path: |
             openwrt/dl
@@ -627,7 +627,7 @@ jobs:
          # cd /workdir && bsdtar -xzf feeds.tar.gz -C /mnt/openwrt/feeds --strip-components=3 && rm feeds.tar.gz
 
       - name: Cache OpenWrt restore
-        uses: actions/cache/restore@v2
+        uses: actions/cache/restore@v3
         with:
           path: |
             openwrt/dl
@@ -703,7 +703,7 @@ jobs:
             # feeds.tar.gz
             
       - name: Cache OpenWrt save
-        uses: actions/cache/save@v2
+        uses: actions/cache/save@v3
         with:
           path: |
             openwrt/dl
@@ -793,7 +793,7 @@ jobs:
          # cd /workdir && bsdtar -xzf feeds.tar.gz -C /mnt/openwrt/feeds --strip-components=3 && rm feeds.tar.gz
 
       - name: Cache OpenWrt restore
-        uses: actions/cache/restore@v2
+        uses: actions/cache/restore@v3
         with:
           path: |
             openwrt/dl
