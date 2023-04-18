@@ -144,16 +144,7 @@ jobs:
         make download -j8
         find dl -size -1024c -exec ls -l {} \;
         find dl -size -1024c -exec rm -f {} \;
- 
-    - name: Cache OpenWrt dependencies
-      uses: actions/cache/restore@v3
-      with:
-        path: |
-          ${{ github.workspace }}/openwrt/dl
-          # ${{ github.workspace }}/openwrt/build_dir
-          ${{ github.workspace }}/openwrt/staging_dir
-        key: ${{ hashFiles('${{ github.workspace }}/openwrt/.config') }}-my-cache-key
- 
+
     - name: Check space usage
       if: (!cancelled())
       run: df -hT
@@ -164,9 +155,9 @@ jobs:
         cd openwrt
         echo -e "$(($(nproc) + 1)) thread compile"
         make -j$(($(nproc) + 1)) tools/compile
-        make -j$(($(nproc) + 1)) toolchain/compile
-        make -j$(($(nproc) + 1)) target/linux/compile
-        make -j$(($(nproc) + 1)) package/{node,golang,php8,ruby,perl,squid,jq,docker}/compile
+        # make -j$(($(nproc) + 1)) toolchain/compile
+        # make -j$(($(nproc) + 1)) target/linux/compile
+        # make -j$(($(nproc) + 1)) package/{node,golang,php8,ruby,perl,squid,jq,docker}/compile
         # make package/compile -j$(($(nproc) + 2))
         # make package/index -j$(($(nproc) + 2))
         echo "::set-output name=status::success"
@@ -218,15 +209,15 @@ jobs:
           # dl.tar.gz
           # staging_dir.tar.gz
           # feeds.tar.gz
-
-    - name: Cache OpenWrt dependencies
+          
+    - name: Cache OpenWrt save
       uses: actions/cache/save@v3
       with:
         path: |
-          ${{ github.workspace }}/openwrt/dl
-          # ${{ github.workspace }}/openwrt/build_dir
-          ${{ github.workspace }}/openwrt/staging_dir
-        key: ${{ hashFiles('${{ github.workspace }}/openwrt/.config') }}-my-cache-key
+          /workdir/openwrt/dl
+          # /workdir/openwrt/build_dir
+          /workdir/openwrt/staging_dir
+        key: ${{ hashFiles('/workdir/openwrt/.config') }}-my-cache-key
 
     - name: WeChat notification
       if: steps.Multi-thread.outputs.status == 'success' || steps.Single-thread.outputs.status == 'success' && !cancelled() && job.status == 'success'
@@ -279,7 +270,7 @@ jobs:
          mkdir -p openwrt
          bsdtar -xzf openwrt.tar.gz -C /workdir/openwrt --strip-components=2 && rm openwrt.tar.gz
          ln -sf /workdir/openwrt ${{ github.workspace }}/openwrt
-         rm -rf openwrt/staging_dir openwrt/dl
+         rm -rf openwrt/build_dir/hostpkg openwrt/staging_dir openwrt/dl
          curl https://sc.ftqq.com/${{ secrets.SCKEY }}.send?text=OpenWrt开始编译第二部分
        
       - name: Free up disk space
@@ -293,7 +284,7 @@ jobs:
           ln -sf /mnt/openwrt/build_dir/hostpkg openwrt/build_dir/hostpkg
           # ln -sf /mnt/openwrt/build_dir/host openwrt/build_dir/host
           # ln -sf /mnt/openwrt/dl openwrt/dl
-          # ln -sf /mnt/openwrt/staging_dir openwrt/staging_dir
+          ln -sf /mnt/openwrt/staging_dir openwrt/staging_dir
           # ln -sf /mnt/openwrt/feeds openwrt/feeds   
           # ln -sf /mnt/openwrt/bin openwrt/bin
           # ln -sf /mnt/openwrt/build_dir openwrt/build_dir
@@ -309,14 +300,14 @@ jobs:
           # cd /workdir && bsdtar -xzf staging_dir.tar.gz -C /mnt/openwrt/staging_dir --strip-components=3 && rm staging_dir.tar.gz
           # cd /workdir && bsdtar -xzf feeds.tar.gz -C /mnt/openwrt/feeds --strip-components=3 && rm feeds.tar.gz
  
-      - name: Cache OpenWrt dependencies
+      - name: Cache OpenWrt restore
         uses: actions/cache/restore@v3
         with:
           path: |
-            ${{ github.workspace }}/openwrt/dl
-            # ${{ github.workspace }}/openwrt/build_dir
-            ${{ github.workspace }}/openwrt/staging_dir
-          key: ${{ hashFiles('${{ github.workspace }}/openwrt/.config') }}-my-cache-key
+            /workdir/openwrt/dl
+            # /workdir/openwrt/build_dir
+            /workdir/openwrt/staging_dir
+          key: ${{ hashFiles('/workdir/openwrt/.config') }}-my-cache-key
  
       - name: Check space usage
         if: (!cancelled())
@@ -379,14 +370,14 @@ jobs:
             # staging_dir.tar.gz
             # feeds.tar.gz
      
-      - name: Cache OpenWrt dependencies
+      - name: Cache OpenWrt save
         uses: actions/cache/save@v3
         with:
           path: |
-            ${{ github.workspace }}/openwrt/dl
-            # ${{ github.workspace }}/openwrt/build_dir
-            ${{ github.workspace }}/openwrt/staging_dir
-          key: ${{ hashFiles('${{ github.workspace }}/openwrt/.config') }}-my-cache-key
+            /workdir/openwrt/dl
+            # /workdir/openwrt/build_dir
+            /workdir/openwrt/staging_dir
+          key: ${{ hashFiles('/workdir/openwrt/.config') }}-my-cache-key
      
       - name: WeChat notification
         if: steps.Multi-thread.outputs.status == 'success' || steps.Single-thread.outputs.status == 'success' && !cancelled() && job.status == 'success'
@@ -439,7 +430,7 @@ jobs:
          mkdir -p openwrt
          bsdtar -xzf openwrt.tar.gz -C /workdir/openwrt --strip-components=2 && rm openwrt.tar.gz
          ln -sf /workdir/openwrt ${{ github.workspace }}/openwrt
-         rm -rf openwrt/staging_dir openwrt/dl
+         rm -rf openwrt/build_dir/hostpkg openwrt/staging_dir openwrt/dl
          curl https://sc.ftqq.com/${{ secrets.SCKEY }}.send?text=OpenWrt开始编译第三部分
        
       - name: Free up disk space
@@ -453,7 +444,7 @@ jobs:
           ln -sf /mnt/openwrt/build_dir/hostpkg openwrt/build_dir/hostpkg
           # ln -sf /mnt/openwrt/build_dir/host openwrt/build_dir/host
           # ln -sf /mnt/openwrt/dl openwrt/dl
-          # ln -sf /mnt/openwrt/staging_dir openwrt/staging_dir
+          ln -sf /mnt/openwrt/staging_dir openwrt/staging_dir
           # ln -sf /mnt/openwrt/feeds openwrt/feeds   
           # ln -sf /mnt/openwrt/bin openwrt/bin
           # ln -sf /mnt/openwrt/build_dir openwrt/build_dir
@@ -469,14 +460,14 @@ jobs:
           # cd /workdir && bsdtar -xzf staging_dir.tar.gz -C /mnt/openwrt/staging_dir --strip-components=3 && rm staging_dir.tar.gz
           # cd /workdir && bsdtar -xzf feeds.tar.gz -C /mnt/openwrt/feeds --strip-components=3 && rm feeds.tar.gz
      
-      - name: Cache OpenWrt dependencies
+      - name: Cache OpenWrt restore
         uses: actions/cache/restore@v3
         with:
           path: |
-            ${{ github.workspace }}/openwrt/dl
-            # ${{ github.workspace }}/openwrt/build_dir
-            ${{ github.workspace }}/openwrt/staging_dir
-          key: ${{ hashFiles('${{ github.workspace }}/openwrt/.config') }}-my-cache-key
+            /workdir/openwrt/dl
+            # /workdir/openwrt/build_dir
+            /workdir/openwrt/staging_dir
+          key: ${{ hashFiles('/workdir/openwrt/.config') }}-my-cache-key
  
       - name: Check space usage
         if: (!cancelled())
@@ -515,21 +506,22 @@ jobs:
          DEBIAN_FRONTEND: noninteractive
         run: |
          bsdtar -czf openwrt.tar.gz /workdir/openwrt && sudo rm -rf /workdir/openwrt
-         # bsdtar -czf host.tar.bz2 /mnt/openwrt/build_dir/host && sudo rm -rf /mnt/openwrt/build_dir/host
+         # bsdtar -czf hostpkg.tar.gz /mnt/openwrt/build_dir/hostpkg && sudo rm -rf /mnt/openwrt/build_dir/hostpkg
          # bsdtar -czf dl.tar.bz2 /mnt/openwrt/dl && sudo rm -rf /mnt/openwrt/dl
          # bsdtar -czf feeds.tar.bz2 /mnt/openwrt/feeds && sudo rm -rf /mnt/openwrt/feeds
        
          df -hT
-      
+
       - name: Compress directory files
         env:
          DEBIAN_FRONTEND: noninteractive
         run: |
          bsdtar -czf hostpkg.tar.gz /mnt/openwrt/build_dir/hostpkg && sudo rm -rf /mnt/openwrt/build_dir/hostpkg
-         # bsdtar -czf staging_dir.tar.gz /mnt/openwrt/staging_dir && sudo rm -rf /mnt/openwrt/staging_dir
+         # bsdtar -czf dl.tar.bz2 /mnt/openwrt/dl && sudo rm -rf /mnt/openwrt/dl
+         # bsdtar -czf feeds.tar.bz2 /mnt/openwrt/feeds && sudo rm -rf /mnt/openwrt/feeds
        
          df -hT
-      
+
       - name: Store build artifacts
         uses: actions/upload-artifact@v3
         env:
@@ -537,21 +529,21 @@ jobs:
         with:
          name: build-output
          path: |
-            openwrt.tar.bz2
+            openwrt.tar.gz
             hostpkg.tar.gz
             # host.tar.bz2
             # dl.tar.bz2
             # staging_dir.tar.gz
             # feeds.tar.bz2
   
-      - name: Cache OpenWrt dependencies
+      - name: Cache OpenWrt save
         uses: actions/cache/save@v3
         with:
           path: |
-            ${{ github.workspace }}/openwrt/dl
-            # ${{ github.workspace }}/openwrt/build_dir
-            ${{ github.workspace }}/openwrt/staging_dir
-          key: ${{ hashFiles('${{ github.workspace }}/openwrt/.config') }}-my-cache-key  
+            /workdir/openwrt/dl
+            # /workdir/openwrt/build_dir
+            /workdir/openwrt/staging_dir
+          key: ${{ hashFiles('/workdir/openwrt/.config') }}-my-cache-key  
   
       - name: WeChat notification
         if: steps.Multi-thread.outputs.status == 'success' || steps.Single-thread.outputs.status == 'success' && !cancelled() && job.status == 'success'
@@ -604,7 +596,7 @@ jobs:
          mkdir -p openwrt
          bsdtar -xzf openwrt.tar.gz -C /workdir/openwrt --strip-components=2 && rm openwrt.tar.gz
          ln -sf /workdir/openwrt ${{ github.workspace }}/openwrt
-         rm -rf openwrt/staging_dir openwrt/dl
+         rm -rf openwrt/build_dir/hostpkg openwrt/staging_dir openwrt/dl
          curl https://sc.ftqq.com/${{ secrets.SCKEY }}.send?text=OpenWrt开始编译第四部分
        
       - name: Free up disk space
@@ -618,7 +610,7 @@ jobs:
           ln -sf /mnt/openwrt/build_dir/hostpkg openwrt/build_dir/hostpkg
           # ln -sf /mnt/openwrt/build_dir/host openwrt/build_dir/host
           # ln -sf /mnt/openwrt/dl openwrt/dl
-          # ln -sf /mnt/openwrt/staging_dir openwrt/staging_dir
+          ln -sf /mnt/openwrt/staging_dir openwrt/staging_dir
           # ln -sf /mnt/openwrt/feeds openwrt/feeds   
           # ln -sf /mnt/openwrt/bin openwrt/bin
           # ln -sf /mnt/openwrt/build_dir openwrt/build_dir
@@ -628,20 +620,20 @@ jobs:
               
       - name: Unzip artifact
         run: |
-          cd /workdir && bsdtar -xzf hostpkg.tar.gz -C /mnt/openwrt/build_dir/hostpkg --strip-components=4 && rm hostpkg.tar.gz
-          # cd /workdir && bsdtar -xzf host.tar.gz -C /mnt/openwrt/build_dir/host --strip-components=4 && rm host.tar.gz
-          # cd /workdir && bsdtar -xzf dl.tar.gz -C /mnt/openwrt/dl --strip-components=3 && rm dl.tar.gz
-          # cd /workdir && bsdtar -xzf staging_dir.tar.gz -C /mnt/openwrt/staging_dir --strip-components=3 && rm staging_dir.tar.gz
-          # cd /workdir && bsdtar -xzf feeds.tar.gz -C /mnt/openwrt/feeds --strip-components=3 && rm feeds.tar.gz
+         cd /workdir && bsdtar -xzf hostpkg.tar.gz -C /mnt/openwrt/build_dir/hostpkg --strip-components=4 && rm hostpkg.tar.gz
+         # cd /workdir && bsdtar -xzf host.tar.gz -C /mnt/openwrt/build_dir/host --strip-components=4 && rm host.tar.gz
+         # cd /workdir && bsdtar -xzf dl.tar.gz -C /mnt/openwrt/dl --strip-components=3 && rm dl.tar.gz
+         # cd /workdir && bsdtar -xzf staging_dir.tar.gz -C /mnt/openwrt/staging_dir --strip-components=3 && rm staging_dir.tar.gz
+         # cd /workdir && bsdtar -xzf feeds.tar.gz -C /mnt/openwrt/feeds --strip-components=3 && rm feeds.tar.gz
 
-      - name: Cache OpenWrt dependencies
+      - name: Cache OpenWrt restore
         uses: actions/cache/restore@v3
         with:
           path: |
-            ${{ github.workspace }}/openwrt/dl
-            # ${{ github.workspace }}/openwrt/build_dir
-            ${{ github.workspace }}/openwrt/staging_dir
-          key: ${{ hashFiles('${{ github.workspace }}/openwrt/.config') }}-my-cache-key
+            /workdir/openwrt/dl
+            # /workdir/openwrt/build_dir
+            /workdir/openwrt/staging_dir
+          key: ${{ hashFiles('/workdir/openwrt/.config') }}-my-cache-key
 
       - name: Check space usage
         if: (!cancelled())
@@ -685,16 +677,17 @@ jobs:
          # bsdtar -czf feeds.tar.gz /mnt/openwrt/feeds && sudo rm -rf /mnt/openwrt/feeds
        
          df -hT
-      
+
       - name: Compress directory files
         env:
          DEBIAN_FRONTEND: noninteractive
         run: |
          bsdtar -czf hostpkg.tar.gz /mnt/openwrt/build_dir/hostpkg && sudo rm -rf /mnt/openwrt/build_dir/hostpkg
-         # bsdtar -czf staging_dir.tar.gz /mnt/openwrt/staging_dir && sudo rm -rf /mnt/openwrt/staging_dir
+         # bsdtar -czf dl.tar.bz2 /mnt/openwrt/dl && sudo rm -rf /mnt/openwrt/dl
+         # bsdtar -czf feeds.tar.bz2 /mnt/openwrt/feeds && sudo rm -rf /mnt/openwrt/feeds
        
          df -hT
-      
+
       - name: Store build artifacts
         uses: actions/upload-artifact@v3
         env:
@@ -708,15 +701,15 @@ jobs:
             # dl.tar.gz
             # staging_dir.tar.gz
             # feeds.tar.gz
-
-      - name: Cache OpenWrt dependencies
+            
+      - name: Cache OpenWrt save
         uses: actions/cache/save@v3
         with:
           path: |
-            ${{ github.workspace }}/openwrt/dl
-            # ${{ github.workspace }}/openwrt/build_dir
-            ${{ github.workspace }}/openwrt/staging_dir
-          key: ${{ hashFiles('${{ github.workspace }}/openwrt/.config') }}-my-cache-key
+            /workdir/openwrt/dl
+            # /workdir/openwrt/build_dir
+            /workdir/openwrt/staging_dir
+          key: ${{ hashFiles('/workdir/openwrt/.config') }}-my-cache-key
 
       - name: WeChat notification
         if: steps.Multi-thread.outputs.status == 'success' || steps.Single-thread.outputs.status == 'success' && !cancelled() && job.status == 'success'
@@ -769,7 +762,7 @@ jobs:
          mkdir -p openwrt
          bsdtar -xzf openwrt.tar.gz -C /workdir/openwrt --strip-components=2 && rm openwrt.tar.gz
          ln -sf /workdir/openwrt ${{ github.workspace }}/openwrt
-         rm -rf openwrt/staging_dir openwrt/dl
+         rm -rf openwrt/build_dir/hostpkg openwrt/staging_dir openwrt/dl
          curl https://sc.ftqq.com/${{ secrets.SCKEY }}.send?text=OpenWrt开始编译第五部分
        
       - name: Free up disk space
@@ -783,7 +776,7 @@ jobs:
           ln -sf /mnt/openwrt/build_dir/hostpkg openwrt/build_dir/hostpkg
           # ln -sf /mnt/openwrt/build_dir/host openwrt/build_dir/host
           # ln -sf /mnt/openwrt/dl openwrt/dl
-          # ln -sf /mnt/openwrt/staging_dir openwrt/staging_dir
+          ln -sf /mnt/openwrt/staging_dir openwrt/staging_dir
           # ln -sf /mnt/openwrt/feeds openwrt/feeds   
           # ln -sf /mnt/openwrt/bin openwrt/bin
           # ln -sf /mnt/openwrt/build_dir openwrt/build_dir
@@ -793,20 +786,20 @@ jobs:
                
       - name: Unzip artifact
         run: |
-          cd /workdir && bsdtar -xzf hostpkg.tar.gz -C /mnt/openwrt/build_dir/hostpkg --strip-components=4 && rm hostpkg.tar.gz
-          # cd /workdir && bsdtar -xzf host.tar.gz -C /mnt/openwrt/build_dir/host --strip-components=4 && rm host.tar.gz
-          # cd /workdir && bsdtar -xzf dl.tar.gz -C /mnt/openwrt/dl --strip-components=3 && rm dl.tar.gz
-          # cd /workdir && bsdtar -xzf staging_dir.tar.gz -C /mnt/openwrt/staging_dir --strip-components=3 && rm staging_dir.tar.gz
-          # cd /workdir && bsdtar -xzf feeds.tar.gz -C /mnt/openwrt/feeds --strip-components=3 && rm feeds.tar.gz
+         cd /workdir && bsdtar -xzf hostpkg.tar.gz -C /mnt/openwrt/build_dir/hostpkg --strip-components=4 && rm hostpkg.tar.gz
+         # cd /workdir && bsdtar -xzf host.tar.gz -C /mnt/openwrt/build_dir/host --strip-components=4 && rm host.tar.gz
+         # cd /workdir && bsdtar -xzf dl.tar.gz -C /mnt/openwrt/dl --strip-components=3 && rm dl.tar.gz
+         # cd /workdir && bsdtar -xzf staging_dir.tar.gz -C /mnt/openwrt/staging_dir --strip-components=3 && rm staging_dir.tar.gz
+         # cd /workdir && bsdtar -xzf feeds.tar.gz -C /mnt/openwrt/feeds --strip-components=3 && rm feeds.tar.gz
 
-      - name: Cache OpenWrt dependencies
+      - name: Cache OpenWrt restore
         uses: actions/cache/restore@v3
         with:
           path: |
-            ${{ github.workspace }}/openwrt/dl
-            # ${{ github.workspace }}/openwrt/build_dir
-            ${{ github.workspace }}/openwrt/staging_dir
-          key: ${{ hashFiles('${{ github.workspace }}/openwrt/.config') }}-my-cache-key 
+            /workdir/openwrt/dl
+            # /workdir/openwrt/build_dir
+            /workdir/openwrt/staging_dir
+          key: ${{ hashFiles('/workdir/openwrt/.config') }}-my-cache-key 
 
       - name: Check space usage
         if: (!cancelled())
