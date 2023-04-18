@@ -151,7 +151,7 @@ jobs:
         path: |
           ${{ github.workspace }}/openwrt/dl
           # ${{ github.workspace }}/openwrt/build_dir
-          # ${{ github.workspace }}/openwrt/staging_dir
+          ${{ github.workspace }}/openwrt/staging_dir
         key: ${{ hashFiles('${{ github.workspace }}/openwrt/.config') }}-my-cache-key
  
     - name: Check space usage
@@ -225,7 +225,7 @@ jobs:
         path: |
           ${{ github.workspace }}/openwrt/dl
           # ${{ github.workspace }}/openwrt/build_dir
-          # ${{ github.workspace }}/openwrt/staging_dir
+          ${{ github.workspace }}/openwrt/staging_dir
         key: ${{ hashFiles('${{ github.workspace }}/openwrt/.config') }}-my-cache-key
 
     - name: WeChat notification
@@ -315,7 +315,7 @@ jobs:
           path: |
             ${{ github.workspace }}/openwrt/dl
             # ${{ github.workspace }}/openwrt/build_dir
-            # ${{ github.workspace }}/openwrt/staging_dir
+            ${{ github.workspace }}/openwrt/staging_dir
           key: ${{ hashFiles('${{ github.workspace }}/openwrt/.config') }}-my-cache-key
  
       - name: Check space usage
@@ -385,7 +385,7 @@ jobs:
           path: |
             ${{ github.workspace }}/openwrt/dl
             # ${{ github.workspace }}/openwrt/build_dir
-            # ${{ github.workspace }}/openwrt/staging_dir
+            ${{ github.workspace }}/openwrt/staging_dir
           key: ${{ hashFiles('${{ github.workspace }}/openwrt/.config') }}-my-cache-key
      
       - name: WeChat notification
@@ -475,7 +475,7 @@ jobs:
           path: |
             ${{ github.workspace }}/openwrt/dl
             # ${{ github.workspace }}/openwrt/build_dir
-            # ${{ github.workspace }}/openwrt/staging_dir
+            ${{ github.workspace }}/openwrt/staging_dir
           key: ${{ hashFiles('${{ github.workspace }}/openwrt/.config') }}-my-cache-key
  
       - name: Check space usage
@@ -550,7 +550,7 @@ jobs:
           path: |
             ${{ github.workspace }}/openwrt/dl
             # ${{ github.workspace }}/openwrt/build_dir
-            # ${{ github.workspace }}/openwrt/staging_dir
+            ${{ github.workspace }}/openwrt/staging_dir
           key: ${{ hashFiles('${{ github.workspace }}/openwrt/.config') }}-my-cache-key  
   
       - name: WeChat notification
@@ -640,7 +640,7 @@ jobs:
           path: |
             ${{ github.workspace }}/openwrt/dl
             # ${{ github.workspace }}/openwrt/build_dir
-            # ${{ github.workspace }}/openwrt/staging_dir
+            ${{ github.workspace }}/openwrt/staging_dir
           key: ${{ hashFiles('${{ github.workspace }}/openwrt/.config') }}-my-cache-key
 
       - name: Check space usage
@@ -715,7 +715,7 @@ jobs:
           path: |
             ${{ github.workspace }}/openwrt/dl
             # ${{ github.workspace }}/openwrt/build_dir
-            # ${{ github.workspace }}/openwrt/staging_dir
+            ${{ github.workspace }}/openwrt/staging_dir
           key: ${{ hashFiles('${{ github.workspace }}/openwrt/.config') }}-my-cache-key
 
       - name: WeChat notification
@@ -805,7 +805,7 @@ jobs:
           path: |
             ${{ github.workspace }}/openwrt/dl
             # ${{ github.workspace }}/openwrt/build_dir
-            # ${{ github.workspace }}/openwrt/staging_dir
+            ${{ github.workspace }}/openwrt/staging_dir
           key: ${{ hashFiles('${{ github.workspace }}/openwrt/.config') }}-my-cache-key 
 
       - name: Check space usage
