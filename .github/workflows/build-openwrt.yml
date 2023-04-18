@@ -49,8 +49,17 @@ jobs:
         
     - name: WeChat notification
       run: |
-      #  curl https://sc.ftqq.com/${{ secrets.SCKEY }}.send?text=开始编译OpenWrt 
-      
+        curl https://sc.ftqq.com/${{ secrets.SCKEY }}.send?text=开始编译OpenWrt 
+ 
+    - name: Cache OpenWrt
+      uses: actions/cache@v2
+      with:
+        path: |
+          ${{ github.workspace }}/openwrt/dl
+          # ${{ github.workspace }}/openwrt/build_dir/
+          ${{ github.workspace }}/openwrt/staging_dir/
+        key: my-cache-key-${{ hashFiles('${{ github.workspace }}/openwrt/.config') }}
+ 
     - name: Initialization environment
       env:
         DEBIAN_FRONTEND: noninteractive
@@ -143,15 +152,6 @@ jobs:
         find dl -size -1024c -exec ls -l {} \;
         find dl -size -1024c -exec rm -f {} \;
 
-    - name: Cache OpenWrt
-      uses: actions/cache@v2
-      with:
-        path: |
-          ${{ github.workspace }}/openwrt/dl
-          # ${{ github.workspace }}/openwrt/build_dir/
-          ${{ github.workspace }}/openwrt/staging_dir/
-        key: my-cache-key-${{ hashFiles('${{ github.workspace }}/openwrt/.config') }}
-
     - name: Check space usage
       if: (!cancelled())
       run: df -hT
@@ -220,12 +220,12 @@ jobs:
     - name: WeChat notification
       if: steps.Multi-thread.outputs.status == 'success' || steps.Single-thread.outputs.status == 'success' && !cancelled() && job.status == 'success'
       run: |
-      #  curl https://sc.ftqq.com/${{ secrets.SCKEY }}.send?text=OpenWrt第一部分编译成功
+        curl https://sc.ftqq.com/${{ secrets.SCKEY }}.send?text=OpenWrt第一部分编译成功
        
     - name: WeChat notification
       if: failure() && !cancelled()
       run: |
-      #  curl https://sc.ftqq.com/${{ secrets.SCKEY }}.send?text=OpenWrt第一部分编译失败
+        curl https://sc.ftqq.com/${{ secrets.SCKEY }}.send?text=OpenWrt第一部分编译失败
       
  build1:
      needs: prepare
@@ -233,7 +233,16 @@ jobs:
      steps:   
       - name: Checkout code
         uses: actions/checkout@v2
-          
+ 
+      - name: Cache OpenWrt
+        uses: actions/cache@v2
+        with:
+          path: |
+            ${{ github.workspace }}/openwrt/dl
+            # ${{ github.workspace }}/openwrt/build_dir/
+            ${{ github.workspace }}/openwrt/staging_dir/
+          key: my-cache-key-${{ hashFiles('${{ github.workspace }}/openwrt/.config') }}
+ 
       - name: Initialization environment
         env:
           DEBIAN_FRONTEND: noninteractive
@@ -295,16 +304,7 @@ jobs:
           # cd /workdir && bsdtar -xzf dl.tar.gz -C /mnt/openwrt/dl --strip-components=3 && rm dl.tar.gz
           # cd /workdir && bsdtar -xzf staging_dir.tar.gz -C /mnt/openwrt/staging_dir --strip-components=3 && rm staging_dir.tar.gz
           # cd /workdir && bsdtar -xzf feeds.tar.gz -C /mnt/openwrt/feeds --strip-components=3 && rm feeds.tar.gz
- 
-      - name: Cache OpenWrt
-        uses: actions/cache@v2
-        with:
-          path: |
-            ${{ github.workspace }}/openwrt/dl
-            # ${{ github.workspace }}/openwrt/build_dir/
-            ${{ github.workspace }}/openwrt/staging_dir/
-          key: my-cache-key-${{ hashFiles('${{ github.workspace }}/openwrt/.config') }}
- 
+  
       - name: Check space usage
         if: (!cancelled())
         run: df -hT   
@@ -382,7 +382,16 @@ jobs:
      steps:
       - name: Checkout code
         uses: actions/checkout@v2
-     
+
+      - name: Cache OpenWrt
+        uses: actions/cache@v2
+        with:
+          path: |
+            ${{ github.workspace }}/openwrt/dl
+            # ${{ github.workspace }}/openwrt/build_dir/
+            ${{ github.workspace }}/openwrt/staging_dir/
+          key: my-cache-key-${{ hashFiles('${{ github.workspace }}/openwrt/.config') }}
+
       - name: Initialization environment
         env:
           DEBIAN_FRONTEND: noninteractive
@@ -444,16 +453,7 @@ jobs:
           # cd /workdir && bsdtar -xzf dl.tar.gz -C /mnt/openwrt/dl --strip-components=3 && rm dl.tar.gz
           # cd /workdir && bsdtar -xzf staging_dir.tar.gz -C /mnt/openwrt/staging_dir --strip-components=3 && rm staging_dir.tar.gz
           # cd /workdir && bsdtar -xzf feeds.tar.gz -C /mnt/openwrt/feeds --strip-components=3 && rm feeds.tar.gz
-     
-      - name: Cache OpenWrt
-        uses: actions/cache@v2
-        with:
-          path: |
-            ${{ github.workspace }}/openwrt/dl
-            # ${{ github.workspace }}/openwrt/build_dir/
-            ${{ github.workspace }}/openwrt/staging_dir/
-          key: my-cache-key-${{ hashFiles('${{ github.workspace }}/openwrt/.config') }}
- 
+      
       - name: Check space usage
         if: (!cancelled())
         run: df -hT   
@@ -538,6 +538,15 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v2
 
+      - name: Cache OpenWrt
+        uses: actions/cache@v2
+        with:
+          path: |
+            ${{ github.workspace }}/openwrt/dl
+            # ${{ github.workspace }}/openwrt/build_dir/
+            ${{ github.workspace }}/openwrt/staging_dir/
+          key: my-cache-key-${{ hashFiles('${{ github.workspace }}/openwrt/.config') }}
+
       - name: Initialization environment
         env:
           DEBIAN_FRONTEND: noninteractive
@@ -599,15 +608,6 @@ jobs:
          # cd /workdir && bsdtar -xzf dl.tar.gz -C /mnt/openwrt/dl --strip-components=3 && rm dl.tar.gz
          # cd /workdir && bsdtar -xzf staging_dir.tar.gz -C /mnt/openwrt/staging_dir --strip-components=3 && rm staging_dir.tar.gz
          # cd /workdir && bsdtar -xzf feeds.tar.gz -C /mnt/openwrt/feeds --strip-components=3 && rm feeds.tar.gz
-
-      - name: Cache OpenWrt
-        uses: actions/cache@v2
-        with:
-          path: |
-            ${{ github.workspace }}/openwrt/dl
-            # ${{ github.workspace }}/openwrt/build_dir/
-            ${{ github.workspace }}/openwrt/staging_dir/
-          key: my-cache-key-${{ hashFiles('${{ github.workspace }}/openwrt/.config') }}
 
       - name: Check space usage
         if: (!cancelled())
@@ -693,6 +693,15 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v2
 
+      - name: Cache OpenWrt
+        uses: actions/cache@v2
+        with:
+          path: |
+            ${{ github.workspace }}/openwrt/dl
+            # ${{ github.workspace }}/openwrt/build_dir/
+            ${{ github.workspace }}/openwrt/staging_dir/
+          key: my-cache-key-${{ hashFiles('${{ github.workspace }}/openwrt/.config') }}
+
       - name: Initialization environment
         env:
           DEBIAN_FRONTEND: noninteractive
@@ -754,15 +763,6 @@ jobs:
          # cd /workdir && bsdtar -xzf dl.tar.gz -C /mnt/openwrt/dl --strip-components=3 && rm dl.tar.gz
          # cd /workdir && bsdtar -xzf staging_dir.tar.gz -C /mnt/openwrt/staging_dir --strip-components=3 && rm staging_dir.tar.gz
          # cd /workdir && bsdtar -xzf feeds.tar.gz -C /mnt/openwrt/feeds --strip-components=3 && rm feeds.tar.gz
-
-      - name: Cache OpenWrt
-        uses: actions/cache@v2
-        with:
-          path: |
-            ${{ github.workspace }}/openwrt/dl
-            # ${{ github.workspace }}/openwrt/build_dir/
-            ${{ github.workspace }}/openwrt/staging_dir/
-          key: my-cache-key-${{ hashFiles('${{ github.workspace }}/openwrt/.config') }}
 
       - name: Check space usage
         if: (!cancelled())
