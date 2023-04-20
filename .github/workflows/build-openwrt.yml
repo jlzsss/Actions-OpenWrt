@@ -165,9 +165,9 @@ jobs:
         cd openwrt
         echo -e "$(($(nproc) + 1)) thread compile"
         make -j$(($(nproc) + 1)) tools/compile
-        make -j$(($(nproc) + 1)) toolchain/compile
-        make -j$(($(nproc) + 1)) target/linux/compile
-        make -j$(($(nproc) + 1)) package/{node,golang,php8,ruby,perl,squid,jq,docker}/compile
+        # make -j$(($(nproc) + 1)) toolchain/compile
+        # make -j$(($(nproc) + 1)) target/linux/compile
+        # make -j$(($(nproc) + 1)) package/{node,golang,php8,ruby,perl,squid,jq,docker}/compile
         # make package/compile -j$(($(nproc) + 2))
         # make package/index -j$(($(nproc) + 2))
         echo "::set-output name=status::success"
@@ -206,8 +206,7 @@ jobs:
       env:
        DEBIAN_FRONTEND: noninteractive
       run: |
-       cd openwrt
-       sudo rm -rf dl tmp staging_dir
+       sudo rm -rf ${{ github.workspace }}/openwrt/dl ${{ github.workspace }}/openwrt/tmp/ ${{ github.workspace }}/openwrt/staging_dir/
        bsdtar -czf openwrt.tar.gz /workdir/openwrt && sudo rm -rf /workdir/openwrt
        bsdtar -czf hostpkg.tar.gz /mnt/openwrt/build_dir/hostpkg && sudo rm -rf /mnt/openwrt/build_dir/hostpkg
        # bsdtar -czf host.tar.gz /mnt/openwrt/build_dir/host && sudo rm -rf /mnt/openwrt/build_dir/host
@@ -247,16 +246,6 @@ jobs:
      steps:   
       - name: Checkout code
         uses: actions/checkout@v2
- 
-      - name: Restore cache
-        id: cache
-        uses: actions/cache/restore@v3.3.1
-        with:
-          path: |
-            ${{ github.workspace }}/openwrt/dl
-            ${{ github.workspace }}/openwrt/tmp/
-            ${{ github.workspace }}/openwrt/staging_dir/
-          key: my-cache-key-${{ hashFiles('${{ github.workspace }}/openwrt/.config') }}
              
       - name: Initialization environment
         env:
@@ -319,7 +308,17 @@ jobs:
           # cd /workdir && bsdtar -xzf dl.tar.gz -C /mnt/openwrt/dl --strip-components=3 && rm dl.tar.gz
           # cd /workdir && bsdtar -xzf staging_dir.tar.gz -C /mnt/openwrt/staging_dir --strip-components=3 && rm staging_dir.tar.gz
           # cd /workdir && bsdtar -xzf feeds.tar.gz -C /mnt/openwrt/feeds --strip-components=3 && rm feeds.tar.gz
-  
+
+      - name: Restore cache
+        id: cache
+        uses: actions/cache/restore@v3.3.1
+        with:
+          path: |
+            ${{ github.workspace }}/openwrt/dl
+            ${{ github.workspace }}/openwrt/tmp/
+            ${{ github.workspace }}/openwrt/staging_dir/
+          key: my-cache-key-${{ hashFiles('${{ github.workspace }}/openwrt/.config') }}
+
       - name: Check space usage
         if: (!cancelled())
         run: df -hT   
@@ -367,8 +366,7 @@ jobs:
         env:
          DEBIAN_FRONTEND: noninteractive
         run: |
-         cd openwrt
-         sudo rm -rf dl tmp staging_dir
+         sudo rm -rf ${{ github.workspace }}/openwrt/dl ${{ github.workspace }}/openwrt/tmp/ ${{ github.workspace }}/openwrt/staging_dir/
          bsdtar -czf openwrt.tar.gz /workdir/openwrt && sudo rm -rf /workdir/openwrt
          bsdtar -czf hostpkg.tar.gz /mnt/openwrt/build_dir/hostpkg && sudo rm -rf /mnt/openwrt/build_dir/hostpkg
          # bsdtar -czf host.tar.gz /mnt/openwrt/build_dir/host && sudo rm -rf /mnt/openwrt/build_dir/host
@@ -408,17 +406,7 @@ jobs:
      steps:
       - name: Checkout code
         uses: actions/checkout@v2
-
-      - name: Restore cache
-        id: cache
-        uses: actions/cache/restore@v3.3.1
-        with:
-          path: |
-            ${{ github.workspace }}/openwrt/dl
-            ${{ github.workspace }}/openwrt/tmp/
-            ${{ github.workspace }}/openwrt/staging_dir/
-          key: my-cache-key-${{ hashFiles('${{ github.workspace }}/openwrt/.config') }}
-             
+           
       - name: Initialization environment
         env:
           DEBIAN_FRONTEND: noninteractive
@@ -480,11 +468,21 @@ jobs:
           # cd /workdir && bsdtar -xzf dl.tar.gz -C /mnt/openwrt/dl --strip-components=3 && rm dl.tar.gz
           # cd /workdir && bsdtar -xzf staging_dir.tar.gz -C /mnt/openwrt/staging_dir --strip-components=3 && rm staging_dir.tar.gz
           # cd /workdir && bsdtar -xzf feeds.tar.gz -C /mnt/openwrt/feeds --strip-components=3 && rm feeds.tar.gz
-      
+
+      - name: Restore cache
+        id: cache
+        uses: actions/cache/restore@v3.3.1
+        with:
+          path: |
+            ${{ github.workspace }}/openwrt/dl
+            ${{ github.workspace }}/openwrt/tmp/
+            ${{ github.workspace }}/openwrt/staging_dir/
+          key: my-cache-key-${{ hashFiles('${{ github.workspace }}/openwrt/.config') }}
+
       - name: Check space usage
         if: (!cancelled())
         run: df -hT   
-                  
+
       - name: Multi-thread compile
         id: Multi-thread
         run: |
@@ -526,8 +524,7 @@ jobs:
         env:
          DEBIAN_FRONTEND: noninteractive
         run: |
-         cd openwrt
-         sudo rm -rf dl tmp staging_dir        
+         sudo rm -rf ${{ github.workspace }}/openwrt/dl ${{ github.workspace }}/openwrt/tmp/ ${{ github.workspace }}/openwrt/staging_dir/      
          bsdtar -czf openwrt.tar.gz /workdir/openwrt && sudo rm -rf /workdir/openwrt
          # bsdtar -czf hostpkg.tar.gz /mnt/openwrt/build_dir/hostpkg && sudo rm -rf /mnt/openwrt/build_dir/hostpkg
          # bsdtar -czf dl.tar.bz2 /mnt/openwrt/dl && sudo rm -rf /mnt/openwrt/dl
@@ -575,16 +572,6 @@ jobs:
      steps:  
       - name: Checkout code
         uses: actions/checkout@v2
-
-      - name: Restore cache
-        id: cache
-        uses: actions/cache/restore@v3.3.1
-        with:
-          path: |
-            ${{ github.workspace }}/openwrt/dl
-            ${{ github.workspace }}/openwrt/tmp/
-            ${{ github.workspace }}/openwrt/staging_dir/
-          key: my-cache-key-${{ hashFiles('${{ github.workspace }}/openwrt/.config') }}
 
       - name: Initialization environment
         env:
@@ -648,6 +635,16 @@ jobs:
          # cd /workdir && bsdtar -xzf staging_dir.tar.gz -C /mnt/openwrt/staging_dir --strip-components=3 && rm staging_dir.tar.gz
          # cd /workdir && bsdtar -xzf feeds.tar.gz -C /mnt/openwrt/feeds --strip-components=3 && rm feeds.tar.gz
 
+      - name: Restore cache
+        id: cache
+        uses: actions/cache/restore@v3.3.1
+        with:
+          path: |
+            ${{ github.workspace }}/openwrt/dl
+            ${{ github.workspace }}/openwrt/tmp/
+            ${{ github.workspace }}/openwrt/staging_dir/
+          key: my-cache-key-${{ hashFiles('${{ github.workspace }}/openwrt/.config') }}
+
       - name: Check space usage
         if: (!cancelled())
         run: df -hT   
@@ -693,8 +690,7 @@ jobs:
         env:
          DEBIAN_FRONTEND: noninteractive
         run: |
-         cd openwrt
-         sudo rm -rf dl tmp staging_dir
+         sudo rm -rf ${{ github.workspace }}/openwrt/dl ${{ github.workspace }}/openwrt/tmp/ ${{ github.workspace }}/openwrt/staging_dir/
          bsdtar -czf openwrt.tar.gz /workdir/openwrt && sudo rm -rf /workdir/openwrt
          # bsdtar -czf host.tar.gz /mnt/openwrt/build_dir/host && sudo rm -rf /mnt/openwrt/build_dir/host
          # bsdtar -czf dl.tar.gz /mnt/openwrt/dl && sudo rm -rf /mnt/openwrt/dl
@@ -742,16 +738,6 @@ jobs:
      steps:  
       - name: Checkout code
         uses: actions/checkout@v2
-
-      - name: Restore cache
-        id: cache
-        uses: actions/cache/restore@v3.3.1
-        with:
-          path: |
-            ${{ github.workspace }}/openwrt/dl
-            ${{ github.workspace }}/openwrt/tmp/
-            ${{ github.workspace }}/openwrt/staging_dir/
-          key: my-cache-key-${{ hashFiles('${{ github.workspace }}/openwrt/.config') }}
 
       - name: Initialization environment
         env:
@@ -814,6 +800,16 @@ jobs:
          # cd /workdir && bsdtar -xzf dl.tar.gz -C /mnt/openwrt/dl --strip-components=3 && rm dl.tar.gz
          # cd /workdir && bsdtar -xzf staging_dir.tar.gz -C /mnt/openwrt/staging_dir --strip-components=3 && rm staging_dir.tar.gz
          # cd /workdir && bsdtar -xzf feeds.tar.gz -C /mnt/openwrt/feeds --strip-components=3 && rm feeds.tar.gz
+
+      - name: Restore cache
+        id: cache
+        uses: actions/cache/restore@v3.3.1
+        with:
+          path: |
+            ${{ github.workspace }}/openwrt/dl
+            ${{ github.workspace }}/openwrt/tmp/
+            ${{ github.workspace }}/openwrt/staging_dir/
+          key: my-cache-key-${{ hashFiles('${{ github.workspace }}/openwrt/.config') }}
 
       - name: Check space usage
         if: (!cancelled())
