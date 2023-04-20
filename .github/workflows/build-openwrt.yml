@@ -51,8 +51,9 @@ jobs:
       run: |
         curl https://sc.ftqq.com/${{ secrets.SCKEY }}.send?text=开始编译OpenWrt 
  
-    - name: Cache OpenWrt
-      uses: actions/cache@v2
+    - name: Restore cache
+      id: cache
+      uses: actions/cache/restore@v3.3.1
       with:
         path: |
           ${{ github.workspace }}/openwrt/dl
@@ -189,11 +190,22 @@ jobs:
     - name: Check space usage
       if: (!cancelled())
       run: df -hT
-      
+
+    - name: Save cache
+      uses: actions/cache/save@v3
+      with:
+        path: |
+          ${{ github.workspace }}/openwrt/dl
+          ${{ github.workspace }}/openwrt/tmp/
+          ${{ github.workspace }}/openwrt/staging_dir/
+        key: my-cache-key-${{ hashFiles('${{ github.workspace }}/openwrt/.config') }}
+        
     - name: Compress directory
       env:
        DEBIAN_FRONTEND: noninteractive
       run: |
+       cd openwrt
+       sudo rm -rf dl tmp staging_dir
        bsdtar -czf openwrt.tar.gz /workdir/openwrt && sudo rm -rf /workdir/openwrt
        bsdtar -czf hostpkg.tar.gz /mnt/openwrt/build_dir/hostpkg && sudo rm -rf /mnt/openwrt/build_dir/hostpkg
        # bsdtar -czf host.tar.gz /mnt/openwrt/build_dir/host && sudo rm -rf /mnt/openwrt/build_dir/host
@@ -234,8 +246,9 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v2
  
-      - name: Cache OpenWrt
-        uses: actions/cache@v2
+      - name: Restore cache
+        id: cache
+        uses: actions/cache/restore@v3.3.1
         with:
           path: |
             ${{ github.workspace }}/openwrt/dl
@@ -275,7 +288,7 @@ jobs:
          mkdir -p openwrt
          bsdtar -xzf openwrt.tar.gz -C /workdir/openwrt --strip-components=2 && rm openwrt.tar.gz
          ln -sf /workdir/openwrt ${{ github.workspace }}/openwrt
-         rm -rf openwrt/build_dir/hostpkg openwrt/staging_dir openwrt/dl
+         # rm -rf openwrt/build_dir/hostpkg openwrt/staging_dir openwrt/dl
          # curl https://sc.ftqq.com/${{ secrets.SCKEY }}.send?text=OpenWrt开始编译第二部分
        
       - name: Free up disk space
@@ -338,11 +351,22 @@ jobs:
       - name: Check space usage
         if: (!cancelled())
         run: df -hT
-     
+ 
+      - name: Save cache
+        uses: actions/cache/save@v3.3.1
+        with:
+          path: |
+            ${{ github.workspace }}/openwrt/dl
+            ${{ github.workspace }}/openwrt/tmp/
+            ${{ github.workspace }}/openwrt/staging_dir/
+          key: my-cache-key-${{ hashFiles('${{ github.workspace }}/openwrt/.config') }}
+ 
       - name: Compress directory
         env:
          DEBIAN_FRONTEND: noninteractive
         run: |
+         cd openwrt
+         sudo rm -rf dl tmp staging_dir
          bsdtar -czf openwrt.tar.gz /workdir/openwrt && sudo rm -rf /workdir/openwrt
          bsdtar -czf hostpkg.tar.gz /mnt/openwrt/build_dir/hostpkg && sudo rm -rf /mnt/openwrt/build_dir/hostpkg
          # bsdtar -czf host.tar.gz /mnt/openwrt/build_dir/host && sudo rm -rf /mnt/openwrt/build_dir/host
@@ -383,8 +407,9 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v2
 
-      - name: Cache OpenWrt
-        uses: actions/cache@v2
+      - name: Restore cache
+        id: cache
+        uses: actions/cache/restore@v3.3.1
         with:
           path: |
             ${{ github.workspace }}/openwrt/dl
@@ -424,7 +449,7 @@ jobs:
          mkdir -p openwrt
          bsdtar -xzf openwrt.tar.gz -C /workdir/openwrt --strip-components=2 && rm openwrt.tar.gz
          ln -sf /workdir/openwrt ${{ github.workspace }}/openwrt
-         rm -rf openwrt/build_dir/hostpkg openwrt/staging_dir openwrt/dl
+         # rm -rf openwrt/build_dir/hostpkg openwrt/staging_dir openwrt/dl
          curl https://sc.ftqq.com/${{ secrets.SCKEY }}.send?text=OpenWrt开始编译第三部分
        
       - name: Free up disk space
@@ -485,11 +510,22 @@ jobs:
       - name: Check space usage
         if: (!cancelled())
         run: df -hT
-     
+
+      - name: Save cache
+        uses: actions/cache/save@v3.3.1
+        with:
+          path: |
+            ${{ github.workspace }}/openwrt/dl
+            ${{ github.workspace }}/openwrt/tmp/
+            ${{ github.workspace }}/openwrt/staging_dir/
+          key: my-cache-key-${{ hashFiles('${{ github.workspace }}/openwrt/.config') }}
+
       - name: Compress directory openwrt
         env:
          DEBIAN_FRONTEND: noninteractive
         run: |
+         cd openwrt
+         sudo rm -rf dl tmp staging_dir        
          bsdtar -czf openwrt.tar.gz /workdir/openwrt && sudo rm -rf /workdir/openwrt
          # bsdtar -czf hostpkg.tar.gz /mnt/openwrt/build_dir/hostpkg && sudo rm -rf /mnt/openwrt/build_dir/hostpkg
          # bsdtar -czf dl.tar.bz2 /mnt/openwrt/dl && sudo rm -rf /mnt/openwrt/dl
@@ -538,8 +574,9 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v2
 
-      - name: Cache OpenWrt
-        uses: actions/cache@v2
+      - name: Restore cache
+        id: cache
+        uses: actions/cache/restore@v3.3.1
         with:
           path: |
             ${{ github.workspace }}/openwrt/dl
@@ -579,7 +616,7 @@ jobs:
          mkdir -p openwrt
          bsdtar -xzf openwrt.tar.gz -C /workdir/openwrt --strip-components=2 && rm openwrt.tar.gz
          ln -sf /workdir/openwrt ${{ github.workspace }}/openwrt
-         rm -rf openwrt/build_dir/hostpkg openwrt/staging_dir openwrt/dl
+         # rm -rf openwrt/build_dir/hostpkg openwrt/staging_dir openwrt/dl
          curl https://sc.ftqq.com/${{ secrets.SCKEY }}.send?text=OpenWrt开始编译第四部分
        
       - name: Free up disk space
@@ -640,11 +677,22 @@ jobs:
       - name: Check space usage
         if: (!cancelled())
         run: df -hT
-        
+
+      - name: Save cache
+        uses: actions/cache/save@v3.3.1
+        with:
+          path: |
+            ${{ github.workspace }}/openwrt/dl
+            ${{ github.workspace }}/openwrt/tmp/
+            ${{ github.workspace }}/openwrt/staging_dir/
+          key: my-cache-key-${{ hashFiles('${{ github.workspace }}/openwrt/.config') }}
+
       - name: Compress directory openwrt
         env:
          DEBIAN_FRONTEND: noninteractive
         run: |
+         cd openwrt
+         sudo rm -rf dl tmp staging_dir
          bsdtar -czf openwrt.tar.gz /workdir/openwrt && sudo rm -rf /workdir/openwrt
          # bsdtar -czf host.tar.gz /mnt/openwrt/build_dir/host && sudo rm -rf /mnt/openwrt/build_dir/host
          # bsdtar -czf dl.tar.gz /mnt/openwrt/dl && sudo rm -rf /mnt/openwrt/dl
@@ -693,8 +741,9 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v2
 
-      - name: Cache OpenWrt
-        uses: actions/cache@v2
+      - name: Restore cache
+        id: cache
+        uses: actions/cache/restore@v3.3.1
         with:
           path: |
             ${{ github.workspace }}/openwrt/dl
@@ -734,7 +783,7 @@ jobs:
          mkdir -p openwrt
          bsdtar -xzf openwrt.tar.gz -C /workdir/openwrt --strip-components=2 && rm openwrt.tar.gz
          ln -sf /workdir/openwrt ${{ github.workspace }}/openwrt
-         rm -rf openwrt/build_dir/hostpkg openwrt/staging_dir openwrt/dl
+         # rm -rf openwrt/build_dir/hostpkg openwrt/staging_dir openwrt/dl
          curl https://sc.ftqq.com/${{ secrets.SCKEY }}.send?text=OpenWrt开始编译第五部分
        
       - name: Free up disk space
