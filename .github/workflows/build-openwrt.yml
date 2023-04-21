@@ -66,7 +66,6 @@ jobs:
           "https://api.github.com/repos/${{ github.repository }}/actions/cache/${CACHE_KEY}"
 
     - name: Restore cache
-      if: github.event_name == 'push' && github.ref == 'refs/heads/main'
       uses: actions/cache/restore@v3.3.1
       with:
         path: |
