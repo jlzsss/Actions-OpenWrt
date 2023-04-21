@@ -50,7 +50,12 @@ jobs:
     - name: WeChat notification
       run: |
       #  curl https://sc.ftqq.com/${{ secrets.SCKEY }}.send?text=开始编译OpenWrt 
- 
+
+    - name: Delete Cache
+      run: |
+        curl -X DELETE -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" \
+        "https://api.github.com/repos/:owner/:repo/actions/cache/:key"
+
     - name: Restore cache
       id: cache
       uses: actions/cache/restore@v3.3.1
