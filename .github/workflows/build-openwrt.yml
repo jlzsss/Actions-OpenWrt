@@ -50,7 +50,7 @@ jobs:
         
     - name: WeChat notification
       run: |
-        curl http://www.pushplus.plus/send?token=${{ secrets.PUSHPLUS_TOKEN }}&content=开始编译OpenWrt&template=html
+        curl http://www.pushplus.plus/send?token=${{ secrets.PUSHPLUS_TOKEN }}&content=开始编译OpenWrt&template=txt
         # curl https://sc.ftqq.com/${{ secrets.SCKEY }}.send?text=开始编译OpenWrt
        
     - name: Delete Cache
@@ -240,13 +240,13 @@ jobs:
     - name: WeChat notification
       if: steps.Multi-thread.outputs.status == 'success' || steps.Single-thread.outputs.status == 'success' && !cancelled() && job.status == 'success'
       run: |
-        curl http://www.pushplus.plus/send?token=${{ secrets.PUSHPLUS_TOKEN }}&content=OpenWrt第一部分编译成功&template=html
+        curl http://www.pushplus.plus/send?token=${{ secrets.PUSHPLUS_TOKEN }}&content=OpenWrt第一部分编译成功&template=txt
         # curl https://sc.ftqq.com/${{ secrets.SCKEY }}.send?text=OpenWrt第一部分编译成功
        
     - name: WeChat notification
       if: failure() && !cancelled()
       run: |
-        curl http://www.pushplus.plus/send?token=${{ secrets.PUSHPLUS_TOKEN }}&content=OpenWrt第一部分编译失败&template=html
+        curl http://www.pushplus.plus/send?token=${{ secrets.PUSHPLUS_TOKEN }}&content=OpenWrt第一部分编译失败&template=txt
         # curl https://sc.ftqq.com/${{ secrets.SCKEY }}.send?text=OpenWrt第一部分编译失败
       
  build1:
@@ -288,7 +288,7 @@ jobs:
          mkdir -p openwrt
          bsdtar -xzf openwrt.tar.gz -C /workdir/openwrt --strip-components=2 && rm openwrt.tar.gz
          ln -sf /workdir/openwrt ${{ github.workspace }}/openwrt
-         curl http://www.pushplus.plus/send?token=${{ secrets.PUSHPLUS_TOKEN }}&content=OpenWrt开始编译第二部分&template=html
+         curl http://www.pushplus.plus/send?token=${{ secrets.PUSHPLUS_TOKEN }}&content=OpenWrt开始编译第二部分&template=txt
          # rm -rf openwrt/build_dir/hostpkg openwrt/staging_dir openwrt/dl
          # curl https://sc.ftqq.com/${{ secrets.SCKEY }}.send?text=OpenWrt开始编译第二部分
        
@@ -403,13 +403,13 @@ jobs:
       - name: WeChat notification
         if: steps.Multi-thread.outputs.status == 'success' || steps.Single-thread.outputs.status == 'success' && !cancelled() && job.status == 'success'
         run: |
-          curl http://www.pushplus.plus/send?token=${{ secrets.PUSHPLUS_TOKEN }}&content=OpenWrt第二部分编译成功&template=html
+          curl http://www.pushplus.plus/send?token=${{ secrets.PUSHPLUS_TOKEN }}&content=OpenWrt第二部分编译成功&template=txt
           # curl https://sc.ftqq.com/${{ secrets.SCKEY }}.send?text=OpenWrt第二部分编译成功
        
       - name: WeChat notification
         if: failure() && !cancelled()
         run: |
-          curl http://www.pushplus.plus/send?token=${{ secrets.PUSHPLUS_TOKEN }}&content=OpenWrt第二部分编译失败&template=html
+          curl http://www.pushplus.plus/send?token=${{ secrets.PUSHPLUS_TOKEN }}&content=OpenWrt第二部分编译失败&template=txt
           # curl https://sc.ftqq.com/${{ secrets.SCKEY }}.send?text=OpenWrt第二部分编译失败  
          
  build2:
@@ -451,7 +451,7 @@ jobs:
          mkdir -p openwrt
          bsdtar -xzf openwrt.tar.gz -C /workdir/openwrt --strip-components=2 && rm openwrt.tar.gz
          ln -sf /workdir/openwrt ${{ github.workspace }}/openwrt
-         curl http://www.pushplus.plus/send?token=${{ secrets.PUSHPLUS_TOKEN }}&content=OpenWrt开始编译第三部分&template=html
+         curl http://www.pushplus.plus/send?token=${{ secrets.PUSHPLUS_TOKEN }}&content=OpenWrt开始编译第三部分&template=txt
          # rm -rf openwrt/build_dir/hostpkg openwrt/staging_dir openwrt/dl
          # curl https://sc.ftqq.com/${{ secrets.SCKEY }}.send?text=OpenWrt开始编译第三部分
        
@@ -573,13 +573,13 @@ jobs:
       - name: WeChat notification
         if: steps.Multi-thread.outputs.status == 'success' || steps.Single-thread.outputs.status == 'success' && !cancelled() && job.status == 'success'
         run: |
-          curl http://www.pushplus.plus/send?token=${{ secrets.PUSHPLUS_TOKEN }}&content=OpenWrt第三部分编译成功&template=html
+          curl http://www.pushplus.plus/send?token=${{ secrets.PUSHPLUS_TOKEN }}&content=OpenWrt第三部分编译成功&template=txt
           # curl https://sc.ftqq.com/${{ secrets.SCKEY }}.send?text=OpenWrt第三部分编译成功
        
       - name: WeChat notification
         if: failure() && !cancelled()
         run: |
-          curl http://www.pushplus.plus/send?token=${{ secrets.PUSHPLUS_TOKEN }}&content=OpenWrt第三部分编译失败&template=html
+          curl http://www.pushplus.plus/send?token=${{ secrets.PUSHPLUS_TOKEN }}&content=OpenWrt第三部分编译失败&template=txt
           # curl https://sc.ftqq.com/${{ secrets.SCKEY }}.send?text=OpenWrt第三部分编译失败  
          
  build3:
@@ -621,7 +621,7 @@ jobs:
          mkdir -p openwrt
          bsdtar -xzf openwrt.tar.gz -C /workdir/openwrt --strip-components=2 && rm openwrt.tar.gz
          ln -sf /workdir/openwrt ${{ github.workspace }}/openwrt
-         curl http://www.pushplus.plus/send?token=${{ secrets.PUSHPLUS_TOKEN }}&content=OpenWrt开始编译第四部分&template=html
+         curl http://www.pushplus.plus/send?token=${{ secrets.PUSHPLUS_TOKEN }}&content=OpenWrt开始编译第四部分&template=txt
          # rm -rf openwrt/build_dir/hostpkg openwrt/staging_dir openwrt/dl
          # curl https://sc.ftqq.com/${{ secrets.SCKEY }}.send?text=OpenWrt开始编译第四部分
        
@@ -742,13 +742,13 @@ jobs:
       - name: WeChat notification
         if: steps.Multi-thread.outputs.status == 'success' || steps.Single-thread.outputs.status == 'success' && !cancelled() && job.status == 'success'
         run: |
-          curl http://www.pushplus.plus/send?token=${{ secrets.PUSHPLUS_TOKEN }}&content=OpenWrt第四部分编译成功&template=html
+          curl http://www.pushplus.plus/send?token=${{ secrets.PUSHPLUS_TOKEN }}&content=OpenWrt第四部分编译成功&template=txt
           # curl https://sc.ftqq.com/${{ secrets.SCKEY }}.send?text=OpenWrt第四部分编译成功
        
       - name: WeChat notification
         if: failure() && !cancelled()
         run: |
-          curl http://www.pushplus.plus/send?token=${{ secrets.PUSHPLUS_TOKEN }}&content=OpenWrt第四部分编译失败&template=html
+          curl http://www.pushplus.plus/send?token=${{ secrets.PUSHPLUS_TOKEN }}&content=OpenWrt第四部分编译失败&template=txt
           # curl https://sc.ftqq.com/${{ secrets.SCKEY }}.send?text=OpenWrt第四部分编译失败          
         
  uploads:
@@ -790,7 +790,7 @@ jobs:
          mkdir -p openwrt
          bsdtar -xzf openwrt.tar.gz -C /workdir/openwrt --strip-components=2 && rm openwrt.tar.gz
          ln -sf /workdir/openwrt ${{ github.workspace }}/openwrt
-         curl http://www.pushplus.plus/send?token=${{ secrets.PUSHPLUS_TOKEN }}&content=OpenWrt开始编译第五部分&template=html
+         curl http://www.pushplus.plus/send?token=${{ secrets.PUSHPLUS_TOKEN }}&content=OpenWrt开始编译第五部分&template=txt
          # rm -rf openwrt/build_dir/hostpkg openwrt/staging_dir openwrt/dl
          # curl https://sc.ftqq.com/${{ secrets.SCKEY }}.send?text=OpenWrt开始编译第五部分
        
@@ -958,11 +958,11 @@ jobs:
       - name: WeChat notification
         if: steps.Multi-thread.outputs.status == 'success' || steps.Single-thread.outputs.status == 'success' && !cancelled() && job.status == 'success'
         run: |
-          curl http://www.pushplus.plus/send?token=${{ secrets.PUSHPLUS_TOKEN }}&content=OpenWrt第五部分编译成功&template=html
+          curl http://www.pushplus.plus/send?token=${{ secrets.PUSHPLUS_TOKEN }}&content=OpenWrt第五部分编译成功&template=txt
           # curl https://sc.ftqq.com/${{ secrets.SCKEY }}.send?text=OpenWrt第五部分编译成功
        
       - name: WeChat notification
         if: failure() && !cancelled()
         run: |
-          curl http://www.pushplus.plus/send?token=${{ secrets.PUSHPLUS_TOKEN }}&content=OpenWrt第五部分编译失败&template=html
+          curl http://www.pushplus.plus/send?token=${{ secrets.PUSHPLUS_TOKEN }}&content=OpenWrt第五部分编译失败&template=txt
           # curl https://sc.ftqq.com/${{ secrets.SCKEY }}.send?text=OpenWrt第五部分编译失败
