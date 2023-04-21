@@ -62,7 +62,7 @@ jobs:
         key: my-cache-key-${{ hashFiles('${{ github.workspace }}/openwrt/.config') }}
         restore-keys: 
           my-cache-key-
-        action: delete
+        mode: delete
 
     - name: Initialization environment
       env:
