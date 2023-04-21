@@ -53,10 +53,16 @@ jobs:
         curl -s -o /dev/null http://www.pushplus.plus/send --data "token=${{ secrets.PUSHPLUS_TOKEN }}&content=开始编译OpenWrt"
         # curl https://sc.ftqq.com/${{ secrets.SCKEY }}.send?text=开始编译OpenWrt
        
-    - name: Delete Cache
+    - name: Clear Cache
       run: |
-        curl -X DELETE -H "Authorization: Bearer ${{ secrets.GH_TOKEN }}" \
-        "https://api.github.com/repos/:owner/:repo/actions/cache/:key"
+        export GITHUB_TOKEN=${{ secrets.GH_TOKEN }}
+        export REPO_OWNER=${{ github.repository_owner }}
+        export REPO_NAME=${{ github.event.repository.name }}
+        export WORKFLOW_NAME=${{ github.workflow }}
+        export BRANCH_NAME=${{ github.ref }}
+        export CACHE_KEY="${{ runner.os }}-build-${{ hashFiles('${{ github.workspace }}/openwrt/.config') }}"
+        curl -X DELETE -H "Authorization: token $GH_TOKEN" \
+          "https://api.github.com/repos/$REPO_OWNER/$REPO_NAME/actions/cache/$CACHE_KEY?branch=$BRANCH_NAME&workflow=$WORKFLOW_NAME"
 
     - name: Restore cache
       id: cache
@@ -66,9 +72,9 @@ jobs:
           ${{ github.workspace }}/openwrt/dl
           ${{ github.workspace }}/openwrt/tmp/
           ${{ github.workspace }}/openwrt/staging_dir/
-        key: my-cache-key-${{ hashFiles('${{ github.workspace }}/openwrt/.config') }}
+        key: ${{ runner.os }}-build-${{ hashFiles('${{ github.workspace }}/openwrt/.config') }}
         restore-keys: 
-          my-cache-key-
+          ${{ runner.os }}-build-
         
     - name: Initialization environment
       env:
