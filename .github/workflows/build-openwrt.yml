@@ -62,7 +62,6 @@ jobs:
         key: my-cache-key-${{ hashFiles('${{ github.workspace }}/openwrt/.config') }}
         restore-keys: 
           my-cache-key-
-        mode: delete
 
     - name: Initialization environment
       env:
@@ -330,7 +329,7 @@ jobs:
           cd openwrt
           echo -e "$(($(nproc) + 1)) thread compile"
           make -j$(($(nproc) + 1)) package/luci/compile
-          make -j$(($(nproc) + 1)) package/{luci-app-airconnect,luci-app-aliyundrive-fuse,luci-app-aliyundrive-webdav,luci-app-webd,luci-app-passwall,luci-app-qbittorrent,luci-app-shadowsocksr,luci-app-vssr,luci-app-adblock,luci-app-adbyby-plus,luci-app-adguardhome,luci-app-transmission,luci-app-amule,luci-app-aria2,luci-app-bypass,luci-app-gost,luci-app-homeproxy,luci-app-kcptun,luci-app-minidlna,luci-app-openclash,luci-app-passwall2,luci-app-smartdns,luci-app-ssr-plus,luci-app-store,luci-app-trojan,luci-app-v2ray,luci-app-wireguard,luci-app-v2raya,luci-app-xray-fw4}/compile
+          make -j$(($(nproc) + 1)) package/{luci-app-mosdns,luci-app-airconnect,luci-app-aliyundrive-fuse,luci-app-aliyundrive-webdav,luci-app-webd,luci-app-passwall,luci-app-qbittorrent,luci-app-shadowsocksr,luci-app-vssr,luci-app-adblock,luci-app-adbyby-plus,luci-app-adguardhome,luci-app-transmission,luci-app-amule,luci-app-aria2,luci-app-bypass,luci-app-gost,luci-app-homeproxy,luci-app-kcptun,luci-app-minidlna,luci-app-openclash,luci-app-passwall2,luci-app-smartdns,luci-app-ssr-plus,luci-app-store,luci-app-trojan,luci-app-v2ray,luci-app-wireguard,luci-app-v2raya,luci-app-xray-fw4}/compile
           # make package/compile -j$(($(nproc) + 2))
           # make package/index -j$(($(nproc) + 2))
           echo "::set-output name=status::success"
@@ -344,7 +343,7 @@ jobs:
         run: |
          cd openwrt
          make -j1 package/luci/compile V=s
-         make -j1 package/{luci-app-airconnect,luci-app-aliyundrive-fuse,luci-app-aliyundrive-webdav,luci-app-webd,luci-app-passwall,luci-app-qbittorrent,luci-app-shadowsocksr,luci-app-vssr,luci-app-adblock,luci-app-adbyby-plus,luci-app-adguardhome,luci-app-transmission,luci-app-amule,luci-app-aria2,luci-app-bypass,luci-app-gost,luci-app-homeproxy,luci-app-kcptun,luci-app-minidlna,luci-app-openclash,luci-app-passwall2,luci-app-smartdns,luci-app-ssr-plus,luci-app-store,luci-app-trojan,luci-app-v2ray,luci-app-wireguard,luci-app-v2raya,luci-app-xray-fw4}/compile V=s
+         make -j1 package/{luci-app-mosdns,luci-app-airconnect,luci-app-aliyundrive-fuse,luci-app-aliyundrive-webdav,luci-app-webd,luci-app-passwall,luci-app-qbittorrent,luci-app-shadowsocksr,luci-app-vssr,luci-app-adblock,luci-app-adbyby-plus,luci-app-adguardhome,luci-app-transmission,luci-app-amule,luci-app-aria2,luci-app-bypass,luci-app-gost,luci-app-homeproxy,luci-app-kcptun,luci-app-minidlna,luci-app-openclash,luci-app-passwall2,luci-app-smartdns,luci-app-ssr-plus,luci-app-store,luci-app-trojan,luci-app-v2ray,luci-app-wireguard,luci-app-v2raya,luci-app-xray-fw4}/compile V=s
          echo "::set-output name=status::success"
          grep '^CONFIG_TARGET.*DEVICE.*=y' .config | sed -r 's/.*DEVICE_(.*)=y/\1/' > DEVICE_NAME
          [ -s DEVICE_NAME ] && echo "DEVICE_NAME=_$(cat DEVICE_NAME)" >> $GITHUB_ENV
