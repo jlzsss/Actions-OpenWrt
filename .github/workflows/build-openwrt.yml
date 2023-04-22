@@ -19,7 +19,7 @@ on:
         required: false
         default: 'false'
   
-  push:
+  # push:
   
   # schedule:
   #   - cron: 0 17 * * *
@@ -53,17 +53,10 @@ jobs:
         curl -s -o /dev/null http://www.pushplus.plus/send --data "token=${{ secrets.PUSHPLUS_TOKEN }}&content=开始编译OpenWrt"
         # curl https://sc.ftqq.com/${{ secrets.SCKEY }}.send?text=开始编译OpenWrt
        
-    - name: Invalidate Cache
-      if: github.event_name == 'push' && github.ref == 'refs/heads/main'
-      env:
-          GITHUB_TOKEN: ${{ secrets.GH_TOKEN }}
-          CACHE_KEY: ${{ runner.os }}-build-${{ hashFiles('${{ github.workspace }}/openwrt/.config') }}
+    - name: Clear cache
       run: |
-        curl \
-          -X DELETE \
-          -H "Accept: application/vnd.github.v3+json" \
-          -H "Authorization: token ${GH_TOKEN}" \
-          "https://api.github.com/repos/${{ github.repository }}/actions/cache/${CACHE_KEY}"
+        curl -X DELETE -H "Authorization: Bearer ${{ secrets.GH_TOKEN }}" \
+        "https://api.github.com/repos/:owner/:repo/actions/cache"
 
     - name: Restore cache
       uses: actions/cache/restore@v3.3.1
