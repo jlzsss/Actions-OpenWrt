@@ -57,11 +57,12 @@ jobs:
       env:
        REPO: ${{ github.repository }}
        TOKEN: ${{ secrets.GH_TOKEN }}
+       CACHE_KEY: ${{ env.CACHE_KEY }}
       run: |
         curl -X DELETE \
           -H "Authorization: token $TOKEN" \
           -H "Accept: application/vnd.github.v3+json" \
-          "https://api.github.com/repos/$REPO/actions/cache"
+          "https://api.github.com/repos/$REPO/actions/cache?key=$CACHE_KEY"
       
     - name: Restore cache
       uses: actions/cache/restore@v3.3.1
