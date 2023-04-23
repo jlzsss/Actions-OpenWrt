@@ -57,7 +57,7 @@ jobs:
       env:
        REPO: ${{ github.repository }}
        TOKEN: ${{ secrets.GH_TOKEN }}
-       CACHE_KEY: ${{ runner.os }}-build-${{ hashFiles('${{ github.workspace }}/openwrt/.config') }}
+       CACHE_KEY: ${{ runner.os }}-build-
       run: |
         curl -X DELETE \
           -H "Authorization: token $TOKEN" \
