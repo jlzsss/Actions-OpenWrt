@@ -53,14 +53,15 @@ jobs:
         curl -s -o /dev/null http://www.pushplus.plus/send --data "token=${{ secrets.PUSHPLUS_TOKEN }}&content=开始编译OpenWrt"
         # curl https://sc.ftqq.com/${{ secrets.SCKEY }}.send?text=开始编译OpenWrt
        
-    - name: Clear cache
-      uses: actions/cache@v2
-      with:
-        path: /
-        key: ${{ runner.os }}-build-${{ hashFiles('${{ github.workspace }}/openwrt/.config') }}
-        restore-keys: |
-          ${{ runner.os }}-build-
-          ${{ runner.os }}
+    - name: Delete cache
+      env:
+       REPO: ${{ github.repository }}
+       TOKEN: ${{ secrets.GH_TOKEN }}
+      run: |
+        curl -X DELETE \
+          -H "Authorization: token $TOKEN" \
+          -H "Accept: application/vnd.github.v3+json" \
+          "https://api.github.com/repos/$REPO/actions/cache"
       
     - name: Restore cache
       uses: actions/cache/restore@v3.3.1
