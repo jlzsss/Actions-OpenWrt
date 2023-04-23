@@ -53,15 +53,10 @@ jobs:
         curl -s -o /dev/null http://www.pushplus.plus/send --data "token=${{ secrets.PUSHPLUS_TOKEN }}&content=开始编译OpenWrt"
         # curl https://sc.ftqq.com/${{ secrets.SCKEY }}.send?text=开始编译OpenWrt
        
-    - name: Get Cache Key
-      id: cache
-      run: echo "::set-output name=key::$(echo $GITHUB_REPOSITORY | md5sum | cut -c1-32)"
-
-    - name: Delete Cache Key
+    - name: Delete cache
       run: |
-        curl -X DELETE \
-          -H "Authorization: Bearer ${{ secrets.GH_TOKEN }}" \
-          https://api.github.com/repos/${{ github.repository }}/actions/cache/${{ steps.cache.outputs.key }}
+        CACHE_KEY=$(curl -X GET -H "Authorization: token ${{ secrets.GH_TOKEN }}" https://api.github.com/repos/jlzsss/Actions-OpenWrt/actions/cache | jq -r '.caches[].key')
+        curl -X DELETE -H "Authorization: token ${{ secrets.GH_TOKEN }}" https://api.github.com/repos/jlzsss/Actions-OpenWrt/actions/cache -d '{"key": "'"$CACHE_KEY"'"}'
 
     - name: Restore cache
       uses: actions/cache/restore@v3.3.1
