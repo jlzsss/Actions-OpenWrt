@@ -53,14 +53,6 @@ jobs:
         curl -s -o /dev/null http://www.pushplus.plus/send --data "token=${{ secrets.PUSHPLUS_TOKEN }}&content=开始编译OpenWrt"
         # curl https://sc.ftqq.com/${{ secrets.SCKEY }}.send?text=开始编译OpenWrt
 
-    - name: Delete cache
-      run: |
-        curl -L -X DELETE \
-         -H "Accept: application/vnd.github+json" \
-         -H "Authorization: Bearer ${{ secrets.GH_TOKEN }}" \
-         -H "X-GitHub-Api-Version: 2022-11-28" \
-         https://api.github.com/repos/jlzsss/Actions-OpenWrt/actions/caches?key=${{ steps.cache-dependencies.outputs.cache-key }}
-
     - name: Restore cache
       uses: actions/cache/restore@v3.3.1
       with:
@@ -69,7 +61,19 @@ jobs:
           ${{ github.workspace }}/openwrt/tmp/
           ${{ github.workspace }}/openwrt/staging_dir/
         key: ${{ runner.os }}-build-${{ hashFiles('${{ github.workspace }}/openwrt/.config') }}
-       
+ 
+    - name: Print cache ID
+      run: echo "${{ runner.os }}-build-${{ hashFiles('${{ github.workspace }}/openwrt/.config') }}"
+      
+    - name: Delete cache
+      run: |
+       curl -L \
+        -X DELETE \
+        -H "Accept: application/vnd.github+json" \
+        -H "Authorization: Bearer <YOUR-TOKEN>"\
+        -H "X-GitHub-Api-Version: 2022-11-28" \
+        https://api.github.com/repos/OWNER/REPO/actions/caches?key=${{ runner.os }}-build-${{ hashFiles('${{ github.workspace }}/openwrt/.config') }}
+ 
     - name: Initialization environment
       env:
         DEBIAN_FRONTEND: noninteractive
