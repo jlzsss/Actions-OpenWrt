@@ -53,38 +53,22 @@ jobs:
         curl -s -o /dev/null http://www.pushplus.plus/send --data "token=${{ secrets.PUSHPLUS_TOKEN }}&content=开始编译OpenWrt"
         # curl https://sc.ftqq.com/${{ secrets.SCKEY }}.send?text=开始编译OpenWrt
        
-    - name: Get Cache ID
-      id: get_cache_id
+    - name: Clear cache
+      env:
+        GITHUB_TOKEN: ${{ secrets.GH_TOKEN }}
       run: |
-        CACHE_NAME="${{ runner.os }}-build-"
-        API_ENDPOINT="https://api.github.com"
-        ACCESS_TOKEN="${{ secrets.GH_TOKEN }}"
-        OWNER="${{ github.repository_owner }}"
-        REPO="${{ github.repository }}"
-        CACHE_ID=$(curl -s -X GET \
-          -H "Authorization: Bearer $ACCESS_TOKEN" \
-          -H "Accept: application/vnd.github.v3+json" \
-          "$API_ENDPOINT/repos/$OWNER/$REPO/actions/cache" \
-          | jq -r ".caches[] | select(.name == \"$CACHE_NAME\") | .id")
-        echo "::set-output name=cache_id::$CACHE_ID"
-        
-    - name: Delete Cache
-      if: steps.get_cache_id.outputs.cache_id != null
-      run: |
-        API_ENDPOINT="https://api.github.com"
-        ACCESS_TOKEN="${{ secrets.GITHUB_TOKEN }}"
-        OWNER="${{ github.repository_owner }}"
-        REPO="${{ github.repository }}"
-        CACHE_ID="${{ steps.get_cache_id.outputs.cache_id }}"
-        RESPONSE=$(curl -s -o /dev/null -w "%{http_code}" -X DELETE \
-          -H "Authorization: Bearer $ACCESS_TOKEN" \
-          -H "Accept: application/vnd.github.v3+json" \
-          "$API_ENDPOINT/repos/$OWNER/$REPO/actions/cache/$CACHE_ID")
-        if [ "$RESPONSE" -eq "204" ]; then
-          echo "Cache with ID $CACHE_ID was deleted."
-        else
-          echo "Failed to delete cache with ID $CACHE_ID."
-        fi
+        BASE_URL="https://api.github.com"
+        REPO_PATH="${{ github.repository }}"
+        CACHE_API_PATH="repos/$REPO_PATH/actions/artifacts"
+        AUTH_HEADER="Authorization: token $GITHUB_TOKEN"
+        all_artifacts=$(curl -s -H "$AUTH_HEADER" "$BASE_URL/$CACHE_API_PATH")
+
+        ids=$(echo "$all_artifacts" | jq '.artifacts[].id')
+
+        for id in $ids; do
+          echo "Deleting artifact ID: $id"
+          curl -s -X DELETE -H "$AUTH_HEADER" "$BASE_URL/$CACHE_API_PATH/$id"
+        done
 
       
     - name: Restore cache
