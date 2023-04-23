@@ -57,7 +57,7 @@ jobs:
       env:
        REPO: ${{ github.repository }}
        TOKEN: ${{ secrets.GH_TOKEN }}
-       CACHE_KEY: ${{ env.CACHE_KEY }}
+       CACHE_KEY: ${{ runner.os }}-build-${{ hashFiles('${{ github.workspace }}/openwrt/.config') }}
       run: |
         curl -X DELETE \
           -H "Authorization: token $TOKEN" \
@@ -72,8 +72,6 @@ jobs:
           ${{ github.workspace }}/openwrt/tmp/
           ${{ github.workspace }}/openwrt/staging_dir/
         key: ${{ runner.os }}-build-${{ hashFiles('${{ github.workspace }}/openwrt/.config') }}
-        restore-keys: 
-          ${{ runner.os }}-build-
        
     - name: Initialization environment
       env:
