@@ -19,7 +19,7 @@ on:
         required: false
         default: 'false'
   
-  # push:
+  push:
   
   # schedule:
   #   - cron: 0 17 * * *
