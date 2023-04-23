@@ -53,24 +53,12 @@ jobs:
         curl -s -o /dev/null http://www.pushplus.plus/send --data "token=${{ secrets.PUSHPLUS_TOKEN }}&content=开始编译OpenWrt"
         # curl https://sc.ftqq.com/${{ secrets.SCKEY }}.send?text=开始编译OpenWrt
        
-    - name: Clear cache
-      env:
-        GITHUB_TOKEN: ${{ secrets.GH_TOKEN }}
+    - name: Delete Cache
       run: |
-        BASE_URL="https://api.github.com"
-        REPO_PATH="${{ github.repository }}"
-        CACHE_API_PATH="repos/$REPO_PATH/actions/artifacts"
-        AUTH_HEADER="Authorization: token $GITHUB_TOKEN"
-        all_artifacts=$(curl -s -H "$AUTH_HEADER" "$BASE_URL/$CACHE_API_PATH")
-
-        ids=$(echo "$all_artifacts" | jq '.artifacts[].id')
-
-        for id in $ids; do
-          echo "Deleting artifact ID: $id"
-          curl -s -X DELETE -H "$AUTH_HEADER" "$BASE_URL/$CACHE_API_PATH/$id"
-        done
-
-      
+        curl -X DELETE -H "Authorization: Bearer ${{secrets.GITHUB_TOKEN}}" \
+        -H "Accept: application/vnd.github.mister-fantastic-preview+json" \
+        "https://api.github.com/repos/${{ github.repository }}/actions/cache"
+   
     - name: Restore cache
       uses: actions/cache/restore@v3.3.1
       with:
