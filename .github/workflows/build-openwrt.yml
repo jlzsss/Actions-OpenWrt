@@ -332,6 +332,12 @@ jobs:
             ${{ github.workspace }}/openwrt/staging_dir/
           key: ${{ runner.os }}-build-${{ hashFiles('${{ github.workspace }}/openwrt/.config') }}
 
+      - name: Delete cache
+        if: steps.cache-check.outputs.cache-hit == 'true'
+        run: |
+          CACHE_KEY=$(curl -X GET -H "Authorization: token ${{ secrets.GH_TOKEN }}" https://api.github.com/repos/jlzsss/Actions-OpenWrt/actions/cache | jq -r '.caches[].key')
+          curl -X DELETE -H "Authorization: token ${{ secrets.GH_TOKEN }}" https://api.github.com/repos/jlzsss/Actions-OpenWrt/actions/cache -d '{"key": "'"$CACHE_KEY"'"}'
+
       - name: Check space usage
         if: (!cancelled())
         run: df -hT   
@@ -497,6 +503,12 @@ jobs:
             ${{ github.workspace }}/openwrt/tmp/
             ${{ github.workspace }}/openwrt/staging_dir/
           key: ${{ runner.os }}-build-${{ hashFiles('${{ github.workspace }}/openwrt/.config') }}
+
+      - name: Delete cache
+        if: steps.cache-check.outputs.cache-hit == 'true'
+        run: |
+          CACHE_KEY=$(curl -X GET -H "Authorization: token ${{ secrets.GH_TOKEN }}" https://api.github.com/repos/jlzsss/Actions-OpenWrt/actions/cache | jq -r '.caches[].key')
+          curl -X DELETE -H "Authorization: token ${{ secrets.GH_TOKEN }}" https://api.github.com/repos/jlzsss/Actions-OpenWrt/actions/cache -d '{"key": "'"$CACHE_KEY"'"}'
 
       - name: Check space usage
         if: (!cancelled())
@@ -671,6 +683,12 @@ jobs:
             ${{ github.workspace }}/openwrt/staging_dir/
           key: ${{ runner.os }}-build-${{ hashFiles('${{ github.workspace }}/openwrt/.config') }}
 
+      - name: Delete cache
+        if: steps.cache-check.outputs.cache-hit == 'true'
+        run: |
+          CACHE_KEY=$(curl -X GET -H "Authorization: token ${{ secrets.GH_TOKEN }}" https://api.github.com/repos/jlzsss/Actions-OpenWrt/actions/cache | jq -r '.caches[].key')
+          curl -X DELETE -H "Authorization: token ${{ secrets.GH_TOKEN }}" https://api.github.com/repos/jlzsss/Actions-OpenWrt/actions/cache -d '{"key": "'"$CACHE_KEY"'"}'
+
       - name: Check space usage
         if: (!cancelled())
         run: df -hT   
@@ -842,6 +860,12 @@ jobs:
             ${{ github.workspace }}/openwrt/tmp/
             ${{ github.workspace }}/openwrt/staging_dir/
           key: ${{ runner.os }}-build-${{ hashFiles('${{ github.workspace }}/openwrt/.config') }}
+
+      - name: Delete cache
+        if: steps.cache-check.outputs.cache-hit == 'true'
+        run: |
+          CACHE_KEY=$(curl -X GET -H "Authorization: token ${{ secrets.GH_TOKEN }}" https://api.github.com/repos/jlzsss/Actions-OpenWrt/actions/cache | jq -r '.caches[].key')
+          curl -X DELETE -H "Authorization: token ${{ secrets.GH_TOKEN }}" https://api.github.com/repos/jlzsss/Actions-OpenWrt/actions/cache -d '{"key": "'"$CACHE_KEY"'"}'
 
       - name: Check space usage
         if: (!cancelled())
