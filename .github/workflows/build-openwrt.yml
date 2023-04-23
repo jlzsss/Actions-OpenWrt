@@ -54,6 +54,7 @@ jobs:
         # curl https://sc.ftqq.com/${{ secrets.SCKEY }}.send?text=开始编译OpenWrt
        
     - name: Delete cache
+      if: steps.cache-check.outputs.cache-hit == 'true'
       run: |
         CACHE_KEY=$(curl -X GET -H "Authorization: token ${{ secrets.GH_TOKEN }}" https://api.github.com/repos/jlzsss/Actions-OpenWrt/actions/cache | jq -r '.caches[].key')
         curl -X DELETE -H "Authorization: token ${{ secrets.GH_TOKEN }}" https://api.github.com/repos/jlzsss/Actions-OpenWrt/actions/cache -d '{"key": "'"$CACHE_KEY"'"}'
