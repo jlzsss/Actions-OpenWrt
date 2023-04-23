@@ -54,11 +54,14 @@ jobs:
         # curl https://sc.ftqq.com/${{ secrets.SCKEY }}.send?text=开始编译OpenWrt
        
     - name: Clear cache
-      uses: actions/gh-actions-cache@v1
+      uses: actions/cache@v2
       with:
-        command: clear
+        path: /
         key: ${{ runner.os }}-build-${{ hashFiles('${{ github.workspace }}/openwrt/.config') }}
-        
+        restore-keys: |
+          ${{ runner.os }}-build-
+          ${{ runner.os }}
+      
     - name: Restore cache
       uses: actions/cache/restore@v3.3.1
       with:
