@@ -57,7 +57,8 @@ jobs:
       uses: actions/cache@v3.3.1
       with:
         path: /
-
+        key: ${{ runner.os }}-build-${{ hashFiles('${{ github.workspace }}/openwrt/.config') }}
+        
     - name: Restore cache
       uses: actions/cache/restore@v3.3.1
       with:
