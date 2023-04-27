@@ -19,7 +19,7 @@ on:
         required: false
         default: 'false'
   
-  push:
+  # push:
   
   # schedule:
   #   - cron: 0 17 * * *
@@ -60,6 +60,7 @@ jobs:
           ${{ github.workspace }}/openwrt/dl
           ${{ github.workspace }}/openwrt/tmp/
           ${{ github.workspace }}/openwrt/bin/
+          ${{ github.workspace }}/openwrt/feeds/
           /mnt/openwrt/build_dir/hostpkg
           /mnt/openwrt/staging_dir/
         key: ${{ runner.os }}-openwrt-${{ hashFiles('${{ github.workspace }}/openwrt/.config') }}
@@ -210,6 +211,7 @@ jobs:
           ${{ github.workspace }}/openwrt/dl
           ${{ github.workspace }}/openwrt/tmp/
           ${{ github.workspace }}/openwrt/bin/
+          ${{ github.workspace }}/openwrt/feeds/
           /mnt/openwrt/build_dir/hostpkg
           /mnt/openwrt/staging_dir/
         key: ${{ runner.os }}-openwrt-${{ hashFiles('${{ github.workspace }}/openwrt/.config') }}
@@ -218,7 +220,7 @@ jobs:
       env:
        DEBIAN_FRONTEND: noninteractive
       run: |
-       sudo rm -rf ${{ github.workspace }}/openwrt/dl ${{ github.workspace }}/openwrt/tmp/ ${{ github.workspace }}/openwrt/bin/
+       sudo rm -rf ${{ github.workspace }}/openwrt/dl ${{ github.workspace }}/openwrt/tmp/ ${{ github.workspace }}/openwrt/bin/ ${{ github.workspace }}/openwrt/feeds/
        tar --hard-dereference -czf openwrt.tar.gz /workdir/openwrt && sudo rm -rf /workdir/openwrt
        # bsdtar -czlf hostpkg.tar.gz /mnt/openwrt/build_dir/hostpkg && sudo rm -rf /mnt/openwrt/build_dir/hostpkg
        # bsdtar -czlf host.tar.gz /mnt/openwrt/build_dir/host && sudo rm -rf /mnt/openwrt/build_dir/host
@@ -333,7 +335,8 @@ jobs:
           path: |
             ${{ github.workspace }}/openwrt/dl
             ${{ github.workspace }}/openwrt/tmp/
-            ${{ github.workspace }}/openwrt/bin/              
+            ${{ github.workspace }}/openwrt/bin/
+            ${{ github.workspace }}/openwrt/feeds/
             /mnt/openwrt/build_dir/hostpkg
             /mnt/openwrt/staging_dir/
           key: ${{ runner.os }}-openwrt-${{ hashFiles('${{ github.workspace }}/openwrt/.config') }}
@@ -388,6 +391,7 @@ jobs:
             ${{ github.workspace }}/openwrt/dl
             ${{ github.workspace }}/openwrt/tmp/
             ${{ github.workspace }}/openwrt/bin/
+            ${{ github.workspace }}/openwrt/feeds/
             /mnt/openwrt/build_dir/hostpkg
             /mnt/openwrt/staging_dir/
           key: ${{ runner.os }}-openwrt-${{ hashFiles('${{ github.workspace }}/openwrt/.config') }}
@@ -396,7 +400,7 @@ jobs:
         env:
          DEBIAN_FRONTEND: noninteractive
         run: |
-         sudo rm -rf ${{ github.workspace }}/openwrt/dl ${{ github.workspace }}/openwrt/tmp/ ${{ github.workspace }}/openwrt/bin/
+         sudo rm -rf ${{ github.workspace }}/openwrt/dl ${{ github.workspace }}/openwrt/tmp/ ${{ github.workspace }}/openwrt/bin/ ${{ github.workspace }}/openwrt/feeds/
          tar --hard-dereference -czf openwrt.tar.gz /workdir/openwrt && sudo rm -rf /workdir/openwrt
          # bsdtar -czlf hostpkg.tar.gz /mnt/openwrt/build_dir/hostpkg && sudo rm -rf /mnt/openwrt/build_dir/hostpkg
          # bsdtar -czlf host.tar.gz /mnt/openwrt/build_dir/host && sudo rm -rf /mnt/openwrt/build_dir/host
@@ -512,6 +516,7 @@ jobs:
             ${{ github.workspace }}/openwrt/dl
             ${{ github.workspace }}/openwrt/tmp/
             ${{ github.workspace }}/openwrt/bin/
+            ${{ github.workspace }}/openwrt/feeds/
             /mnt/openwrt/build_dir/hostpkg
             /mnt/openwrt/staging_dir/
           key: ${{ runner.os }}-openwrt-${{ hashFiles('${{ github.workspace }}/openwrt/.config') }}
@@ -564,6 +569,7 @@ jobs:
             ${{ github.workspace }}/openwrt/dl
             ${{ github.workspace }}/openwrt/tmp/
             ${{ github.workspace }}/openwrt/bin/
+            ${{ github.workspace }}/openwrt/feeds/
             /mnt/openwrt/build_dir/hostpkg
             /mnt/openwrt/staging_dir/
           key: ${{ runner.os }}-openwrt-${{ hashFiles('${{ github.workspace }}/openwrt/.config') }}
@@ -572,7 +578,7 @@ jobs:
         env:
          DEBIAN_FRONTEND: noninteractive
         run: |
-         sudo rm -rf ${{ github.workspace }}/openwrt/dl ${{ github.workspace }}/openwrt/tmp/ ${{ github.workspace }}/openwrt/bin/   
+         sudo rm -rf ${{ github.workspace }}/openwrt/dl ${{ github.workspace }}/openwrt/tmp/ ${{ github.workspace }}/openwrt/bin/ ${{ github.workspace }}/openwrt/feeds/
          tar --hard-dereference -czf openwrt.tar.gz /workdir/openwrt && sudo rm -rf /workdir/openwrt
          # bsdtar -czlf hostpkg.tar.gz /mnt/openwrt/build_dir/hostpkg && sudo rm -rf /mnt/openwrt/build_dir/hostpkg
          # bsdtar -czlf dl.tar.bz2 /mnt/openwrt/dl && sudo rm -rf /mnt/openwrt/dl
@@ -697,6 +703,7 @@ jobs:
             ${{ github.workspace }}/openwrt/dl
             ${{ github.workspace }}/openwrt/tmp/
             ${{ github.workspace }}/openwrt/bin/
+            ${{ github.workspace }}/openwrt/feeds/
             /mnt/openwrt/build_dir/hostpkg
             /mnt/openwrt/staging_dir/
           key: ${{ runner.os }}-openwrt-${{ hashFiles('${{ github.workspace }}/openwrt/.config') }}
@@ -749,6 +756,7 @@ jobs:
             ${{ github.workspace }}/openwrt/dl
             ${{ github.workspace }}/openwrt/tmp/
             ${{ github.workspace }}/openwrt/bin/
+            ${{ github.workspace }}/openwrt/feeds/
             /mnt/openwrt/build_dir/hostpkg
             /mnt/openwrt/staging_dir/
           key: ${{ runner.os }}-openwrt-${{ hashFiles('${{ github.workspace }}/openwrt/.config') }}
@@ -757,7 +765,7 @@ jobs:
         env:
          DEBIAN_FRONTEND: noninteractive
         run: |
-         sudo rm -rf ${{ github.workspace }}/openwrt/dl ${{ github.workspace }}/openwrt/tmp/ ${{ github.workspace }}/openwrt/bin/
+         sudo rm -rf ${{ github.workspace }}/openwrt/dl ${{ github.workspace }}/openwrt/tmp/ ${{ github.workspace }}/openwrt/bin/ ${{ github.workspace }}/openwrt/feeds/
          tar --hard-dereference -czf openwrt.tar.gz /workdir/openwrt && sudo rm -rf /workdir/openwrt
          # bsdtar -czhf dl.tar.gz /mnt/openwrt/dl && sudo rm -rf /mnt/openwrt/dl
          # bsdtar -czhf feeds.tar.gz /mnt/openwrt/feeds && sudo rm -rf /mnt/openwrt/feeds
@@ -881,6 +889,7 @@ jobs:
             ${{ github.workspace }}/openwrt/dl
             ${{ github.workspace }}/openwrt/tmp/
             ${{ github.workspace }}/openwrt/bin/
+            ${{ github.workspace }}/openwrt/feeds/
             /mnt/openwrt/build_dir/hostpkg
             /mnt/openwrt/staging_dir/
           key: ${{ runner.os }}-openwrt-${{ hashFiles('${{ github.workspace }}/openwrt/.config') }}
