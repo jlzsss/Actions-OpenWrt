@@ -8,10 +8,7 @@ src-git diy2 https://github.com/xiaorouji/openwrt-passwall.git;luci
 src-git NueXini https://github.com/NueXini/NueXini_Packages.git
 src-git kenzok8 https://github.com/kenzok8/jell.git
 src-git packages2 https://github.com/xiangfeidexiaohuo/openwrt-packages.git
-src-git kenzo https://github.com/kenzok8/openwrt-packages;master
-src-git lienol https://github.com/Lienol/openwrt-package.git;main
 src-git kiddin https://github.com/kiddin9/openwrt-packages.git;master
 src-git liuran https://github.com/liuran001/openwrt-packages;packages
 src-git other https://github.com/Lienol/openwrt-package.git;other
 src-git lede https://github.com/jlzsss/project-lede.git
-src-git darkmatter https://github.com/apollo-ng/luci-theme-darkmatter.git;master
