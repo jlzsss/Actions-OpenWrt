@@ -81,11 +81,13 @@ jobs:
       run: |
         docker image prune -a -f
         sudo rm -rf /usr/share/dotnet /etc/apt/sources.list.d/* /var/cache/apt/archives /usr/local/share/boost /usr/local/go* /usr/local/lib/android /opt/ghc
-        sudo -E apt-get -y purge --ignore-missing azure-cli ghc* zulu* llvm* firefox google* dotnet* openjdk* mysql* php* android* mongodb* moby* snapd* libreoffice-core gnome-games unity-webapps-common
+        sudo -E apt-get -y purge azure-cli ghc* zulu* llvm* firefox google* dotnet* openjdk* mysql* php* android* mongodb* moby* snapd* libreoffice-core gnome-games unity-webapps-common snapd lxd lxd-client \
+        cloud-init cloud-guest-utils cloud-initramfs-copymods cloud-initramfs-dyn-netconf ubuntu-server landscape-client-ui-install landscape-common linux-cloud-tools-common linux-cloud-tools-generic linux-firmware linux-tools-generic linux-modules-extra-$(uname -r) linux-headers-$(uname -r)
         sudo -E apt-get -qq update
         sudo -E apt-get -qq install build-essential clang flex bison g++ gawk gcc-multilib g++-multilib gettext git libncurses5-dev libssl-dev python3-distutils rsync unzip zlib1g-dev file wget
         sudo -E apt-get -qq autoremove --purge
         sudo -E apt-get -qq clean
+        sudo rm -rf /var/lib/apt/lists/* /var/cache/apt/archives
         sudo timedatectl set-timezone "$TZ"
         sudo mkdir -p /workdir
         sudo chown $USER:$GROUPS /workdir
@@ -273,11 +275,13 @@ jobs:
         run: |
           docker image prune -a -f
           sudo rm -rf /usr/share/dotnet /etc/apt/sources.list.d/* /var/cache/apt/archives /usr/local/share/boost /usr/local/go* /usr/local/lib/android /opt/ghc
-          sudo -E apt-get -y purge --ignore-missing azure-cli ghc* zulu* llvm* firefox google* dotnet* openjdk* mysql* php* android* mongodb* moby* snapd* libreoffice-core gnome-games unity-webapps-common
+          sudo -E apt-get -y purge azure-cli ghc* zulu* llvm* firefox google* dotnet* openjdk* mysql* php* android* mongodb* moby* snapd* libreoffice-core gnome-games unity-webapps-common snapd lxd lxd-client \
+          cloud-init cloud-guest-utils cloud-initramfs-copymods cloud-initramfs-dyn-netconf ubuntu-server landscape-client-ui-install landscape-common linux-cloud-tools-common linux-cloud-tools-generic linux-firmware linux-tools-generic linux-modules-extra-$(uname -r) linux-headers-$(uname -r)
           sudo -E apt-get -qq update
           sudo -E apt-get -qq install build-essential clang flex bison g++ gawk gcc-multilib g++-multilib gettext git libncurses5-dev libssl-dev python3-distutils rsync unzip zlib1g-dev file wget
           sudo -E apt-get -qq autoremove --purge
           sudo -E apt-get -qq clean
+          sudo rm -rf /var/lib/apt/lists/* /var/cache/apt/archives
           sudo timedatectl set-timezone "$TZ"
           sudo mkdir -p /workdir
           sudo chown $USER:$GROUPS /workdir
@@ -455,11 +459,13 @@ jobs:
         run: |
           docker image prune -a -f
           sudo rm -rf /usr/share/dotnet /etc/apt/sources.list.d/* /var/cache/apt/archives /usr/local/share/boost /usr/local/go* /usr/local/lib/android /opt/ghc
-          sudo -E apt-get -y purge --ignore-missing azure-cli ghc* zulu* llvm* firefox google* dotnet* openjdk* mysql* php* android* mongodb* moby* snapd* libreoffice-core gnome-games unity-webapps-common
+          sudo -E apt-get -y purge azure-cli ghc* zulu* llvm* firefox google* dotnet* openjdk* mysql* php* android* mongodb* moby* snapd* libreoffice-core gnome-games unity-webapps-common snapd lxd lxd-client \
+          cloud-init cloud-guest-utils cloud-initramfs-copymods cloud-initramfs-dyn-netconf ubuntu-server landscape-client-ui-install landscape-common linux-cloud-tools-common linux-cloud-tools-generic linux-firmware linux-tools-generic linux-modules-extra-$(uname -r) linux-headers-$(uname -r)
           sudo -E apt-get -qq update
           sudo -E apt-get -qq install build-essential clang flex bison g++ gawk gcc-multilib g++-multilib gettext git libncurses5-dev libssl-dev python3-distutils rsync unzip zlib1g-dev file wget
           sudo -E apt-get -qq autoremove --purge
           sudo -E apt-get -qq clean
+          sudo rm -rf /var/lib/apt/lists/* /var/cache/apt/archives
           sudo timedatectl set-timezone "$TZ"
           sudo mkdir -p /workdir
           sudo chown $USER:$GROUPS /workdir
@@ -644,11 +650,13 @@ jobs:
         run: |
           docker image prune -a -f
           sudo rm -rf /usr/share/dotnet /etc/apt/sources.list.d/* /var/cache/apt/archives /usr/local/share/boost /usr/local/go* /usr/local/lib/android /opt/ghc
-          sudo -E apt-get -y purge --ignore-missing azure-cli ghc* zulu* llvm* firefox google* dotnet* openjdk* mysql* php* android* mongodb* moby* snapd* libreoffice-core gnome-games unity-webapps-common
+          sudo -E apt-get -y purge azure-cli ghc* zulu* llvm* firefox google* dotnet* openjdk* mysql* php* android* mongodb* moby* snapd* libreoffice-core gnome-games unity-webapps-common snapd lxd lxd-client \
+          cloud-init cloud-guest-utils cloud-initramfs-copymods cloud-initramfs-dyn-netconf ubuntu-server landscape-client-ui-install landscape-common linux-cloud-tools-common linux-cloud-tools-generic linux-firmware linux-tools-generic linux-modules-extra-$(uname -r) linux-headers-$(uname -r)
           sudo -E apt-get -qq update
           sudo -E apt-get -qq install build-essential clang flex bison g++ gawk gcc-multilib g++-multilib gettext git libncurses5-dev libssl-dev python3-distutils rsync unzip zlib1g-dev file wget
           sudo -E apt-get -qq autoremove --purge
           sudo -E apt-get -qq clean
+          sudo rm -rf /var/lib/apt/lists/* /var/cache/apt/archives
           sudo timedatectl set-timezone "$TZ"
           sudo mkdir -p /workdir
           sudo chown $USER:$GROUPS /workdir
