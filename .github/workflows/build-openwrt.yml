@@ -19,7 +19,7 @@ on:
         required: false
         default: 'false'
   
-  # push:
+  push:
   
   # schedule:
   #   - cron: 0 17 * * *
@@ -62,6 +62,7 @@ jobs:
           ${{ github.workspace }}/openwrt/bin/
           ${{ github.workspace }}/openwrt/feeds/
           /mnt/openwrt/build_dir/hostpkg
+          /mnt/openwrt/build_dir/host
           /mnt/openwrt/staging_dir/
         key: ${{ runner.os }}-openwrt-${{ hashFiles('${{ github.workspace }}/openwrt/.config') }}
        
@@ -106,7 +107,7 @@ jobs:
         sudo rm -rf /mnt/swapfile
         sudo mkdir -p -m 777 /mnt/openwrt/build_dir/hostpkg /mnt/openwrt/build_dir/host openwrt/build_dir /mnt/openwrt/dl /mnt/openwrt/feeds /mnt/openwrt/staging_dir /mnt/openwrt/build_dir /mnt/openwrt/tmp /mnt/openwrt/bin
         ln -sf /mnt/openwrt/build_dir/hostpkg openwrt/build_dir/hostpkg
-        # ln -sf /mnt/openwrt/build_dir/host openwrt/build_dir/host
+        ln -sf /mnt/openwrt/build_dir/host openwrt/build_dir/host
         ln -sf /mnt/openwrt/staging_dir openwrt/staging_dir
         # ln -sf /mnt/openwrt/bin openwrt/bin 
         # ln -sf /mnt/openwrt/dl openwrt/dl
@@ -213,6 +214,7 @@ jobs:
           ${{ github.workspace }}/openwrt/bin/
           ${{ github.workspace }}/openwrt/feeds/
           /mnt/openwrt/build_dir/hostpkg
+          /mnt/openwrt/build_dir/host
           /mnt/openwrt/staging_dir/
         key: ${{ runner.os }}-openwrt-${{ hashFiles('${{ github.workspace }}/openwrt/.config') }}
         
@@ -310,7 +312,7 @@ jobs:
           sudo rm -rf /mnt/swapfile
           sudo mkdir -p -m 777 /mnt/openwrt/build_dir/hostpkg /mnt/openwrt/build_dir/host openwrt/build_dir /mnt/openwrt/dl /mnt/openwrt/feeds /mnt/openwrt/staging_dir /mnt/openwrt/build_dir /mnt/openwrt/tmp /mnt/openwrt/bin
           ln -sf /mnt/openwrt/build_dir/hostpkg openwrt/build_dir/hostpkg
-          # ln -sf /mnt/openwrt/build_dir/host openwrt/build_dir/host
+          ln -sf /mnt/openwrt/build_dir/host openwrt/build_dir/host
           ln -sf /mnt/openwrt/staging_dir openwrt/staging_dir
           # ln -sf /mnt/openwrt/bin openwrt/bin 
           # ln -sf /mnt/openwrt/dl openwrt/dl
@@ -338,6 +340,7 @@ jobs:
             ${{ github.workspace }}/openwrt/bin/
             ${{ github.workspace }}/openwrt/feeds/
             /mnt/openwrt/build_dir/hostpkg
+            /mnt/openwrt/build_dir/host
             /mnt/openwrt/staging_dir/
           key: ${{ runner.os }}-openwrt-${{ hashFiles('${{ github.workspace }}/openwrt/.config') }}
 
@@ -393,6 +396,7 @@ jobs:
             ${{ github.workspace }}/openwrt/bin/
             ${{ github.workspace }}/openwrt/feeds/
             /mnt/openwrt/build_dir/hostpkg
+            /mnt/openwrt/build_dir/host
             /mnt/openwrt/staging_dir/
           key: ${{ runner.os }}-openwrt-${{ hashFiles('${{ github.workspace }}/openwrt/.config') }}
  
@@ -490,7 +494,7 @@ jobs:
           sudo rm -rf /mnt/swapfile
           sudo mkdir -p -m 777 /mnt/openwrt/build_dir/hostpkg /mnt/openwrt/build_dir/host openwrt/build_dir /mnt/openwrt/dl /mnt/openwrt/feeds /mnt/openwrt/staging_dir /mnt/openwrt/build_dir /mnt/openwrt/tmp /mnt/openwrt/bin
           ln -sf /mnt/openwrt/build_dir/hostpkg openwrt/build_dir/hostpkg
-          # ln -sf /mnt/openwrt/build_dir/host openwrt/build_dir/host
+          ln -sf /mnt/openwrt/build_dir/host openwrt/build_dir/host
           ln -sf /mnt/openwrt/staging_dir openwrt/staging_dir
           # ln -sf /mnt/openwrt/bin openwrt/bin 
           # ln -sf /mnt/openwrt/dl openwrt/dl
@@ -518,6 +522,7 @@ jobs:
             ${{ github.workspace }}/openwrt/bin/
             ${{ github.workspace }}/openwrt/feeds/
             /mnt/openwrt/build_dir/hostpkg
+            /mnt/openwrt/build_dir/host
             /mnt/openwrt/staging_dir/
           key: ${{ runner.os }}-openwrt-${{ hashFiles('${{ github.workspace }}/openwrt/.config') }}
 
@@ -571,6 +576,7 @@ jobs:
             ${{ github.workspace }}/openwrt/bin/
             ${{ github.workspace }}/openwrt/feeds/
             /mnt/openwrt/build_dir/hostpkg
+            /mnt/openwrt/build_dir/host
             /mnt/openwrt/staging_dir/
           key: ${{ runner.os }}-openwrt-${{ hashFiles('${{ github.workspace }}/openwrt/.config') }}
 
@@ -677,7 +683,7 @@ jobs:
           sudo rm -rf /mnt/swapfile
           sudo mkdir -p -m 777 /mnt/openwrt/build_dir/hostpkg /mnt/openwrt/build_dir/host openwrt/build_dir /mnt/openwrt/dl /mnt/openwrt/feeds /mnt/openwrt/staging_dir /mnt/openwrt/build_dir /mnt/openwrt/tmp /mnt/openwrt/bin
           ln -sf /mnt/openwrt/build_dir/hostpkg openwrt/build_dir/hostpkg
-          # ln -sf /mnt/openwrt/build_dir/host openwrt/build_dir/host
+          ln -sf /mnt/openwrt/build_dir/host openwrt/build_dir/host
           ln -sf /mnt/openwrt/staging_dir openwrt/staging_dir
           # ln -sf /mnt/openwrt/bin openwrt/bin 
           # ln -sf /mnt/openwrt/dl openwrt/dl
@@ -705,6 +711,7 @@ jobs:
             ${{ github.workspace }}/openwrt/bin/
             ${{ github.workspace }}/openwrt/feeds/
             /mnt/openwrt/build_dir/hostpkg
+            /mnt/openwrt/build_dir/host
             /mnt/openwrt/staging_dir/
           key: ${{ runner.os }}-openwrt-${{ hashFiles('${{ github.workspace }}/openwrt/.config') }}
 
@@ -758,6 +765,7 @@ jobs:
             ${{ github.workspace }}/openwrt/bin/
             ${{ github.workspace }}/openwrt/feeds/
             /mnt/openwrt/build_dir/hostpkg
+            /mnt/openwrt/build_dir/host
             /mnt/openwrt/staging_dir/
           key: ${{ runner.os }}-openwrt-${{ hashFiles('${{ github.workspace }}/openwrt/.config') }}
 
@@ -863,7 +871,7 @@ jobs:
           sudo rm -rf /mnt/swapfile
           sudo mkdir -p -m 777 /mnt/openwrt/build_dir/hostpkg /mnt/openwrt/build_dir/host openwrt/build_dir /mnt/openwrt/dl /mnt/openwrt/feeds /mnt/openwrt/staging_dir /mnt/openwrt/build_dir /mnt/openwrt/tmp /mnt/openwrt/bin
           ln -sf /mnt/openwrt/build_dir/hostpkg openwrt/build_dir/hostpkg
-          # ln -sf /mnt/openwrt/build_dir/host openwrt/build_dir/host
+          ln -sf /mnt/openwrt/build_dir/host openwrt/build_dir/host
           ln -sf /mnt/openwrt/staging_dir openwrt/staging_dir
           # ln -sf /mnt/openwrt/bin openwrt/bin 
           # ln -sf /mnt/openwrt/dl openwrt/dl
@@ -891,6 +899,7 @@ jobs:
             ${{ github.workspace }}/openwrt/bin/
             ${{ github.workspace }}/openwrt/feeds/
             /mnt/openwrt/build_dir/hostpkg
+            /mnt/openwrt/build_dir/host
             /mnt/openwrt/staging_dir/
           key: ${{ runner.os }}-openwrt-${{ hashFiles('${{ github.workspace }}/openwrt/.config') }}
 
