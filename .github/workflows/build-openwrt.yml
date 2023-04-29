@@ -81,7 +81,7 @@ jobs:
       run: |
         docker image prune -a -f
         sudo rm -rf /usr/share/dotnet /etc/apt/sources.list.d/* /var/cache/apt/archives /usr/local/share/boost /usr/local/go* /usr/local/lib/android /opt/ghc
-        sudo -E apt-get -y purge azure-cli ghc* zulu* hhvm llvm* firefox google* dotnet* openjdk* mysql* php* android* adoptopenjdk* mongodb* moby* snapd* --ignore-missing
+        sudo -E apt-get -y purge --ignore-missing azure-cli ghc* zulu* llvm* firefox google* dotnet* openjdk* mysql* php* android* mongodb* moby* snapd*
         sudo -E apt-get -qq update
         sudo -E apt-get -qq install build-essential clang flex bison g++ gawk gcc-multilib g++-multilib gettext git libncurses5-dev libssl-dev python3-distutils rsync unzip zlib1g-dev file wget
         sudo -E apt-get -qq autoremove --purge
@@ -273,7 +273,7 @@ jobs:
         run: |
           docker image prune -a -f
           sudo rm -rf /usr/share/dotnet /etc/apt/sources.list.d/* /var/cache/apt/archives /usr/local/share/boost /usr/local/go* /usr/local/lib/android /opt/ghc
-          sudo -E apt-get -y purge --ignore-missing azure-cli ghc* zulu* hhvm llvm* firefox google* dotnet* openjdk* mysql* php* android* adoptopenjdk* mongodb* moby* snapd*
+          sudo -E apt-get -y purge --ignore-missing azure-cli ghc* zulu* llvm* firefox google* dotnet* openjdk* mysql* php* android* mongodb* moby* snapd*
           sudo -E apt-get -qq update
           sudo -E apt-get -qq install build-essential clang flex bison g++ gawk gcc-multilib g++-multilib gettext git libncurses5-dev libssl-dev python3-distutils rsync unzip zlib1g-dev file wget
           sudo -E apt-get -qq autoremove --purge
@@ -455,7 +455,7 @@ jobs:
         run: |
           docker image prune -a -f
           sudo rm -rf /usr/share/dotnet /etc/apt/sources.list.d/* /var/cache/apt/archives /usr/local/share/boost /usr/local/go* /usr/local/lib/android /opt/ghc
-          sudo -E apt-get -y purge --ignore-missing azure-cli ghc* zulu* hhvm llvm* firefox google* dotnet* openjdk* mysql* php* android* adoptopenjdk* mongodb* moby* snapd*
+          sudo -E apt-get -y purge --ignore-missing azure-cli ghc* zulu* llvm* firefox google* dotnet* openjdk* mysql* php* android* mongodb* moby* snapd*
           sudo -E apt-get -qq update
           sudo -E apt-get -qq install build-essential clang flex bison g++ gawk gcc-multilib g++-multilib gettext git libncurses5-dev libssl-dev python3-distutils rsync unzip zlib1g-dev file wget
           sudo -E apt-get -qq autoremove --purge
@@ -465,7 +465,7 @@ jobs:
           sudo chown $USER:$GROUPS /workdir
         
           df -hT
-          
+                    
       - name: Download artifacts
         uses: actions/download-artifact@v3
         env:
@@ -631,7 +631,7 @@ jobs:
           curl -s -o /dev/null http://www.pushplus.plus/send --data "token=${{ secrets.PUSHPLUS_TOKEN }}&content=OpenWrt第三部分编译失败"
           # curl https://sc.ftqq.com/${{ secrets.SCKEY }}.send?text=OpenWrt第三部分编译失败  
          
- build3:
+ uploads:
      needs: build2
      runs-on: ubuntu-latest
      steps:  
@@ -644,7 +644,7 @@ jobs:
         run: |
           docker image prune -a -f
           sudo rm -rf /usr/share/dotnet /etc/apt/sources.list.d/* /var/cache/apt/archives /usr/local/share/boost /usr/local/go* /usr/local/lib/android /opt/ghc
-          sudo -E apt-get -y purge --ignore-missing azure-cli ghc* zulu* hhvm llvm* firefox google* dotnet* openjdk* mysql* php* android* adoptopenjdk* mongodb* moby* snapd*
+          sudo -E apt-get -y purge --ignore-missing azure-cli ghc* zulu* llvm* firefox google* dotnet* openjdk* mysql* php* android* mongodb* moby* snapd*
           sudo -E apt-get -qq update
           sudo -E apt-get -qq install build-essential clang flex bison g++ gawk gcc-multilib g++-multilib gettext git libncurses5-dev libssl-dev python3-distutils rsync unzip zlib1g-dev file wget
           sudo -E apt-get -qq autoremove --purge
@@ -654,195 +654,7 @@ jobs:
           sudo chown $USER:$GROUPS /workdir
         
           df -hT
-         
-      - name: Download artifacts
-        uses: actions/download-artifact@v3
-        env:
-         DEBIAN_FRONTEND: noninteractive
-        with:
-          name: build-output
-          path: /workdir
-
-      - name: WeChat notification
-        working-directory: /workdir
-        run: |
-         cd /workdir
-         mkdir -p openwrt
-         tar -xzf openwrt.tar.gz -C /workdir/openwrt --strip-components=2 && rm openwrt.tar.gz
-         ln -sf /workdir/openwrt ${{ github.workspace }}/openwrt
-         curl -s -o /dev/null http://www.pushplus.plus/send --data "token=${{ secrets.PUSHPLUS_TOKEN }}&content=OpenWrt开始编译第四部分"
-         # rm -rf openwrt/build_dir/hostpkg openwrt/staging_dir openwrt/dl
-         # curl https://sc.ftqq.com/${{ secrets.SCKEY }}.send?text=OpenWrt开始编译第四部分
-       
-      - name: Free up disk space
-        if: env.FREE_UP_DISK == 'true'
-        env:
-          DEBIAN_FRONTEND: noninteractive
-        run: |
-          sudo swapoff /mnt/swapfile
-          sudo rm -rf /mnt/swapfile
-          sudo mkdir -p -m 777 /mnt/openwrt/build_dir/hostpkg /mnt/openwrt/build_dir/host openwrt/build_dir /mnt/openwrt/dl /mnt/openwrt/feeds /mnt/openwrt/staging_dir /mnt/openwrt/build_dir /mnt/openwrt/tmp /mnt/openwrt/bin
-          ln -sf /mnt/openwrt/build_dir/hostpkg openwrt/build_dir/hostpkg
-          ln -sf /mnt/openwrt/build_dir/host openwrt/build_dir/host
-          ln -sf /mnt/openwrt/staging_dir openwrt/staging_dir
-          # ln -sf /mnt/openwrt/bin openwrt/bin 
-          # ln -sf /mnt/openwrt/dl openwrt/dl
-          # ln -sf /mnt/openwrt/feeds openwrt/feeds
-          # ln -sf /mnt/openwrt/build_dir openwrt/build_dir
-          # ln -sf /mnt/openwrt/tmp openwrt/tmp
-        
-          df -hT        
-              
-      # - name: Unzip artifact
-      #   run: |
-         # cd /workdir && bsdtar -xzf hostpkg.tar.gz -C /mnt/openwrt/build_dir/hostpkg --strip-components=4 && rm hostpkg.tar.gz
-         # cd /workdir && bsdtar -xzf host.tar.gz -C /mnt/openwrt/build_dir/host --strip-components=4 && rm host.tar.gz
-         # cd /workdir && bsdtar -xzf bin.tar.gz -C /mnt/openwrt/bin --strip-components=3 && rm bin.tar.gz
-         # cd /workdir && bsdtar -xzf dl.tar.gz -C /mnt/openwrt/dl --strip-components=3 && rm dl.tar.gz
-         # cd /workdir && bsdtar -xzf staging_dir.tar.gz -C /mnt/openwrt/staging_dir --strip-components=3 && rm staging_dir.tar.gz
-         # cd /workdir && bsdtar -xzf feeds.tar.gz -C /mnt/openwrt/feeds --strip-components=3 && rm feeds.tar.gz
-
-      - name: Restore cache
-        uses: actions/cache/restore@v3.3.1
-        with:
-          path: |
-            ${{ github.workspace }}/openwrt/dl
-            ${{ github.workspace }}/openwrt/tmp/
-            ${{ github.workspace }}/openwrt/bin/
-            ${{ github.workspace }}/openwrt/feeds/
-            /mnt/openwrt/build_dir/hostpkg
-            /mnt/openwrt/build_dir/host
-            /mnt/openwrt/staging_dir/
-          key: ${{ runner.os }}-openwrt-${{ hashFiles('${{ github.workspace }}/openwrt/.config') }}
-
-      - name: Delete cache
-        run: |
-         curl -L \
-          -X DELETE \
-          -H "Accept: application/vnd.github+json" \
-          -H "Authorization: Bearer ${{ secrets.GH_TOKEN }}"\
-          -H "X-GitHub-Api-Version: 2022-11-28" \
-          https://api.github.com/repos/jlzsss/Actions-OpenWrt/actions/caches?key=${{ runner.os }}-openwrt-${{ hashFiles('${{ github.workspace }}/openwrt/.config') }}
-
-      - name: Check space usage
-        if: (!cancelled())
-        run: df -hT   
-         
-      - name: Multi-thread compile
-        id: Multi-thread
-        run: |
-          cd openwrt
-          echo -e "$(($(nproc) + 1)) thread compile"
-          make -j$(($(nproc) + 1)) package/compile
-          # make package/compile -j$(($(nproc) + 2))
-          # make package/index -j$(($(nproc) + 2))
-          echo "::set-output name=status::success"
-          grep '^CONFIG_TARGET.*DEVICE.*=y' .config | sed -r 's/.*DEVICE_(.*)=y/\1/' > DEVICE_NAME
-          [ -s DEVICE_NAME ] && echo "DEVICE_NAME=_$(cat DEVICE_NAME)" >> $GITHUB_ENV
-          echo "FILE_DATE=_$(date +"%Y%m%d%H%M")" >> $GITHUB_ENV
-        
-      - name: Single-thread compile
-        id: Single-thread
-        if: failure() 
-        run: |
-         cd openwrt
-         make -j1 package/compile V=s
-         echo "::set-output name=status::success"
-         grep '^CONFIG_TARGET.*DEVICE.*=y' .config | sed -r 's/.*DEVICE_(.*)=y/\1/' > DEVICE_NAME
-         [ -s DEVICE_NAME ] && echo "DEVICE_NAME=_$(cat DEVICE_NAME)" >> $GITHUB_ENV
-         echo "FILE_DATE=_$(date +"%Y%m%d%H%M")" >> $GITHUB_ENV
-         
-      - name: Check space usage
-        if: (!cancelled())
-        run: df -hT
-
-      - name: Save cache
-        uses: actions/cache/save@v3.3.1
-        with:
-          path: |
-            ${{ github.workspace }}/openwrt/dl
-            ${{ github.workspace }}/openwrt/tmp/
-            ${{ github.workspace }}/openwrt/bin/
-            ${{ github.workspace }}/openwrt/feeds/
-            /mnt/openwrt/build_dir/hostpkg
-            /mnt/openwrt/build_dir/host
-            /mnt/openwrt/staging_dir/
-          key: ${{ runner.os }}-openwrt-${{ hashFiles('${{ github.workspace }}/openwrt/.config') }}
-
-      - name: Compress directory
-        env:
-         DEBIAN_FRONTEND: noninteractive
-        run: |
-         sudo rm -rf ${{ github.workspace }}/openwrt/dl ${{ github.workspace }}/openwrt/tmp/ ${{ github.workspace }}/openwrt/bin/ ${{ github.workspace }}/openwrt/feeds/
-         tar --hard-dereference -czf openwrt.tar.gz /workdir/openwrt && sudo rm -rf /workdir/openwrt
-         # bsdtar -czhf dl.tar.gz /mnt/openwrt/dl && sudo rm -rf /mnt/openwrt/dl
-         # bsdtar -czhf feeds.tar.gz /mnt/openwrt/feeds && sudo rm -rf /mnt/openwrt/feeds
-       
-         df -hT
-
-      # - name: Compress directory files
-        # env:
-         # DEBIAN_FRONTEND: noninteractive
-        # run: |
-         # bsdtar -czlf hostpkg.tar.gz /mnt/openwrt/build_dir/hostpkg && sudo rm -rf /mnt/openwrt/build_dir/hostpkg
-         # bsdtar -czlf host.tar.gz /mnt/openwrt/build_dir/host && sudo rm -rf /mnt/openwrt/build_dir/host
-         # bsdtar -czlf bin.tar.gz /mnt/openwrt/bin && sudo rm -rf /mnt/openwrt/bin
-         # bsdtar -czlf dl.tar.bz2 /mnt/openwrt/dl && sudo rm -rf /mnt/openwrt/dl
-         # bsdtar -czlf feeds.tar.bz2 /mnt/openwrt/feeds && sudo rm -rf /mnt/openwrt/feeds
-       
-         # df -hT
-
-      - name: Store build artifacts
-        uses: actions/upload-artifact@v3
-        env:
-         DEBIAN_FRONTEND: noninteractive
-        with:
-         name: build-output
-         path: |
-            openwrt.tar.gz
-            # hostpkg.tar.gz
-            # host.tar.gz
-            # bin.tar.gz
-            # dl.tar.gz
-            # staging_dir.tar.gz
-            # feeds.tar.gz
-        
-      - name: WeChat notification
-        if: steps.Multi-thread.outputs.status == 'success' || steps.Single-thread.outputs.status == 'success' && !cancelled() && job.status == 'success'
-        run: |
-          curl -s -o /dev/null http://www.pushplus.plus/send --data "token=${{ secrets.PUSHPLUS_TOKEN }}&content=OpenWrt第四部分编译成功"
-          # curl https://sc.ftqq.com/${{ secrets.SCKEY }}.send?text=OpenWrt第四部分编译成功
-       
-      - name: WeChat notification
-        if: failure() && !cancelled()
-        run: |
-          curl -s -o /dev/null http://www.pushplus.plus/send --data "token=${{ secrets.PUSHPLUS_TOKEN }}&content=OpenWrt第四部分编译失败"
-          # curl https://sc.ftqq.com/${{ secrets.SCKEY }}.send?text=OpenWrt第四部分编译失败          
-        
- uploads:
-     needs: build3
-     runs-on: ubuntu-latest
-     steps:  
-      - name: Checkout code
-        uses: actions/checkout@v2
-
-      - name: Initialization environment
-        env:
-          DEBIAN_FRONTEND: noninteractive
-        run: |
-          docker image prune -a -f
-          sudo rm -rf /usr/share/dotnet /etc/apt/sources.list.d/* /var/cache/apt/archives /usr/local/share/boost /usr/local/go* /usr/local/lib/android /opt/ghc
-          sudo -E apt-get -y purge --ignore-missing azure-cli ghc* zulu* hhvm llvm* firefox google* dotnet* openjdk* mysql* php* android* adoptopenjdk* mongodb* moby* snapd*
-          sudo -E apt-get -qq update
-          sudo -E apt-get -qq install build-essential clang flex bison g++ gawk gcc-multilib g++-multilib gettext git libncurses5-dev libssl-dev python3-distutils rsync unzip zlib1g-dev file wget
-          sudo -E apt-get -qq autoremove --purge
-          sudo -E apt-get -qq clean
-          sudo timedatectl set-timezone "$TZ"
-          sudo mkdir -p /workdir
-          sudo chown $USER:$GROUPS /workdir
-        
-          df -hT
-         
+                   
       - name: Download artifacts
         uses: actions/download-artifact@v3
         env:
@@ -860,7 +672,7 @@ jobs:
          ln -sf /workdir/openwrt ${{ github.workspace }}/openwrt
          curl -s -o /dev/null http://www.pushplus.plus/send --data "token=${{ secrets.PUSHPLUS_TOKEN }}&content=OpenWrt开始编译第五部分"
          # rm -rf openwrt/build_dir/hostpkg openwrt/staging_dir openwrt/dl
-         # curl https://sc.ftqq.com/${{ secrets.SCKEY }}.send?text=OpenWrt开始编译第五部分
+         # curl https://sc.ftqq.com/${{ secrets.SCKEY }}.send?text=OpenWrt开始编译第四部分
        
       - name: Free up disk space
         if: env.FREE_UP_DISK == 'true'
@@ -1040,10 +852,10 @@ jobs:
         if: steps.Multi-thread.outputs.status == 'success' || steps.Single-thread.outputs.status == 'success' && !cancelled() && job.status == 'success'
         run: |
           curl -s -o /dev/null http://www.pushplus.plus/send --data "token=${{ secrets.PUSHPLUS_TOKEN }}&content=OpenWrt第五部分编译成功"
-          # curl https://sc.ftqq.com/${{ secrets.SCKEY }}.send?text=OpenWrt第五部分编译成功
+          # curl https://sc.ftqq.com/${{ secrets.SCKEY }}.send?text=OpenWrt第四部分编译成功
        
       - name: WeChat notification
         if: failure() && !cancelled()
         run: |
           curl -s -o /dev/null http://www.pushplus.plus/send --data "token=${{ secrets.PUSHPLUS_TOKEN }}&content=OpenWrt第五部分编译失败"
-          # curl https://sc.ftqq.com/${{ secrets.SCKEY }}.send?text=OpenWrt第五部分编译失败
+          # curl https://sc.ftqq.com/${{ secrets.SCKEY }}.send?text=OpenWrt第四部分编译失败
