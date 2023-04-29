@@ -1,0 +1,1049 @@
+#
+# Copyright (c) 2019-2020 P3TERX <https://p3terx.com>
+#
+# This is free software, licensed under the MIT License.
+# See /LICENSE for more information.
+#
+# https://github.com/P3TERX/Actions-OpenWrt
+# Description: Build OpenWrt using GitHub Actions
+#
+
+name: Build-Openwrt
+
+on:
+  repository_dispatch:
+  workflow_dispatch:
+    inputs:
+      ssh:
+        description: 'SSH connection to Actions'
+        required: false
+        default: 'false'
+  
+  push:
+  
+  # schedule:
+  #   - cron: 0 17 * * *
+
+env:
+  REPO_URL: https://github.com/openwrt/openwrt
+  REPO_BRANCH: openwrt-22.03
+  FEEDS_CONF: feeds.conf.default-openwrt
+  CONFIG_FILE: .config-final
+  DIY_P1_SH: diy-part1-openwrt.sh
+  DIY_P2_SH: diy-part2-openwrt.sh
+  SCKEY: ${{ secrets.SCKEY }}
+  PUSHPLUS_TOKEN: ${{ secrets.PUSHPLUS_TOKEN }} 
+  FREE_UP_DISK: true
+  UPLOAD_FILES: false
+  UPLOAD_COWTRANSFER: false
+  UPLOAD_WETRANSFER: false
+  UPLOAD_RELEASE: true
+  TZ: Asia/Shanghai
+
+jobs:
+
+ prepare:
+   runs-on: ubuntu-latest
+   steps:
+    - name: Checkout
+      uses: actions/checkout@main
+        
+    - name: WeChat notification
+      run: |
+        curl -s -o /dev/null http://www.pushplus.plus/send --data "token=${{ secrets.PUSHPLUS_TOKEN }}&content=开始编译OpenWrt"
+        # curl https://sc.ftqq.com/${{ secrets.SCKEY }}.send?text=开始编译OpenWrt
+
+    - name: Restore cache
+      uses: actions/cache/restore@v3.3.1
+      with:
+        path: |
+          ${{ github.workspace }}/openwrt/dl
+          ${{ github.workspace }}/openwrt/tmp/
+          ${{ github.workspace }}/openwrt/bin/
+          ${{ github.workspace }}/openwrt/feeds/
+          /mnt/openwrt/build_dir/hostpkg
+          /mnt/openwrt/build_dir/host
+          /mnt/openwrt/staging_dir/
+        key: ${{ runner.os }}-openwrt-${{ hashFiles('${{ github.workspace }}/openwrt/.config') }}
+       
+    - name: Delete cache
+      run: |
+       curl -L \
+        -X DELETE \
+        -H "Accept: application/vnd.github+json" \
+        -H "Authorization: Bearer ${{ secrets.GH_TOKEN }}"\
+        -H "X-GitHub-Api-Version: 2022-11-28" \
+        https://api.github.com/repos/jlzsss/Actions-OpenWrt/actions/caches?key=${{ runner.os }}-openwrt-${{ hashFiles('${{ github.workspace }}/openwrt/.config') }}
+ 
+    - name: Initialization environment
+      env:
+        DEBIAN_FRONTEND: noninteractive
+      run: |
+        docker image prune -a -f
+        sudo rm -rf /usr/share/dotnet /etc/apt/sources.list.d/* /var/cache/apt/archives /usr/local/share/boost /usr/local/go* /usr/local/lib/android /opt/ghc
+        sudo -E apt-get -y purge --ignore-missing azure-cli ghc* zulu* hhvm llvm* firefox google* dotnet* openjdk* mysql* php* android* adoptopenjdk* mongodb* moby* snapd*
+        sudo -E apt-get -qq update
+        sudo -E apt-get -qq install build-essential clang flex bison g++ gawk gcc-multilib g++-multilib gettext git libncurses5-dev libssl-dev python3-distutils rsync unzip zlib1g-dev file wget
+        sudo -E apt-get -qq autoremove --purge
+        sudo -E apt-get -qq clean
+        sudo timedatectl set-timezone "$TZ"
+        sudo mkdir -p /workdir
+        sudo chown $USER:$GROUPS /workdir
+        
+        df -hT
+        
+    - name: Clone source code
+      working-directory: /workdir
+      run: |
+        git clone -b $REPO_BRANCH --single-branch $REPO_URL  openwrt
+        ln -sf /workdir/openwrt ${{ github.workspace }}/openwrt
+        
+    - name: Free up disk space
+      if: env.FREE_UP_DISK == 'true'
+      env:
+        DEBIAN_FRONTEND: noninteractive
+      run: |
+        sudo swapoff /mnt/swapfile
+        sudo rm -rf /mnt/swapfile
+        sudo mkdir -p -m 777 /mnt/openwrt/build_dir/hostpkg /mnt/openwrt/build_dir/host openwrt/build_dir /mnt/openwrt/dl /mnt/openwrt/feeds /mnt/openwrt/staging_dir /mnt/openwrt/build_dir /mnt/openwrt/tmp /mnt/openwrt/bin
+        ln -sf /mnt/openwrt/build_dir/hostpkg openwrt/build_dir/hostpkg
+        ln -sf /mnt/openwrt/build_dir/host openwrt/build_dir/host
+        ln -sf /mnt/openwrt/staging_dir openwrt/staging_dir
+        # ln -sf /mnt/openwrt/bin openwrt/bin 
+        # ln -sf /mnt/openwrt/dl openwrt/dl
+        # ln -sf /mnt/openwrt/feeds openwrt/feeds
+        # ln -sf /mnt/openwrt/build_dir openwrt/build_dir
+        # ln -sf /mnt/openwrt/tmp openwrt/tmp
+        
+        df -hT
+        
+   # - name: Cache
+   #   uses: stupidloud/cachewrtbuild@main
+   #   with:
+          #是否一并缓存.ccache目录，如果你启用了ccache。这是唯一的常用参数，其他三个用于除错，一般不需要调整
+   #       ccache: true
+          #是否缓存工具链目录
+   #       toolchain: true
+          #是否跳过工具链编译
+   #       skip: true
+          #清空缓存
+   #       clean: true
+   #       prefix: ${{ github.workspace }}/openwrt
+        
+    - name: Load custom feeds
+      run: |
+        [ -e $FEEDS_CONF ] && mv $FEEDS_CONF openwrt/feeds.conf.default
+        chmod +x $DIY_P1_SH
+        cd openwrt
+        $GITHUB_WORKSPACE/$DIY_P1_SH
+        
+    - name: Update feeds
+      run: cd openwrt && ./scripts/feeds update -a 
+    - name: Install feeds
+      run: cd openwrt && ./scripts/feeds install -a
+
+    - name: Load custom configuration
+      run: |
+        [ -e files ] && mv files openwrt/files
+        [ -e $CONFIG_FILE ] && mv $CONFIG_FILE openwrt/.config
+        chmod +x $DIY_P2_SH
+        cd openwrt
+        $GITHUB_WORKSPACE/$DIY_P2_SH
+        find "${GITHUB_WORKSPACE}/patches" -type f -name '*.patch' -print0 | sort -z | xargs -I % -t -0 -n 1 sh -c "cat '%'  | patch -d '${GITHUB_WORKSPACE}/openwrt' -p1 --forward"
+        
+    - name: SSH connection to Actions
+      uses: P3TERX/ssh2actions@v1.0.0
+      if: (github.event.inputs.ssh == 'true' && github.event.inputs.ssh  != 'false') || contains(github.event.action, 'ssh')
+      env:
+        TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+        TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}    
+        
+    - name: Download package
+      id: package
+      run: |
+        cd openwrt
+        # make defconfig
+        make download -j8
+        find dl -size -1024c -exec ls -l {} \;
+        find dl -size -1024c -exec rm -f {} \;
+
+    - name: Check space usage
+      if: (!cancelled())
+      run: df -hT
+      
+    - name: Multi-thread compile
+      id: Multi-thread
+      run: |
+        cd openwrt
+        echo -e "$(($(nproc) + 1)) thread compile"
+        make -j$(($(nproc) + 1)) tools/compile
+        make -j$(($(nproc) + 1)) toolchain/compile
+        make -j$(($(nproc) + 1)) target/linux/compile
+        make -j$(($(nproc) + 1)) package/{node,golang,php8,ruby,perl,squid,jq,docker}/compile
+        # make package/compile -j$(($(nproc) + 2))
+        # make package/index -j$(($(nproc) + 2))
+        echo "::set-output name=status::success"
+        grep '^CONFIG_TARGET.*DEVICE.*=y' .config | sed -r 's/.*DEVICE_(.*)=y/\1/' > DEVICE_NAME
+        [ -s DEVICE_NAME ] && echo "DEVICE_NAME=_$(cat DEVICE_NAME)" >> $GITHUB_ENV
+        echo "FILE_DATE=_$(date +"%Y%m%d%H%M")" >> $GITHUB_ENV
+        
+    - name: Single-thread compile
+      id: Single-thread
+      if: failure() 
+      run: |
+       cd openwrt
+       make -j1 tools/compile V=s
+       make -j1 toolchain/compile V=s
+       make -j1 target/linux/compile V=s
+       make -j1 package/{node,golang,php8,ruby,perl,squid.jq,docker}/compile V=s
+       echo "::set-output name=status::success"
+       grep '^CONFIG_TARGET.*DEVICE.*=y' .config | sed -r 's/.*DEVICE_(.*)=y/\1/' > DEVICE_NAME
+       [ -s DEVICE_NAME ] && echo "DEVICE_NAME=_$(cat DEVICE_NAME)" >> $GITHUB_ENV
+       echo "FILE_DATE=_$(date +"%Y%m%d%H%M")" >> $GITHUB_ENV
+       
+    - name: Check space usage
+      if: (!cancelled())
+      run: df -hT
+
+    - name: Save cache
+      uses: actions/cache/save@v3.3.1
+      with:
+        path: |
+          ${{ github.workspace }}/openwrt/dl
+          ${{ github.workspace }}/openwrt/tmp/
+          ${{ github.workspace }}/openwrt/bin/
+          ${{ github.workspace }}/openwrt/feeds/
+          /mnt/openwrt/build_dir/hostpkg
+          /mnt/openwrt/build_dir/host
+          /mnt/openwrt/staging_dir/
+        key: ${{ runner.os }}-openwrt-${{ hashFiles('${{ github.workspace }}/openwrt/.config') }}
+        
+    - name: Compress directory
+      env:
+       DEBIAN_FRONTEND: noninteractive
+      run: |
+       sudo rm -rf ${{ github.workspace }}/openwrt/dl ${{ github.workspace }}/openwrt/tmp/ ${{ github.workspace }}/openwrt/bin/ ${{ github.workspace }}/openwrt/feeds/
+       tar --hard-dereference -czf openwrt.tar.gz /workdir/openwrt && sudo rm -rf /workdir/openwrt
+       # bsdtar -czlf hostpkg.tar.gz /mnt/openwrt/build_dir/hostpkg && sudo rm -rf /mnt/openwrt/build_dir/hostpkg
+       # bsdtar -czlf host.tar.gz /mnt/openwrt/build_dir/host && sudo rm -rf /mnt/openwrt/build_dir/host
+       # bsdtar -czlf bin.tar.gz /mnt/openwrt/bin && sudo rm -rf /mnt/openwrt/bin
+       # bsdtar -czlf dl.tar.gz /mnt/openwrt/dl && sudo rm -rf /mnt/openwrt/dl
+       # bsdtar -czlf staging_dir.tar.gz /mnt/openwrt/staging_dir && sudo rm -rf /mnt/openwrt/staging_dir
+       # bsdtar -czlf feeds.tar.gz /mnt/openwrt/feeds && sudo rm -rf /mnt/openwrt/feeds
+       
+       df -hT
+      
+    - name: Store build artifacts
+      uses: actions/upload-artifact@v3
+      env:
+       DEBIAN_FRONTEND: noninteractive
+      with:
+       name: build-output
+       path: |
+          openwrt.tar.gz
+          # hostpkg.tar.gz
+          # host.tar.gz
+          # bin.tar.gz
+          # dl.tar.gz
+          # staging_dir.tar.gz
+          # feeds.tar.gz
+          
+    - name: WeChat notification
+      if: steps.Multi-thread.outputs.status == 'success' || steps.Single-thread.outputs.status == 'success' && !cancelled() && job.status == 'success'
+      run: |
+        curl -s -o /dev/null http://www.pushplus.plus/send --data "token=${{ secrets.PUSHPLUS_TOKEN }}&content=OpenWrt第一部分编译成功"
+        # curl https://sc.ftqq.com/${{ secrets.SCKEY }}.send?text=OpenWrt第一部分编译成功
+       
+    - name: WeChat notification
+      if: failure() && !cancelled()
+      run: |
+        curl -s -o /dev/null http://www.pushplus.plus/send --data "token=${{ secrets.PUSHPLUS_TOKEN }}&content=OpenWrt第一部分编译失败"
+        # curl https://sc.ftqq.com/${{ secrets.SCKEY }}.send?text=OpenWrt第一部分编译失败
+      
+ build1:
+     needs: prepare
+     runs-on: ubuntu-latest
+     steps:   
+      - name: Checkout code
+        uses: actions/checkout@v2
+             
+      - name: Initialization environment
+        env:
+          DEBIAN_FRONTEND: noninteractive
+        run: |
+          docker image prune -a -f
+          sudo rm -rf /usr/share/dotnet /etc/apt/sources.list.d/* /var/cache/apt/archives /usr/local/share/boost /usr/local/go* /usr/local/lib/android /opt/ghc
+          sudo -E apt-get -y purge --ignore-missing azure-cli ghc* zulu* hhvm llvm* firefox google* dotnet* openjdk* mysql* php* android* adoptopenjdk* mongodb* moby* snapd*
+          sudo -E apt-get -qq update
+          sudo -E apt-get -qq install build-essential clang flex bison g++ gawk gcc-multilib g++-multilib gettext git libncurses5-dev libssl-dev python3-distutils rsync unzip zlib1g-dev file wget
+          sudo -E apt-get -qq autoremove --purge
+          sudo -E apt-get -qq clean
+          sudo timedatectl set-timezone "$TZ"
+          sudo mkdir -p /workdir
+          sudo chown $USER:$GROUPS /workdir
+        
+          df -hT
+          
+      - name: Download artifacts
+        uses: actions/download-artifact@v3
+        env:
+         DEBIAN_FRONTEND: noninteractive
+        with:
+          name: build-output
+          path: /workdir
+
+      - name: WeChat notification
+        working-directory: /workdir
+        run: |
+         cd /workdir
+         mkdir -p openwrt
+         tar -xzf openwrt.tar.gz -C /workdir/openwrt --strip-components=2 && rm openwrt.tar.gz
+         ln -sf /workdir/openwrt ${{ github.workspace }}/openwrt
+         curl -s -o /dev/null http://www.pushplus.plus/send --data "token=${{ secrets.PUSHPLUS_TOKEN }}&content=OpenWrt开始编译第二部分"
+         # rm -rf openwrt/build_dir/hostpkg openwrt/staging_dir openwrt/dl
+         # curl https://sc.ftqq.com/${{ secrets.SCKEY }}.send?text=OpenWrt开始编译第二部分
+       
+      - name: Free up disk space
+        if: env.FREE_UP_DISK == 'true'
+        env:
+          DEBIAN_FRONTEND: noninteractive
+        run: |
+          sudo swapoff /mnt/swapfile
+          sudo rm -rf /mnt/swapfile
+          sudo mkdir -p -m 777 /mnt/openwrt/build_dir/hostpkg /mnt/openwrt/build_dir/host openwrt/build_dir /mnt/openwrt/dl /mnt/openwrt/feeds /mnt/openwrt/staging_dir /mnt/openwrt/build_dir /mnt/openwrt/tmp /mnt/openwrt/bin
+          ln -sf /mnt/openwrt/build_dir/hostpkg openwrt/build_dir/hostpkg
+          ln -sf /mnt/openwrt/build_dir/host openwrt/build_dir/host
+          ln -sf /mnt/openwrt/staging_dir openwrt/staging_dir
+          # ln -sf /mnt/openwrt/bin openwrt/bin 
+          # ln -sf /mnt/openwrt/dl openwrt/dl
+          # ln -sf /mnt/openwrt/feeds openwrt/feeds
+          # ln -sf /mnt/openwrt/build_dir openwrt/build_dir
+          # ln -sf /mnt/openwrt/tmp openwrt/tmp
+        
+          df -hT     
+              
+       # - name: Unzip artifact
+       #  run: |
+          # cd /workdir && bsdtar -xzf hostpkg.tar.gz -C /mnt/openwrt/build_dir/hostpkg --strip-components=4 && rm hostpkg.tar.gz
+          # cd /workdir && bsdtar -xzf host.tar.gz -C /mnt/openwrt/build_dir/host --strip-components=4 && rm host.tar.gz
+          # cd /workdir && bsdtar -xzf bin.tar.gz -C /mnt/openwrt/bin --strip-components=3 && rm bin.tar.gz
+          # cd /workdir && bsdtar -xzf dl.tar.gz -C /mnt/openwrt/dl --strip-components=3 && rm dl.tar.gz
+          # cd /workdir && bsdtar -xzf staging_dir.tar.gz -C /mnt/openwrt/staging_dir --strip-components=3 && rm staging_dir.tar.gz
+          # cd /workdir && bsdtar -xzf feeds.tar.gz -C /mnt/openwrt/feeds --strip-components=3 && rm feeds.tar.gz
+
+      - name: Restore cache
+        uses: actions/cache/restore@v3.3.1
+        with:
+          path: |
+            ${{ github.workspace }}/openwrt/dl
+            ${{ github.workspace }}/openwrt/tmp/
+            ${{ github.workspace }}/openwrt/bin/
+            ${{ github.workspace }}/openwrt/feeds/
+            /mnt/openwrt/build_dir/hostpkg
+            /mnt/openwrt/build_dir/host
+            /mnt/openwrt/staging_dir/
+          key: ${{ runner.os }}-openwrt-${{ hashFiles('${{ github.workspace }}/openwrt/.config') }}
+
+      - name: Delete cache
+        run: |
+         curl -L \
+          -X DELETE \
+          -H "Accept: application/vnd.github+json" \
+          -H "Authorization: Bearer ${{ secrets.GH_TOKEN }}"\
+          -H "X-GitHub-Api-Version: 2022-11-28" \
+          https://api.github.com/repos/jlzsss/Actions-OpenWrt/actions/caches?key=${{ runner.os }}-openwrt-${{ hashFiles('${{ github.workspace }}/openwrt/.config') }}
+
+      - name: Check space usage
+        if: (!cancelled())
+        run: df -hT   
+                  
+      - name: Multi-thread compile
+        id: Multi-thread
+        run: |
+          cd openwrt
+          echo -e "$(($(nproc) + 1)) thread compile"
+          make -j$(($(nproc) + 1)) package/luci/compile
+          make -j$(($(nproc) + 1)) package/{qttools,luci-app-airconnect,luci-app-aliyundrive-fuse,luci-app-aliyundrive-webdav,luci-app-webd,luci-app-passwall,luci-app-qbittorrent,luci-app-shadowsocksr,luci-app-vssr,luci-app-adblock,luci-app-adbyby-plus,luci-app-adguardhome,luci-app-transmission,luci-app-amule,luci-app-aria2,luci-app-bypass,luci-app-gost,luci-app-homeproxy,luci-app-kcptun,luci-app-minidlna,luci-app-openclash,luci-app-passwall2,luci-app-smartdns,luci-app-ssr-plus,luci-app-store,luci-app-trojan,luci-app-v2ray,luci-app-wireguard,luci-app-v2raya}/compile
+          # make package/compile -j$(($(nproc) + 2))
+          # make package/index -j$(($(nproc) + 2))
+          echo "::set-output name=status::success"
+          grep '^CONFIG_TARGET.*DEVICE.*=y' .config | sed -r 's/.*DEVICE_(.*)=y/\1/' > DEVICE_NAME
+          [ -s DEVICE_NAME ] && echo "DEVICE_NAME=_$(cat DEVICE_NAME)" >> $GITHUB_ENV
+          echo "FILE_DATE=_$(date +"%Y%m%d%H%M")" >> $GITHUB_ENV
+        
+      - name: Single-thread compile
+        id: Single-thread
+        if: failure() 
+        run: |
+         cd openwrt
+         make -j1 package/luci/compile V=s
+         make -j1 package/{qttools,luci-app-airconnect,luci-app-aliyundrive-fuse,luci-app-aliyundrive-webdav,luci-app-webd,luci-app-passwall,luci-app-qbittorrent,luci-app-shadowsocksr,luci-app-vssr,luci-app-adblock,luci-app-adbyby-plus,luci-app-adguardhome,luci-app-transmission,luci-app-amule,luci-app-aria2,luci-app-bypass,luci-app-gost,luci-app-homeproxy,luci-app-kcptun,luci-app-minidlna,luci-app-openclash,luci-app-passwall2,luci-app-smartdns,luci-app-ssr-plus,luci-app-store,luci-app-trojan,luci-app-v2ray,luci-app-wireguard,luci-app-v2raya}/compile V=s
+         echo "::set-output name=status::success"
+         grep '^CONFIG_TARGET.*DEVICE.*=y' .config | sed -r 's/.*DEVICE_(.*)=y/\1/' > DEVICE_NAME
+         [ -s DEVICE_NAME ] && echo "DEVICE_NAME=_$(cat DEVICE_NAME)" >> $GITHUB_ENV
+         echo "FILE_DATE=_$(date +"%Y%m%d%H%M")" >> $GITHUB_ENV
+         
+      - name: Check space usage
+        if: (!cancelled())
+        run: df -hT
+ 
+      - name: Save cache
+        uses: actions/cache/save@v3.3.1
+        with:
+          path: |
+            ${{ github.workspace }}/openwrt/dl
+            ${{ github.workspace }}/openwrt/tmp/
+            ${{ github.workspace }}/openwrt/bin/
+            ${{ github.workspace }}/openwrt/feeds/
+            /mnt/openwrt/build_dir/hostpkg
+            /mnt/openwrt/build_dir/host
+            /mnt/openwrt/staging_dir/
+          key: ${{ runner.os }}-openwrt-${{ hashFiles('${{ github.workspace }}/openwrt/.config') }}
+ 
+      - name: Compress directory
+        env:
+         DEBIAN_FRONTEND: noninteractive
+        run: |
+         sudo rm -rf ${{ github.workspace }}/openwrt/dl ${{ github.workspace }}/openwrt/tmp/ ${{ github.workspace }}/openwrt/bin/ ${{ github.workspace }}/openwrt/feeds/
+         tar --hard-dereference -czf openwrt.tar.gz /workdir/openwrt && sudo rm -rf /workdir/openwrt
+         # bsdtar -czlf hostpkg.tar.gz /mnt/openwrt/build_dir/hostpkg && sudo rm -rf /mnt/openwrt/build_dir/hostpkg
+         # bsdtar -czlf host.tar.gz /mnt/openwrt/build_dir/host && sudo rm -rf /mnt/openwrt/build_dir/host
+         # bsdtar -czlf bin.tar.gz /mnt/openwrt/bin && sudo rm -rf /mnt/openwrt/bin
+         # bsdtar -czlf dl.tar.gz /mnt/openwrt/dl && sudo rm -rf /mnt/openwrt/dl
+         # bsdtar -czlf staging_dir.tar.gz /mnt/openwrt/staging_dir && sudo rm -rf /mnt/openwrt/staging_dir
+         # bsdtar -czlf feeds.tar.gz /mnt/openwrt/feeds && sudo rm -rf /mnt/openwrt/feeds
+       
+         df -hT
+      
+      - name: Store build artifacts
+        uses: actions/upload-artifact@v3
+        env:
+         DEBIAN_FRONTEND: noninteractive
+        with:
+         name: build-output
+         path: |
+            openwrt.tar.gz
+            # hostpkg.tar.gz
+            # host.tar.gz
+            # bin.tar.gz
+            # dl.tar.gz
+            # staging_dir.tar.gz
+            # feeds.tar.gz
+       
+      - name: WeChat notification
+        if: steps.Multi-thread.outputs.status == 'success' || steps.Single-thread.outputs.status == 'success' && !cancelled() && job.status == 'success'
+        run: |
+          curl -s -o /dev/null http://www.pushplus.plus/send --data "token=${{ secrets.PUSHPLUS_TOKEN }}&content=OpenWrt第二部分编译成功"
+          # curl https://sc.ftqq.com/${{ secrets.SCKEY }}.send?text=OpenWrt第二部分编译成功
+       
+      - name: WeChat notification
+        if: failure() && !cancelled()
+        run: |
+          curl -s -o /dev/null http://www.pushplus.plus/send --data "token=${{ secrets.PUSHPLUS_TOKEN }}&content=OpenWrt第二部分编译失败"
+          # curl https://sc.ftqq.com/${{ secrets.SCKEY }}.send?text=OpenWrt第二部分编译失败  
+         
+ build2:
+     needs: build1
+     runs-on: ubuntu-latest
+     steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+           
+      - name: Initialization environment
+        env:
+          DEBIAN_FRONTEND: noninteractive
+        run: |
+          docker image prune -a -f
+          sudo rm -rf /usr/share/dotnet /etc/apt/sources.list.d/* /var/cache/apt/archives /usr/local/share/boost /usr/local/go* /usr/local/lib/android /opt/ghc
+          sudo -E apt-get -y purge --ignore-missing azure-cli ghc* zulu* hhvm llvm* firefox google* dotnet* openjdk* mysql* php* android* adoptopenjdk* mongodb* moby* snapd*
+          sudo -E apt-get -qq update
+          sudo -E apt-get -qq install build-essential clang flex bison g++ gawk gcc-multilib g++-multilib gettext git libncurses5-dev libssl-dev python3-distutils rsync unzip zlib1g-dev file wget
+          sudo -E apt-get -qq autoremove --purge
+          sudo -E apt-get -qq clean
+          sudo timedatectl set-timezone "$TZ"
+          sudo mkdir -p /workdir
+          sudo chown $USER:$GROUPS /workdir
+        
+          df -hT
+          
+      - name: Download artifacts
+        uses: actions/download-artifact@v3
+        env:
+         DEBIAN_FRONTEND: noninteractive
+        with:
+          name: build-output
+          path: /workdir
+
+      - name: WeChat notification
+        working-directory: /workdir
+        run: |
+         cd /workdir
+         mkdir -p openwrt
+         tar -xzf openwrt.tar.gz -C /workdir/openwrt --strip-components=2 && rm openwrt.tar.gz
+         ln -sf /workdir/openwrt ${{ github.workspace }}/openwrt
+         curl -s -o /dev/null http://www.pushplus.plus/send --data "token=${{ secrets.PUSHPLUS_TOKEN }}&content=OpenWrt开始编译第三部分"
+         # rm -rf openwrt/build_dir/hostpkg openwrt/staging_dir openwrt/dl
+         # curl https://sc.ftqq.com/${{ secrets.SCKEY }}.send?text=OpenWrt开始编译第三部分
+       
+      - name: Free up disk space
+        if: env.FREE_UP_DISK == 'true'
+        env:
+          DEBIAN_FRONTEND: noninteractive
+        run: |
+          sudo swapoff /mnt/swapfile
+          sudo rm -rf /mnt/swapfile
+          sudo mkdir -p -m 777 /mnt/openwrt/build_dir/hostpkg /mnt/openwrt/build_dir/host openwrt/build_dir /mnt/openwrt/dl /mnt/openwrt/feeds /mnt/openwrt/staging_dir /mnt/openwrt/build_dir /mnt/openwrt/tmp /mnt/openwrt/bin
+          ln -sf /mnt/openwrt/build_dir/hostpkg openwrt/build_dir/hostpkg
+          ln -sf /mnt/openwrt/build_dir/host openwrt/build_dir/host
+          ln -sf /mnt/openwrt/staging_dir openwrt/staging_dir
+          # ln -sf /mnt/openwrt/bin openwrt/bin 
+          # ln -sf /mnt/openwrt/dl openwrt/dl
+          # ln -sf /mnt/openwrt/feeds openwrt/feeds
+          # ln -sf /mnt/openwrt/build_dir openwrt/build_dir
+          # ln -sf /mnt/openwrt/tmp openwrt/tmp
+        
+          df -hT         
+              
+      # - name: Unzip artifact
+      #   run: |
+          # cd /workdir && bsdtar -xzf hostpkg.tar.gz -C /mnt/openwrt/build_dir/hostpkg --strip-components=4 && rm hostpkg.tar.gz
+          # cd /workdir && bsdtar -xzf host.tar.gz -C /mnt/openwrt/build_dir/host --strip-components=4 && rm host.tar.gz
+          # cd /workdir && bsdtar -xzf bin.tar.gz -C /mnt/openwrt/bin --strip-components=3 && rm bin.tar.gz          
+          # cd /workdir && bsdtar -xzf dl.tar.gz -C /mnt/openwrt/dl --strip-components=3 && rm dl.tar.gz
+          # cd /workdir && bsdtar -xzf staging_dir.tar.gz -C /mnt/openwrt/staging_dir --strip-components=3 && rm staging_dir.tar.gz
+          # cd /workdir && bsdtar -xzf feeds.tar.gz -C /mnt/openwrt/feeds --strip-components=3 && rm feeds.tar.gz
+
+      - name: Restore cache
+        uses: actions/cache/restore@v3.3.1
+        with:
+          path: |
+            ${{ github.workspace }}/openwrt/dl
+            ${{ github.workspace }}/openwrt/tmp/
+            ${{ github.workspace }}/openwrt/bin/
+            ${{ github.workspace }}/openwrt/feeds/
+            /mnt/openwrt/build_dir/hostpkg
+            /mnt/openwrt/build_dir/host
+            /mnt/openwrt/staging_dir/
+          key: ${{ runner.os }}-openwrt-${{ hashFiles('${{ github.workspace }}/openwrt/.config') }}
+
+      - name: Delete cache
+        run: |
+         curl -L \
+          -X DELETE \
+          -H "Accept: application/vnd.github+json" \
+          -H "Authorization: Bearer ${{ secrets.GH_TOKEN }}"\
+          -H "X-GitHub-Api-Version: 2022-11-28" \
+          https://api.github.com/repos/jlzsss/Actions-OpenWrt/actions/caches?key=${{ runner.os }}-openwrt-${{ hashFiles('${{ github.workspace }}/openwrt/.config') }}
+
+      - name: Check space usage
+        if: (!cancelled())
+        run: df -hT   
+
+      - name: Multi-thread compile
+        id: Multi-thread
+        run: |
+          cd openwrt
+          echo -e "$(($(nproc) + 1)) thread compile"
+          make -j$(($(nproc) + 1)) package/{luci-app-diskman,luci-app-dockerman,luci-app-filerun,luci-app-homebox,luci-app-lucky,luci-app-mosdns,luci-app-netspeedtest,luci-app-rclone,luci-app-softethervpn5,luci-app-syncthing,luci-app-turboacc,luci-app-unblockmusic}/compile
+          # make package/compile -j$(($(nproc) + 2))
+          # make package/index -j$(($(nproc) + 2))
+          echo "::set-output name=status::success"
+          grep '^CONFIG_TARGET.*DEVICE.*=y' .config | sed -r 's/.*DEVICE_(.*)=y/\1/' > DEVICE_NAME
+          [ -s DEVICE_NAME ] && echo "DEVICE_NAME=_$(cat DEVICE_NAME)" >> $GITHUB_ENV
+          echo "FILE_DATE=_$(date +"%Y%m%d%H%M")" >> $GITHUB_ENV
+        
+      - name: Single-thread compile
+        id: Single-thread
+        if: failure() 
+        run: |
+         cd openwrt
+         make -j1 package/{luci-app-diskman,luci-app-dockerman,luci-app-filerun,luci-app-homebox,luci-app-lucky,luci-app-mosdns,luci-app-netspeedtest,luci-app-rclone,luci-app-softethervpn5,luci-app-syncthing,luci-app-turboacc,luci-app-unblockmusic}/compile V=s
+         echo "::set-output name=status::success"
+         grep '^CONFIG_TARGET.*DEVICE.*=y' .config | sed -r 's/.*DEVICE_(.*)=y/\1/' > DEVICE_NAME
+         [ -s DEVICE_NAME ] && echo "DEVICE_NAME=_$(cat DEVICE_NAME)" >> $GITHUB_ENV
+         echo "FILE_DATE=_$(date +"%Y%m%d%H%M")" >> $GITHUB_ENV
+         
+      - name: Check space usage
+        if: (!cancelled())
+        run: df -hT
+
+      - name: Save cache
+        uses: actions/cache/save@v3.3.1
+        with:
+          path: |
+            ${{ github.workspace }}/openwrt/dl
+            ${{ github.workspace }}/openwrt/tmp/
+            ${{ github.workspace }}/openwrt/bin/
+            ${{ github.workspace }}/openwrt/feeds/
+            /mnt/openwrt/build_dir/hostpkg
+            /mnt/openwrt/build_dir/host
+            /mnt/openwrt/staging_dir/
+          key: ${{ runner.os }}-openwrt-${{ hashFiles('${{ github.workspace }}/openwrt/.config') }}
+
+      - name: Compress directory
+        env:
+         DEBIAN_FRONTEND: noninteractive
+        run: |
+         sudo rm -rf ${{ github.workspace }}/openwrt/dl ${{ github.workspace }}/openwrt/tmp/ ${{ github.workspace }}/openwrt/bin/ ${{ github.workspace }}/openwrt/feeds/
+         tar --hard-dereference -czf openwrt.tar.gz /workdir/openwrt && sudo rm -rf /workdir/openwrt
+         # bsdtar -czlf hostpkg.tar.gz /mnt/openwrt/build_dir/hostpkg && sudo rm -rf /mnt/openwrt/build_dir/hostpkg
+         # bsdtar -czlf dl.tar.bz2 /mnt/openwrt/dl && sudo rm -rf /mnt/openwrt/dl
+         # bsdtar -czlf feeds.tar.bz2 /mnt/openwrt/feeds && sudo rm -rf /mnt/openwrt/feeds
+       
+         df -hT
+
+      # - name: Compress directory files
+       #  env:
+        # DEBIAN_FRONTEND: noninteractive
+        # run: |
+         # bsdtar -czlf hostpkg.tar.gz /mnt/openwrt/build_dir/hostpkg && sudo rm -rf /mnt/openwrt/build_dir/hostpkg
+         # bsdtar -czlf host.tar.gz /mnt/openwrt/build_dir/host && sudo rm -rf /mnt/openwrt/build_dir/host
+         # bsdtar -czlf bin.tar.gz /mnt/openwrt/bin && sudo rm -rf /mnt/openwrt/bin
+         # bsdtar -czlf dl.tar.bz2 /mnt/openwrt/dl && sudo rm -rf /mnt/openwrt/dl
+         # bsdtar -czlf feeds.tar.bz2 /mnt/openwrt/feeds && sudo rm -rf /mnt/openwrt/feeds
+       
+         # df -hT
+
+      - name: Store build artifacts
+        uses: actions/upload-artifact@v3
+        env:
+         DEBIAN_FRONTEND: noninteractive
+        with:
+         name: build-output
+         path: |
+            openwrt.tar.gz
+            # hostpkg.tar.gz
+            # host.tar.gz
+            # bin.tar.gz
+            # dl.tar.bz2
+            # staging_dir.tar.gz
+            # feeds.tar.bz2
+   
+      - name: WeChat notification
+        if: steps.Multi-thread.outputs.status == 'success' || steps.Single-thread.outputs.status == 'success' && !cancelled() && job.status == 'success'
+        run: |
+          curl -s -o /dev/null http://www.pushplus.plus/send --data "token=${{ secrets.PUSHPLUS_TOKEN }}&content=OpenWrt第三部分编译成功"
+          # curl https://sc.ftqq.com/${{ secrets.SCKEY }}.send?text=OpenWrt第三部分编译成功
+       
+      - name: WeChat notification
+        if: failure() && !cancelled()
+        run: |
+          curl -s -o /dev/null http://www.pushplus.plus/send --data "token=${{ secrets.PUSHPLUS_TOKEN }}&content=OpenWrt第三部分编译失败"
+          # curl https://sc.ftqq.com/${{ secrets.SCKEY }}.send?text=OpenWrt第三部分编译失败  
+         
+ build3:
+     needs: build2
+     runs-on: ubuntu-latest
+     steps:  
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      - name: Initialization environment
+        env:
+          DEBIAN_FRONTEND: noninteractive
+        run: |
+          docker image prune -a -f
+          sudo rm -rf /usr/share/dotnet /etc/apt/sources.list.d/* /var/cache/apt/archives /usr/local/share/boost /usr/local/go* /usr/local/lib/android /opt/ghc
+          sudo -E apt-get -y purge --ignore-missing azure-cli ghc* zulu* hhvm llvm* firefox google* dotnet* openjdk* mysql* php* android* adoptopenjdk* mongodb* moby* snapd*
+          sudo -E apt-get -qq update
+          sudo -E apt-get -qq install build-essential clang flex bison g++ gawk gcc-multilib g++-multilib gettext git libncurses5-dev libssl-dev python3-distutils rsync unzip zlib1g-dev file wget
+          sudo -E apt-get -qq autoremove --purge
+          sudo -E apt-get -qq clean
+          sudo timedatectl set-timezone "$TZ"
+          sudo mkdir -p /workdir
+          sudo chown $USER:$GROUPS /workdir
+        
+          df -hT
+         
+      - name: Download artifacts
+        uses: actions/download-artifact@v3
+        env:
+         DEBIAN_FRONTEND: noninteractive
+        with:
+          name: build-output
+          path: /workdir
+
+      - name: WeChat notification
+        working-directory: /workdir
+        run: |
+         cd /workdir
+         mkdir -p openwrt
+         tar -xzf openwrt.tar.gz -C /workdir/openwrt --strip-components=2 && rm openwrt.tar.gz
+         ln -sf /workdir/openwrt ${{ github.workspace }}/openwrt
+         curl -s -o /dev/null http://www.pushplus.plus/send --data "token=${{ secrets.PUSHPLUS_TOKEN }}&content=OpenWrt开始编译第四部分"
+         # rm -rf openwrt/build_dir/hostpkg openwrt/staging_dir openwrt/dl
+         # curl https://sc.ftqq.com/${{ secrets.SCKEY }}.send?text=OpenWrt开始编译第四部分
+       
+      - name: Free up disk space
+        if: env.FREE_UP_DISK == 'true'
+        env:
+          DEBIAN_FRONTEND: noninteractive
+        run: |
+          sudo swapoff /mnt/swapfile
+          sudo rm -rf /mnt/swapfile
+          sudo mkdir -p -m 777 /mnt/openwrt/build_dir/hostpkg /mnt/openwrt/build_dir/host openwrt/build_dir /mnt/openwrt/dl /mnt/openwrt/feeds /mnt/openwrt/staging_dir /mnt/openwrt/build_dir /mnt/openwrt/tmp /mnt/openwrt/bin
+          ln -sf /mnt/openwrt/build_dir/hostpkg openwrt/build_dir/hostpkg
+          ln -sf /mnt/openwrt/build_dir/host openwrt/build_dir/host
+          ln -sf /mnt/openwrt/staging_dir openwrt/staging_dir
+          # ln -sf /mnt/openwrt/bin openwrt/bin 
+          # ln -sf /mnt/openwrt/dl openwrt/dl
+          # ln -sf /mnt/openwrt/feeds openwrt/feeds
+          # ln -sf /mnt/openwrt/build_dir openwrt/build_dir
+          # ln -sf /mnt/openwrt/tmp openwrt/tmp
+        
+          df -hT        
+              
+      # - name: Unzip artifact
+      #   run: |
+         # cd /workdir && bsdtar -xzf hostpkg.tar.gz -C /mnt/openwrt/build_dir/hostpkg --strip-components=4 && rm hostpkg.tar.gz
+         # cd /workdir && bsdtar -xzf host.tar.gz -C /mnt/openwrt/build_dir/host --strip-components=4 && rm host.tar.gz
+         # cd /workdir && bsdtar -xzf bin.tar.gz -C /mnt/openwrt/bin --strip-components=3 && rm bin.tar.gz
+         # cd /workdir && bsdtar -xzf dl.tar.gz -C /mnt/openwrt/dl --strip-components=3 && rm dl.tar.gz
+         # cd /workdir && bsdtar -xzf staging_dir.tar.gz -C /mnt/openwrt/staging_dir --strip-components=3 && rm staging_dir.tar.gz
+         # cd /workdir && bsdtar -xzf feeds.tar.gz -C /mnt/openwrt/feeds --strip-components=3 && rm feeds.tar.gz
+
+      - name: Restore cache
+        uses: actions/cache/restore@v3.3.1
+        with:
+          path: |
+            ${{ github.workspace }}/openwrt/dl
+            ${{ github.workspace }}/openwrt/tmp/
+            ${{ github.workspace }}/openwrt/bin/
+            ${{ github.workspace }}/openwrt/feeds/
+            /mnt/openwrt/build_dir/hostpkg
+            /mnt/openwrt/build_dir/host
+            /mnt/openwrt/staging_dir/
+          key: ${{ runner.os }}-openwrt-${{ hashFiles('${{ github.workspace }}/openwrt/.config') }}
+
+      - name: Delete cache
+        run: |
+         curl -L \
+          -X DELETE \
+          -H "Accept: application/vnd.github+json" \
+          -H "Authorization: Bearer ${{ secrets.GH_TOKEN }}"\
+          -H "X-GitHub-Api-Version: 2022-11-28" \
+          https://api.github.com/repos/jlzsss/Actions-OpenWrt/actions/caches?key=${{ runner.os }}-openwrt-${{ hashFiles('${{ github.workspace }}/openwrt/.config') }}
+
+      - name: Check space usage
+        if: (!cancelled())
+        run: df -hT   
+         
+      - name: Multi-thread compile
+        id: Multi-thread
+        run: |
+          cd openwrt
+          echo -e "$(($(nproc) + 1)) thread compile"
+          make -j$(($(nproc) + 1)) package/compile
+          # make package/compile -j$(($(nproc) + 2))
+          # make package/index -j$(($(nproc) + 2))
+          echo "::set-output name=status::success"
+          grep '^CONFIG_TARGET.*DEVICE.*=y' .config | sed -r 's/.*DEVICE_(.*)=y/\1/' > DEVICE_NAME
+          [ -s DEVICE_NAME ] && echo "DEVICE_NAME=_$(cat DEVICE_NAME)" >> $GITHUB_ENV
+          echo "FILE_DATE=_$(date +"%Y%m%d%H%M")" >> $GITHUB_ENV
+        
+      - name: Single-thread compile
+        id: Single-thread
+        if: failure() 
+        run: |
+         cd openwrt
+         make -j1 package/compile V=s
+         echo "::set-output name=status::success"
+         grep '^CONFIG_TARGET.*DEVICE.*=y' .config | sed -r 's/.*DEVICE_(.*)=y/\1/' > DEVICE_NAME
+         [ -s DEVICE_NAME ] && echo "DEVICE_NAME=_$(cat DEVICE_NAME)" >> $GITHUB_ENV
+         echo "FILE_DATE=_$(date +"%Y%m%d%H%M")" >> $GITHUB_ENV
+         
+      - name: Check space usage
+        if: (!cancelled())
+        run: df -hT
+
+      - name: Save cache
+        uses: actions/cache/save@v3.3.1
+        with:
+          path: |
+            ${{ github.workspace }}/openwrt/dl
+            ${{ github.workspace }}/openwrt/tmp/
+            ${{ github.workspace }}/openwrt/bin/
+            ${{ github.workspace }}/openwrt/feeds/
+            /mnt/openwrt/build_dir/hostpkg
+            /mnt/openwrt/build_dir/host
+            /mnt/openwrt/staging_dir/
+          key: ${{ runner.os }}-openwrt-${{ hashFiles('${{ github.workspace }}/openwrt/.config') }}
+
+      - name: Compress directory
+        env:
+         DEBIAN_FRONTEND: noninteractive
+        run: |
+         sudo rm -rf ${{ github.workspace }}/openwrt/dl ${{ github.workspace }}/openwrt/tmp/ ${{ github.workspace }}/openwrt/bin/ ${{ github.workspace }}/openwrt/feeds/
+         tar --hard-dereference -czf openwrt.tar.gz /workdir/openwrt && sudo rm -rf /workdir/openwrt
+         # bsdtar -czhf dl.tar.gz /mnt/openwrt/dl && sudo rm -rf /mnt/openwrt/dl
+         # bsdtar -czhf feeds.tar.gz /mnt/openwrt/feeds && sudo rm -rf /mnt/openwrt/feeds
+       
+         df -hT
+
+      # - name: Compress directory files
+        # env:
+         # DEBIAN_FRONTEND: noninteractive
+        # run: |
+         # bsdtar -czlf hostpkg.tar.gz /mnt/openwrt/build_dir/hostpkg && sudo rm -rf /mnt/openwrt/build_dir/hostpkg
+         # bsdtar -czlf host.tar.gz /mnt/openwrt/build_dir/host && sudo rm -rf /mnt/openwrt/build_dir/host
+         # bsdtar -czlf bin.tar.gz /mnt/openwrt/bin && sudo rm -rf /mnt/openwrt/bin
+         # bsdtar -czlf dl.tar.bz2 /mnt/openwrt/dl && sudo rm -rf /mnt/openwrt/dl
+         # bsdtar -czlf feeds.tar.bz2 /mnt/openwrt/feeds && sudo rm -rf /mnt/openwrt/feeds
+       
+         # df -hT
+
+      - name: Store build artifacts
+        uses: actions/upload-artifact@v3
+        env:
+         DEBIAN_FRONTEND: noninteractive
+        with:
+         name: build-output
+         path: |
+            openwrt.tar.gz
+            # hostpkg.tar.gz
+            # host.tar.gz
+            # bin.tar.gz
+            # dl.tar.gz
+            # staging_dir.tar.gz
+            # feeds.tar.gz
+        
+      - name: WeChat notification
+        if: steps.Multi-thread.outputs.status == 'success' || steps.Single-thread.outputs.status == 'success' && !cancelled() && job.status == 'success'
+        run: |
+          curl -s -o /dev/null http://www.pushplus.plus/send --data "token=${{ secrets.PUSHPLUS_TOKEN }}&content=OpenWrt第四部分编译成功"
+          # curl https://sc.ftqq.com/${{ secrets.SCKEY }}.send?text=OpenWrt第四部分编译成功
+       
+      - name: WeChat notification
+        if: failure() && !cancelled()
+        run: |
+          curl -s -o /dev/null http://www.pushplus.plus/send --data "token=${{ secrets.PUSHPLUS_TOKEN }}&content=OpenWrt第四部分编译失败"
+          # curl https://sc.ftqq.com/${{ secrets.SCKEY }}.send?text=OpenWrt第四部分编译失败          
+        
+ uploads:
+     needs: build3
+     runs-on: ubuntu-latest
+     steps:  
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      - name: Initialization environment
+        env:
+          DEBIAN_FRONTEND: noninteractive
+        run: |
+          docker image prune -a -f
+          sudo rm -rf /usr/share/dotnet /etc/apt/sources.list.d/* /var/cache/apt/archives /usr/local/share/boost /usr/local/go* /usr/local/lib/android /opt/ghc
+          sudo -E apt-get -y purge --ignore-missing azure-cli ghc* zulu* hhvm llvm* firefox google* dotnet* openjdk* mysql* php* android* adoptopenjdk* mongodb* moby* snapd*
+          sudo -E apt-get -qq update
+          sudo -E apt-get -qq install build-essential clang flex bison g++ gawk gcc-multilib g++-multilib gettext git libncurses5-dev libssl-dev python3-distutils rsync unzip zlib1g-dev file wget
+          sudo -E apt-get -qq autoremove --purge
+          sudo -E apt-get -qq clean
+          sudo timedatectl set-timezone "$TZ"
+          sudo mkdir -p /workdir
+          sudo chown $USER:$GROUPS /workdir
+        
+          df -hT
+         
+      - name: Download artifacts
+        uses: actions/download-artifact@v3
+        env:
+         DEBIAN_FRONTEND: noninteractive
+        with:
+          name: build-output
+          path: /workdir
+
+      - name: WeChat notification
+        working-directory: /workdir
+        run: |
+         cd /workdir
+         mkdir -p openwrt
+         tar -xzf openwrt.tar.gz -C /workdir/openwrt --strip-components=2 && rm openwrt.tar.gz
+         ln -sf /workdir/openwrt ${{ github.workspace }}/openwrt
+         curl -s -o /dev/null http://www.pushplus.plus/send --data "token=${{ secrets.PUSHPLUS_TOKEN }}&content=OpenWrt开始编译第五部分"
+         # rm -rf openwrt/build_dir/hostpkg openwrt/staging_dir openwrt/dl
+         # curl https://sc.ftqq.com/${{ secrets.SCKEY }}.send?text=OpenWrt开始编译第五部分
+       
+      - name: Free up disk space
+        if: env.FREE_UP_DISK == 'true'
+        env:
+          DEBIAN_FRONTEND: noninteractive
+        run: |
+          sudo swapoff /mnt/swapfile
+          sudo rm -rf /mnt/swapfile
+          sudo mkdir -p -m 777 /mnt/openwrt/build_dir/hostpkg /mnt/openwrt/build_dir/host openwrt/build_dir /mnt/openwrt/dl /mnt/openwrt/feeds /mnt/openwrt/staging_dir /mnt/openwrt/build_dir /mnt/openwrt/tmp /mnt/openwrt/bin
+          ln -sf /mnt/openwrt/build_dir/hostpkg openwrt/build_dir/hostpkg
+          ln -sf /mnt/openwrt/build_dir/host openwrt/build_dir/host
+          ln -sf /mnt/openwrt/staging_dir openwrt/staging_dir
+          # ln -sf /mnt/openwrt/bin openwrt/bin 
+          # ln -sf /mnt/openwrt/dl openwrt/dl
+          # ln -sf /mnt/openwrt/feeds openwrt/feeds
+          # ln -sf /mnt/openwrt/build_dir openwrt/build_dir
+          # ln -sf /mnt/openwrt/tmp openwrt/tmp
+        
+          df -hT    
+               
+      # - name: Unzip artifact
+        # run: |
+         # cd /workdir && bsdtar -xzf hostpkg.tar.gz -C /mnt/openwrt/build_dir/hostpkg --strip-components=4 && rm hostpkg.tar.gz
+         # cd /workdir && bsdtar -xzf host.tar.gz -C /mnt/openwrt/build_dir/host --strip-components=4 && rm host.tar.gz
+         # cd /workdir && bsdtar -xzf bin.tar.gz -C /mnt/openwrt/bin --strip-components=3 && rm bin.tar.gz         
+         # cd /workdir && bsdtar -xzf dl.tar.gz -C /mnt/openwrt/dl --strip-components=3 && rm dl.tar.gz
+         # cd /workdir && bsdtar -xzf staging_dir.tar.gz -C /mnt/openwrt/staging_dir --strip-components=3 && rm staging_dir.tar.gz
+         # cd /workdir && bsdtar -xzf feeds.tar.gz -C /mnt/openwrt/feeds --strip-components=3 && rm feeds.tar.gz
+
+      - name: Restore cache
+        uses: actions/cache/restore@v3.3.1
+        with:
+          path: |
+            ${{ github.workspace }}/openwrt/dl
+            ${{ github.workspace }}/openwrt/tmp/
+            ${{ github.workspace }}/openwrt/bin/
+            ${{ github.workspace }}/openwrt/feeds/
+            /mnt/openwrt/build_dir/hostpkg
+            /mnt/openwrt/build_dir/host
+            /mnt/openwrt/staging_dir/
+          key: ${{ runner.os }}-openwrt-${{ hashFiles('${{ github.workspace }}/openwrt/.config') }}
+
+      - name: Delete cache
+        run: |
+         curl -L \
+          -X DELETE \
+          -H "Accept: application/vnd.github+json" \
+          -H "Authorization: Bearer ${{ secrets.GH_TOKEN }}"\
+          -H "X-GitHub-Api-Version: 2022-11-28" \
+          https://api.github.com/repos/jlzsss/Actions-OpenWrt/actions/caches?key=${{ runner.os }}-openwrt-${{ hashFiles('${{ github.workspace }}/openwrt/.config') }}
+
+      - name: Check space usage
+        if: (!cancelled())
+        run: df -hT      
+         
+      - name: Multi-thread compile
+        id: Multi-thread
+        run: |
+          cd openwrt
+          echo -e "$(($(nproc) + 1)) thread compile"
+          make -j$(($(nproc) + 1))
+          # make package/compile -j$(($(nproc) + 2))
+          # make package/index -j$(($(nproc) + 2))
+          echo "::set-output name=status::success"
+          grep '^CONFIG_TARGET.*DEVICE.*=y' .config | sed -r 's/.*DEVICE_(.*)=y/\1/' > DEVICE_NAME
+          [ -s DEVICE_NAME ] && echo "DEVICE_NAME=_$(cat DEVICE_NAME)" >> $GITHUB_ENV
+          echo "FILE_DATE=_$(date +"%Y%m%d%H%M")" >> $GITHUB_ENV
+        
+      - name: Single-thread compile
+        id: Single-thread
+        if: failure() 
+        run: |
+         cd openwrt
+         make -j1 V=s
+         echo "::set-output name=status::success"
+         grep '^CONFIG_TARGET.*DEVICE.*=y' .config | sed -r 's/.*DEVICE_(.*)=y/\1/' > DEVICE_NAME
+         [ -s DEVICE_NAME ] && echo "DEVICE_NAME=_$(cat DEVICE_NAME)" >> $GITHUB_ENV
+         echo "FILE_DATE=_$(date +"%Y%m%d%H%M")" >> $GITHUB_ENV
+         
+      - name: Check space usage
+        if: (!cancelled())
+        run: df -hT      
+         
+      - name: Upload bin directory
+        uses: actions/upload-artifact@v2
+        if: steps.Multi-thread.outputs.status == 'success' || steps.Single-thread.outputs.status == 'success'
+        with:
+          name: OpenWrt_bin${{ env.DEVICE_NAME }}${{ env.FILE_DATE }}
+          path: openwrt/bin
+
+      - name: Upload packages
+        uses: actions/upload-artifact@master
+        if: steps.Multi-thread.outputs.status == 'success' || steps.Single-thread.outputs.status == 'success'
+        with:
+          name: OpenWrt_packages${{ env.DEVICE_NAME }}${{ env.FILE_DATE }}
+          path: openwrt/bin/packages
+
+      - name: Upload targets
+        uses: actions/upload-artifact@master
+        if: steps.Multi-thread.outputs.status == 'success' || steps.Single-thread.outputs.status == 'success'
+        with:
+          name: OpenWrt_firmware${{ env.DEVICE_NAME }}${{ env.FILE_DATE }}
+          path: openwrt/bin/targets
+
+      - name: Organize files
+        id: organize
+        if: env.UPLOAD_FILES == 'true' && !cancelled()
+        shell: pwsh
+        run: |
+          rm -rf openwrt/bin/targets/x86/64/packages
+          echo "::set-output name=status::success"
+          Compress-Archive -Path /workdir/openwrt/bin/packages OpenWrt_packages${{ env.DEVICE_NAME }}${{ env.FILE_DATE }}.zip
+          Compress-Archive -Path /workdir/openwrt/bin/targets OpenWrt_targets${{ env.DEVICE_NAME }}${{ env.FILE_DATE }}.zip       
+          Compress-Archive -Path /workdir/openwrt/bin OpenWrt_bin${{ env.DEVICE_NAME }}${{ env.FILE_DATE }}.tar.gz
+        
+      - name: Check space usage
+        if: (!cancelled())
+        run: df -hT
+      
+      - name: Upload files to cowtransfer
+        id: cowtransfer
+        if: steps.organize.outputs.status == 'success' && env.UPLOAD_COWTRANSFER == 'true' && !cancelled()
+        run: |
+          curl -fsSL git.io/file-transfer | sh
+          ./transfer cow --block 2621440 -s -p 99 --hash --no-progress *.zip 2>&1 | tee cowtransfer.log
+          echo "::warning file=cowtransfer.com::$(cat cowtransfer.log | grep https)"
+          echo "::set-output name=url::$(cat cowtransfer.log | grep https | cut -f3 -d" ")"
+          
+      - name: Upload files to WeTransfer
+        id: wetransfer
+        if: steps.organize.outputs.status == 'success' && env.UPLOAD_WETRANSFER == 'true' && !cancelled()
+        run: |
+          curl -fsSL git.io/file-transfer | sh
+          ./transfer wet -s -p 16 --no-progress *.zip 2>&1 | tee wetransfer.log
+          echo "::warning file=wetransfer.com::$(cat wetransfer.log | grep https)"
+          echo "::set-output name=url::$(cat wetransfer.log | grep https | cut -f3 -d" ")"
+ 
+      - name: Generate release tag
+        id: tag
+        if: env.UPLOAD_RELEASE == 'true' && !cancelled()
+        run: |
+          echo "::set-output name=release_tag::$(date +"%Y.%m.%d-%H%M")"
+          touch release.txt
+          [ $UPLOAD_COWTRANSFER = true ] && echo "🔗 [Cowtransfer](${{ steps.cowtransfer.outputs.url }})" >> release.txt
+          [ $UPLOAD_WETRANSFER = true ] && echo "🔗 [WeTransfer](${{ steps.wetransfer.outputs.url }})" >> release.txt
+          echo "::set-output name=status::success"
+   
+      - name: Upload files to release
+        uses: softprops/action-gh-release@v1
+        if: steps.tag.outputs.status == 'success' && !cancelled()
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+         tag_name: ${{ steps.tag.outputs.release_tag }}
+         body_path: release.txt
+         files: |
+            OpenWrt_packages${{ env.DEVICE_NAME }}${{ env.FILE_DATE }}.zip
+            OpenWrt_targets${{ env.DEVICE_NAME }}${{ env.FILE_DATE }}.zip
+            OpenWrt_bin${{ env.DEVICE_NAME }}${{ env.FILE_DATE }}.tar.gz
+            
+      - name: Delete workflow runs
+        uses: GitRML/delete-workflow-runs@main
+        with:
+          retain_days: 5
+          keep_minimum_runs: 10
+
+      - name: Remove old Releases
+        uses: dev-drprasad/delete-older-releases@v0.1.0
+        if: env.UPLOAD_RELEASE == 'true' && !cancelled()
+        with:
+          keep_latest: 5
+          delete_tags: true
+        env:
+          GITHUB_TOKEN: ${{ secrets.GH_TOKEN }}
+
+      - name: WeChat notification
+        if: steps.Multi-thread.outputs.status == 'success' || steps.Single-thread.outputs.status == 'success' && !cancelled() && job.status == 'success'
+        run: |
+          curl -s -o /dev/null http://www.pushplus.plus/send --data "token=${{ secrets.PUSHPLUS_TOKEN }}&content=OpenWrt第五部分编译成功"
+          # curl https://sc.ftqq.com/${{ secrets.SCKEY }}.send?text=OpenWrt第五部分编译成功
+       
+      - name: WeChat notification
+        if: failure() && !cancelled()
+        run: |
+          curl -s -o /dev/null http://www.pushplus.plus/send --data "token=${{ secrets.PUSHPLUS_TOKEN }}&content=OpenWrt第五部分编译失败"
+          # curl https://sc.ftqq.com/${{ secrets.SCKEY }}.send?text=OpenWrt第五部分编译失败
