@@ -103,8 +103,8 @@ jobs:
         
     - name: Choose openwrt version
       run: |
-        cd openwrt   
-        checkout ${{ CHOOSE_VERSION }}
+        cd openwrt
+        checkout $CHOOSE_VERSION
         
     - name: Free up disk space
       if: env.FREE_UP_DISK == 'true'
