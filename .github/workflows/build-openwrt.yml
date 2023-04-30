@@ -31,6 +31,7 @@ env:
   CONFIG_FILE: .config-final
   DIY_P1_SH: diy-part1-openwrt.sh
   DIY_P2_SH: diy-part2-openwrt.sh
+  CHOOSE_VERSION: v22.03.4
   SCKEY: ${{ secrets.SCKEY }}
   PUSHPLUS_TOKEN: ${{ secrets.PUSHPLUS_TOKEN }} 
   FREE_UP_DISK: true
@@ -99,6 +100,11 @@ jobs:
       run: |
         git clone -b $REPO_BRANCH --single-branch $REPO_URL  openwrt
         ln -sf /workdir/openwrt ${{ github.workspace }}/openwrt
+        
+    - name: Choose openwrt version
+      run: |
+        cd openwrt   
+        checkout ${{ CHOOSE_VERSION }}
         
     - name: Free up disk space
       if: env.FREE_UP_DISK == 'true'
