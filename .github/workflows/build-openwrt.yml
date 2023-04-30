@@ -43,7 +43,7 @@ env:
 jobs:
 
  prepare:
-   runs-on: debian-11
+   runs-on: debian-latest
    steps:
     - name: Checkout
       uses: actions/checkout@main
