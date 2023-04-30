@@ -27,11 +27,11 @@ on:
 env:
   REPO_URL: https://github.com/openwrt/openwrt
   REPO_BRANCH: openwrt-22.03
+  CHOOSE_VERSION: v22.03.4
   FEEDS_CONF: feeds.conf.default-openwrt
   CONFIG_FILE: .config-final
   DIY_P1_SH: diy-part1-openwrt.sh
   DIY_P2_SH: diy-part2-openwrt.sh
-  CHOOSE_VERSION: v22.03.4
   SCKEY: ${{ secrets.SCKEY }}
   PUSHPLUS_TOKEN: ${{ secrets.PUSHPLUS_TOKEN }} 
   FREE_UP_DISK: true
@@ -58,14 +58,14 @@ jobs:
       uses: actions/cache/restore@v3.3.1
       with:
         path: |
-          ${{ github.workspace }}/openwrt/dl
-          ${{ github.workspace }}/openwrt/tmp/
-          ${{ github.workspace }}/openwrt/bin/
-          ${{ github.workspace }}/openwrt/feeds/
+          /workdir/openwrt/dl
+          /workdir/openwrt/tmp/
+          /workdir/openwrt/bin/
+          /workdir/openwrt/feeds/
           /mnt/openwrt/build_dir/hostpkg
           /mnt/openwrt/build_dir/host
           /mnt/openwrt/staging_dir/
-        key: ${{ runner.os }}-openwrt-${{ hashFiles('${{ github.workspace }}/openwrt/.config') }}
+        key: ${{ runner.os }}-openwrt-${{ hashFiles('/workdir/openwrt/.config') }}
        
     - name: Delete cache
       run: |
@@ -217,20 +217,20 @@ jobs:
       uses: actions/cache/save@v3.3.1
       with:
         path: |
-          ${{ github.workspace }}/openwrt/dl
-          ${{ github.workspace }}/openwrt/tmp/
-          ${{ github.workspace }}/openwrt/bin/
-          ${{ github.workspace }}/openwrt/feeds/
+          /workdir/openwrt/dl
+          /workdir/openwrt/tmp/
+          /workdir/openwrt/bin/
+          /workdir/openwrt/feeds/
           /mnt/openwrt/build_dir/hostpkg
           /mnt/openwrt/build_dir/host
           /mnt/openwrt/staging_dir/
-        key: ${{ runner.os }}-openwrt-${{ hashFiles('${{ github.workspace }}/openwrt/.config') }}
+        key: ${{ runner.os }}-openwrt-${{ hashFiles('/workdir/openwrt/.config') }}
         
     - name: Compress directory
       env:
        DEBIAN_FRONTEND: noninteractive
       run: |
-       sudo rm -rf ${{ github.workspace }}/openwrt/dl ${{ github.workspace }}/openwrt/tmp/ ${{ github.workspace }}/openwrt/bin/ ${{ github.workspace }}/openwrt/feeds/
+       sudo rm -rf /workdir/openwrt/dl /workdir/openwrt/tmp/ /workdir/openwrt/bin/ /workdir/openwrt/feeds/
        tar --hard-dereference -czf openwrt.tar.gz /workdir/openwrt && sudo rm -rf /workdir/openwrt
        # bsdtar -czlf hostpkg.tar.gz /mnt/openwrt/build_dir/hostpkg && sudo rm -rf /mnt/openwrt/build_dir/hostpkg
        # bsdtar -czlf host.tar.gz /mnt/openwrt/build_dir/host && sudo rm -rf /mnt/openwrt/build_dir/host
@@ -345,14 +345,14 @@ jobs:
         uses: actions/cache/restore@v3.3.1
         with:
           path: |
-            ${{ github.workspace }}/openwrt/dl
-            ${{ github.workspace }}/openwrt/tmp/
-            ${{ github.workspace }}/openwrt/bin/
-            ${{ github.workspace }}/openwrt/feeds/
+            /workdir/openwrt/dl
+            /workdir/openwrt/tmp/
+            /workdir/openwrt/bin/
+            /workdir/openwrt/feeds/
             /mnt/openwrt/build_dir/hostpkg
             /mnt/openwrt/build_dir/host
             /mnt/openwrt/staging_dir/
-          key: ${{ runner.os }}-openwrt-${{ hashFiles('${{ github.workspace }}/openwrt/.config') }}
+          key: ${{ runner.os }}-openwrt-${{ hashFiles('/workdir/openwrt/.config') }}
 
       - name: Delete cache
         run: |
@@ -401,20 +401,20 @@ jobs:
         uses: actions/cache/save@v3.3.1
         with:
           path: |
-            ${{ github.workspace }}/openwrt/dl
-            ${{ github.workspace }}/openwrt/tmp/
-            ${{ github.workspace }}/openwrt/bin/
-            ${{ github.workspace }}/openwrt/feeds/
+            /workdir/openwrt/dl
+            /workdir/openwrt/tmp/
+            /workdir/openwrt/bin/
+            /workdir/openwrt/feeds/
             /mnt/openwrt/build_dir/hostpkg
             /mnt/openwrt/build_dir/host
             /mnt/openwrt/staging_dir/
-          key: ${{ runner.os }}-openwrt-${{ hashFiles('${{ github.workspace }}/openwrt/.config') }}
+          key: ${{ runner.os }}-openwrt-${{ hashFiles('/workdir/openwrt/.config') }}
  
       - name: Compress directory
         env:
          DEBIAN_FRONTEND: noninteractive
         run: |
-         sudo rm -rf ${{ github.workspace }}/openwrt/dl ${{ github.workspace }}/openwrt/tmp/ ${{ github.workspace }}/openwrt/bin/ ${{ github.workspace }}/openwrt/feeds/
+         sudo rm -rf /workdir/openwrt/dl /workdir/openwrt/tmp/ /workdir/openwrt/bin/ /workdir/openwrt/feeds/
          tar --hard-dereference -czf openwrt.tar.gz /workdir/openwrt && sudo rm -rf /workdir/openwrt
          # bsdtar -czlf hostpkg.tar.gz /mnt/openwrt/build_dir/hostpkg && sudo rm -rf /mnt/openwrt/build_dir/hostpkg
          # bsdtar -czlf host.tar.gz /mnt/openwrt/build_dir/host && sudo rm -rf /mnt/openwrt/build_dir/host
@@ -529,14 +529,14 @@ jobs:
         uses: actions/cache/restore@v3.3.1
         with:
           path: |
-            ${{ github.workspace }}/openwrt/dl
-            ${{ github.workspace }}/openwrt/tmp/
-            ${{ github.workspace }}/openwrt/bin/
-            ${{ github.workspace }}/openwrt/feeds/
+            /workdir/openwrt/dl
+            /workdir/openwrt/tmp/
+            /workdir/openwrt/bin/
+            /workdir/openwrt/feeds/
             /mnt/openwrt/build_dir/hostpkg
             /mnt/openwrt/build_dir/host
             /mnt/openwrt/staging_dir/
-          key: ${{ runner.os }}-openwrt-${{ hashFiles('${{ github.workspace }}/openwrt/.config') }}
+          key: ${{ runner.os }}-openwrt-${{ hashFiles('/workdir/openwrt/.config') }}
 
       - name: Delete cache
         run: |
@@ -583,20 +583,20 @@ jobs:
         uses: actions/cache/save@v3.3.1
         with:
           path: |
-            ${{ github.workspace }}/openwrt/dl
-            ${{ github.workspace }}/openwrt/tmp/
-            ${{ github.workspace }}/openwrt/bin/
-            ${{ github.workspace }}/openwrt/feeds/
+            /workdir/openwrt/dl
+            /workdir/openwrt/tmp/
+            /workdir/openwrt/bin/
+            /workdir/openwrt/feeds/
             /mnt/openwrt/build_dir/hostpkg
             /mnt/openwrt/build_dir/host
             /mnt/openwrt/staging_dir/
-          key: ${{ runner.os }}-openwrt-${{ hashFiles('${{ github.workspace }}/openwrt/.config') }}
+          key: ${{ runner.os }}-openwrt-${{ hashFiles('/workdir/openwrt/.config') }}
 
       - name: Compress directory
         env:
          DEBIAN_FRONTEND: noninteractive
         run: |
-         sudo rm -rf ${{ github.workspace }}/openwrt/dl ${{ github.workspace }}/openwrt/tmp/ ${{ github.workspace }}/openwrt/bin/ ${{ github.workspace }}/openwrt/feeds/
+         sudo rm -rf /workdir/openwrt/dl /workdir/openwrt/tmp/ /workdir/openwrt/bin/ /workdir/openwrt/feeds/
          tar --hard-dereference -czf openwrt.tar.gz /workdir/openwrt && sudo rm -rf /workdir/openwrt
          # bsdtar -czlf hostpkg.tar.gz /mnt/openwrt/build_dir/hostpkg && sudo rm -rf /mnt/openwrt/build_dir/hostpkg
          # bsdtar -czlf dl.tar.bz2 /mnt/openwrt/dl && sudo rm -rf /mnt/openwrt/dl
@@ -720,14 +720,14 @@ jobs:
         uses: actions/cache/restore@v3.3.1
         with:
           path: |
-            ${{ github.workspace }}/openwrt/dl
-            ${{ github.workspace }}/openwrt/tmp/
-            ${{ github.workspace }}/openwrt/bin/
-            ${{ github.workspace }}/openwrt/feeds/
+            /workdir/openwrt/dl
+            /workdir/openwrt/tmp/
+            /workdir/openwrt/bin/
+            /workdir/openwrt/feeds/
             /mnt/openwrt/build_dir/hostpkg
             /mnt/openwrt/build_dir/host
             /mnt/openwrt/staging_dir/
-          key: ${{ runner.os }}-openwrt-${{ hashFiles('${{ github.workspace }}/openwrt/.config') }}
+          key: ${{ runner.os }}-openwrt-${{ hashFiles('/workdir/openwrt/.config') }}
 
       - name: Delete cache
         run: |
