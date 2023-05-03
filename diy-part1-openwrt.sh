@@ -41,8 +41,8 @@ git clone https://github.com/jlzsss/luci-app-cloudflarespeedtest.git package/luc
 # git clone https://github.com/jlzsss/smartdns.git package/feeds/packages/smartdns
 # git clone https://github.com/jlzsss/luci-app-smartdns.git package/feeds/luci/luci-app-smartdns
 git clone https://github.com/jlzsss/libgd.git package/feeds/packages/libgd
-git clone https://github.com/v2rayA/v2raya-openwrt.git package/v2raya-openwrt
-# git clone https://github.com/jlzsss/v2raya-openwrt.git package/v2raya-openwrt
+# git clone https://github.com/v2rayA/v2raya-openwrt.git package/v2raya-openwrt
+git clone https://github.com/jlzsss/v2raya-openwrt.git package/v2raya-openwrt
 git clone https://github.com/jerrykuku/luci-app-vssr.git package/luci-app-vssr
 git clone https://github.com/jerrykuku/lua-maxminddb.git package/lua-maxminddb
 git clone https://github.com/sbwml/luci-app-mosdns package/mosdns
