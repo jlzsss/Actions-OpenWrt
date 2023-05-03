@@ -164,7 +164,7 @@ CONFIG_TARGET_IMAGES_GZIP=y
 # Image Options
 #
 CONFIG_TARGET_KERNEL_PARTSIZE=16
-CONFIG_TARGET_ROOTFS_PARTSIZE=104
+CONFIG_TARGET_ROOTFS_PARTSIZE=4096
 CONFIG_TARGET_ROOTFS_PARTNAME=""
 # CONFIG_TARGET_ROOTFS_PERSIST_VAR is not set
 # end of Target Images
@@ -484,13 +484,10 @@ CONFIG_FEED_diy2=y
 CONFIG_FEED_NueXini=y
 CONFIG_FEED_kenzok8=y
 CONFIG_FEED_packages2=y
-CONFIG_FEED_kenzo=y
-CONFIG_FEED_lienol=y
 CONFIG_FEED_kiddin=y
 CONFIG_FEED_liuran=y
 CONFIG_FEED_other=y
 CONFIG_FEED_lede=y
-CONFIG_FEED_darkmatter=y
 
 #
 # Base system
@@ -2746,14 +2743,27 @@ CONFIG_PACKAGE_cellled=y
 # CONFIG_PACKAGE_k3wifi is not set
 CONFIG_PACKAGE_libiwinfo-data=y
 # CONFIG_PACKAGE_libjose is not set
-# CONFIG_PACKAGE_luci-app-xray-fw4 is not set
-# CONFIG_PACKAGE_luci-app-xray-shared is not set
+CONFIG_PACKAGE_luci-app-xray-fw4=y
+CONFIG_PACKAGE_luci-app-xray-shared=y
+
+#
+# luci-app-xray Configuration
+#
+CONFIG_PACKAGE_XRAY_INCLUDE_CLOUDFLARE_ORIGIN_ROOT_CA=y
+CONFIG_PACKAGE_XRAY_INFINITE_RETRY_ON_STARTUP=y
+CONFIG_PACKAGE_XRAY_RLIMIT_NOFILE_LARGE=y
+# CONFIG_PACKAGE_XRAY_RESTART_DNSMASQ_ON_IFACE_CHANGE is not set
+CONFIG_PACKAGE_XRAY_IGNORE_TP_SPEC_DEF_GW=y
+# CONFIG_PACKAGE_XRAY_RLIMIT_DATA_UNLIMITED is not set
+# CONFIG_PACKAGE_XRAY_RLIMIT_DATA_SMALL is not set
+CONFIG_PACKAGE_XRAY_RLIMIT_DATA_LARGE=y
+# end of luci-app-xray Configuration
+
 CONFIG_PACKAGE_nginx=y
 CONFIG_PACKAGE_nginx-mod-luci-ssl=y
 CONFIG_PACKAGE_nginx-util=y
 # CONFIG_PACKAGE_openvpn-dns-hotplug is not set
 # CONFIG_PACKAGE_openwrt-cloudflared is not set
-# CONFIG_PACKAGE_openwrt-xray is not set
 # CONFIG_PACKAGE_rrm-nr-distributor is not set
 # CONFIG_PACKAGE_tang is not set
 CONFIG_PACKAGE_telegrambot=y
@@ -5953,7 +5963,7 @@ CONFIG_PACKAGE_libupnp=y
 CONFIG_PACKAGE_liburing=y
 CONFIG_PACKAGE_libusb-1.0=y
 # CONFIG_PACKAGE_libusb-compat is not set
-# CONFIG_PACKAGE_libustream-mbedtls is not set
+CONFIG_PACKAGE_libustream-mbedtls=m
 CONFIG_PACKAGE_libustream-openssl=y
 CONFIG_PACKAGE_libustream-wolfssl=m
 CONFIG_PACKAGE_libuuid=y
@@ -6141,7 +6151,7 @@ CONFIG_PACKAGE_luci-app-airconnect=y
 CONFIG_PACKAGE_luci-app-airplay2=y
 # CONFIG_PACKAGE_luci-app-airwhu is not set
 CONFIG_PACKAGE_luci-app-aliddns=y
-# CONFIG_PACKAGE_luci-app-alist is not set
+CONFIG_PACKAGE_luci-app-alist=y
 CONFIG_PACKAGE_luci-app-aliyundrive-fuse=y
 CONFIG_PACKAGE_luci-app-aliyundrive-webdav=y
 CONFIG_PACKAGE_luci-app-amule=y
@@ -6399,6 +6409,7 @@ CONFIG_PACKAGE_luci-app-passwall2=y
 CONFIG_PACKAGE_luci-app-passwall2_Transparent_Proxy=y
 CONFIG_PACKAGE_luci-app-passwall2_Transparent_Proxy_Iptables-nft=y
 CONFIG_PACKAGE_luci-app-passwall2_INCLUDE_Brook=y
+CONFIG_PACKAGE_luci-app-passwall2_INCLUDE_Haproxy=y
 CONFIG_PACKAGE_luci-app-passwall2_INCLUDE_Hysteria=y
 CONFIG_PACKAGE_luci-app-passwall2_INCLUDE_NaiveProxy=y
 CONFIG_PACKAGE_luci-app-passwall2_INCLUDE_Shadowsocks_Libev_Client=y
@@ -6598,10 +6609,8 @@ CONFIG_PACKAGE_luci-theme-argon=y
 # CONFIG_PACKAGE_luci-theme-argon-mod is not set
 # CONFIG_PACKAGE_luci-theme-argonne is not set
 # CONFIG_PACKAGE_luci-theme-atmaterial is not set
-# CONFIG_PACKAGE_luci-theme-atmaterial_new is not set
 CONFIG_PACKAGE_luci-theme-bootstrap=y
 # CONFIG_PACKAGE_luci-theme-bootstrap-mmdvm is not set
-# CONFIG_PACKAGE_luci-theme-darkmatter is not set
 # CONFIG_PACKAGE_luci-theme-design is not set
 # CONFIG_PACKAGE_luci-theme-dog-1806 is not set
 # CONFIG_PACKAGE_luci-theme-edge is not set
@@ -6623,7 +6632,6 @@ CONFIG_PACKAGE_luci-theme-openwrt-2020=y
 # CONFIG_PACKAGE_luci-theme-rosy is not set
 # CONFIG_PACKAGE_luci-theme-rosy-1806 is not set
 # CONFIG_PACKAGE_luci-theme-teleofis is not set
-# CONFIG_PACKAGE_luci-theme-tomato is not set
 # end of 4. Themes
 
 #
@@ -6687,6 +6695,12 @@ CONFIG_PACKAGE_luci-lib-xterm=y
 #
 # CONFIG_PACKAGE_luci-theme-alpha is not set
 # end of 9. Themes
+
+#
+# Luci
+#
+# CONFIG_PACKAGE_luci-i18n-xray-zh-cn is not set
+# end of Luci
 
 CONFIG_PACKAGE_default-settings=y
 # CONFIG_PACKAGE_luci-i18n-3ginfo-de is not set
@@ -6829,6 +6843,7 @@ CONFIG_PACKAGE_luci-i18n-ahcp-zh-cn=y
 # CONFIG_PACKAGE_luci-i18n-ahcp-zh-tw is not set
 CONFIG_PACKAGE_luci-i18n-airconnect-zh-cn=y
 CONFIG_PACKAGE_luci-i18n-airplay2-zh-cn=y
+CONFIG_PACKAGE_luci-i18n-alist-zh-cn=y
 CONFIG_PACKAGE_luci-i18n-aliyundrive-fuse-zh-cn=y
 CONFIG_PACKAGE_luci-i18n-aliyundrive-fuse-zh_Hans=y
 CONFIG_PACKAGE_luci-i18n-aliyundrive-webdav-zh-cn=y
@@ -7589,7 +7604,6 @@ CONFIG_PACKAGE_luci-i18n-fullconenat-zh-cn=y
 CONFIG_PACKAGE_luci-i18n-fwknopd-zh-cn=y
 # CONFIG_PACKAGE_luci-i18n-fwknopd-zh-tw is not set
 CONFIG_PACKAGE_luci-i18n-go-aliyundrive-webdav-zh-cn=y
-CONFIG_PACKAGE_luci-i18n-gobinetmodem-zh-cn=y
 CONFIG_PACKAGE_luci-i18n-gogs-zh-cn=y
 CONFIG_PACKAGE_luci-i18n-gpsysupgrade-zh-cn=y
 CONFIG_PACKAGE_luci-i18n-guest-wifi-zh-cn=y
@@ -8282,7 +8296,6 @@ CONFIG_PACKAGE_luci-i18n-pbr-zh-cn=y
 # CONFIG_PACKAGE_luci-i18n-pbr-zh-tw is not set
 CONFIG_PACKAGE_luci-i18n-pcap-dnsproxy-zh-cn=y
 # CONFIG_PACKAGE_luci-i18n-pcap-dnsproxy-zh-tw is not set
-CONFIG_PACKAGE_luci-i18n-pcimodem-zh-cn=y
 CONFIG_PACKAGE_luci-i18n-penpot-zh-cn=y
 CONFIG_PACKAGE_luci-i18n-photoprism-zh-cn=y
 CONFIG_PACKAGE_luci-i18n-phtunnel-zh-cn=y
@@ -9085,7 +9098,6 @@ CONFIG_PACKAGE_luci-i18n-upnp-zh-cn=y
 # CONFIG_PACKAGE_luci-i18n-upnp-zh-tw is not set
 CONFIG_PACKAGE_luci-i18n-usb-printer-zh-cn=y
 CONFIG_PACKAGE_luci-i18n-usb3disable-zh-cn=y
-CONFIG_PACKAGE_luci-i18n-usbmodem-zh-cn=y
 CONFIG_PACKAGE_luci-i18n-uugamebooster-zh-cn=y
 CONFIG_PACKAGE_luci-i18n-v2ray-server-zh-cn=y
 CONFIG_PACKAGE_luci-i18n-v2ray-zh-cn=m
@@ -9657,7 +9669,6 @@ CONFIG_PACKAGE_miniupnpd-nftables=y
 # CONFIG_PACKAGE_natpmpc is not set
 CONFIG_PACKAGE_nftables-json=y
 CONFIG_PACKAGE_nftables-nojson=m
-# CONFIG_PACKAGE_openappid is not set
 # CONFIG_PACKAGE_shorewall is not set
 # CONFIG_PACKAGE_shorewall-core is not set
 # CONFIG_PACKAGE_shorewall-lite is not set
@@ -9871,7 +9882,6 @@ CONFIG_PACKAGE_switch-lan-play=y
 #
 # LoRaWAN
 #
-# CONFIG_PACKAGE_basicstation is not set
 # CONFIG_PACKAGE_libloragw-tests is not set
 # CONFIG_PACKAGE_libloragw-utils is not set
 # end of LoRaWAN
@@ -10387,7 +10397,7 @@ CONFIG_PACKAGE_uqmi=y
 # Web Servers/Proxies
 #
 CONFIG_PACKAGE_3proxy=y
-# CONFIG_PACKAGE_alist is not set
+CONFIG_PACKAGE_alist=y
 # CONFIG_PACKAGE_apache is not set
 CONFIG_PACKAGE_brook=y
 CONFIG_PACKAGE_cgi-io=y
@@ -10664,7 +10674,7 @@ CONFIG_PACKAGE_wpad=y
 # CONFIG_PACKAGE_arp-scan-database is not set
 # end of arp-scan
 
-# CONFIG_PACKAGE_3ginfo is not set
+CONFIG_PACKAGE_3ginfo=y
 # CONFIG_PACKAGE_3ginfo-lite is not set
 # CONFIG_PACKAGE_3ginfo-qmisignal is not set
 CONFIG_PACKAGE_3ginfo-text=y
@@ -10706,7 +10716,6 @@ CONFIG_PACKAGE_batctl-default=y
 # CONFIG_PACKAGE_bmon is not set
 # CONFIG_PACKAGE_boinc is not set
 # CONFIG_PACKAGE_boinc-wrapper is not set
-# CONFIG_PACKAGE_bpfcountd is not set
 # CONFIG_PACKAGE_bpftool-full is not set
 # CONFIG_PACKAGE_bpftool-minimal is not set
 # CONFIG_PACKAGE_bwm-ng is not set
@@ -10772,7 +10781,6 @@ CONFIG_PACKAGE_geoipupdate=y
 # CONFIG_PACKAGE_go-wol is not set
 CONFIG_PACKAGE_gost=y
 CONFIG_PACKAGE_gre=y
-# CONFIG_PACKAGE_gsocket is not set
 # CONFIG_PACKAGE_hnet-full is not set
 # CONFIG_PACKAGE_hnet-full-l2tp is not set
 # CONFIG_PACKAGE_hnet-full-secure is not set
@@ -11053,7 +11061,6 @@ CONFIG_PACKAGE_vxlan=y
 CONFIG_PACKAGE_webd=y
 CONFIG_PACKAGE_wg-installer-client=y
 # CONFIG_PACKAGE_wg-installer-server is not set
-# CONFIG_PACKAGE_wifi-presence is not set
 # CONFIG_PACKAGE_wol is not set
 # CONFIG_PACKAGE_wpan-tools is not set
 CONFIG_PACKAGE_wwan=y
@@ -11821,7 +11828,7 @@ CONFIG_PACKAGE_giflib-utils=y
 # CONFIG_PACKAGE_gnuplot is not set
 # CONFIG_PACKAGE_gpioctl-sysfs is not set
 # CONFIG_PACKAGE_gpiod-tools is not set
-# CONFIG_PACKAGE_gpsd is not set
+CONFIG_PACKAGE_gpsd=y
 # CONFIG_PACKAGE_gpsd-clients is not set
 # CONFIG_PACKAGE_gpsd-utils is not set
 CONFIG_PACKAGE_grep=y
@@ -12143,7 +12150,7 @@ CONFIG_PACKAGE_ucode-mod-uci=y
 # CONFIG_PACKAGE_upx is not set
 # CONFIG_PACKAGE_usb-modeswitch is not set
 # CONFIG_PACKAGE_usbids is not set
-# CONFIG_PACKAGE_usbutils is not set
+CONFIG_PACKAGE_usbutils=y
 # CONFIG_PACKAGE_uuidd is not set
 # CONFIG_PACKAGE_uuidgen is not set
 # CONFIG_PACKAGE_uvcdynctrl is not set
