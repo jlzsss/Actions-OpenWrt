@@ -24,7 +24,7 @@ git clone -b luci2 https://github.com/jlzsss/luci-app-v2ray.git package/luci-app
 git clone https://github.com/frainzy1477/luci-app-trojan.git package/luci-app-trojan
 git clone -b test https://github.com/frainzy1477/luci-app-clash.git package/luci-app-clash
 git clone https://github.com/sirpdboy/netspeedtest.git package/netspeedtest
-git clone https://github.com/lisaac/luci-app-dockerman.git package/luci-app-dockerman
+# git clone https://github.com/lisaac/luci-app-dockerman.git package/luci-app-dockerman
 # git clone https://github.com/project-openwrt/luci-app-koolproxyR.git package/luci-app-koolproxyR
 # git clone -b master https://github.com/vernesong/OpenClash.git package/OpenClash
 # svn co https://github.com/Lienol/openwrt/trunk/package/diy package/diy
@@ -47,7 +47,7 @@ git clone https://github.com/jerrykuku/luci-app-vssr.git package/luci-app-vssr
 git clone https://github.com/jerrykuku/lua-maxminddb.git package/lua-maxminddb
 git clone https://github.com/sbwml/luci-app-mosdns package/mosdns
 git clone https://github.com/sbwml/v2ray-geodata package/v2ray-geodata
-git clone https://github.com/jlzsss/qBittorrent-Enhanced-Edition.git package/feeds/packages/qBittorrent-Enhanced-Edition
+# git clone https://github.com/jlzsss/qBittorrent-Enhanced-Edition.git package/feeds/packages/qBittorrent-Enhanced-Edition
 
 
 
@@ -59,10 +59,11 @@ svn export --force https://github.com/coolsnowwolf/lede/branches/master/package/
 # svn export --force https://github.com/JuanParker1/Packages/trunk/luci-app-qbittorrent package/feeds/luci/luci-app-qbittorrent
 svn export --force https://github.com/kenzok8/jell/trunk/luci-app-qbittorrent package/feeds/luci/luci-app-qbittorrent
 svn export --force https://github.com/kiddin9/openwrt-packages/trunk/luci-app-transmission package/feeds/luci/luci-app-transmission
-svn export --force https://github.com/kiddin9/openwrt-packages/trunk/transmission package/feeds/packages/transmission
-svn export --force https://github.com/kiddin9/openwrt-packages/trunk/transmission-web-control package/feeds/packages/transmission-web-control
+svn export --force https://github.com/openwrt/packages/branches/openwrt-23.05/net/transmission package/feeds/packages/transmission
+svn export --force https://github.com/openwrt/packages/branches/openwrt-23.05/net/transmission-web-control package/feeds/packages/transmission-web-control
 # svn export --force https://github.com/kiddin9/openwrt-packages/trunk/luci-app-smartdns package/feeds/luci/luci-app-smartdns
 # svn export --force https://github.com/kiddin9/openwrt-packages/trunk/smartdns package/feeds/packages/smartdns
 svn export --force https://github.com/coolsnowwolf/packages/trunk/net/amule package/feeds/packages/amule
-svn export --force https://github.com/openwrt/routing/branches/openwrt-19.07/cjdns package/feeds/routing/cjdns
+# svn export --force https://github.com/openwrt/routing/branches/openwrt-19.07/cjdns package/feeds/routing/cjdns
 svn export --force https://github.com/kenzok8/jell/branches/main/gost package/feeds/packages/gost
+svn export --force https://github.com/kenzok8/jell/branches/main/luci-app-adguardhome package/feeds/packages/luci-app-adguardhome
