@@ -22,12 +22,16 @@ CACHE_TYPES=(
 log() {
     local level="$1"
     shift
-    echo "[$(date '+%Y-%m-%d %H:%M:%S')] [$level] $*" | tee -a "$LOG_FILE"
+    local message="[$(date '+%Y-%m-%d %H:%M:%S')] [$level] $*"
+    echo "$message"
+    if [ -d "$CACHE_ROOT" ]; then
+        echo "$message" >> "$LOG_FILE" 2>/dev/null || true
+    fi
 }
 
 init_cache() {
-    log "INFO" "Initializing cache system v${CACHE_VERSION}"
     mkdir -p "$CACHE_ROOT"
+    log "INFO" "Initializing cache system v${CACHE_VERSION}"
     
     if [ ! -f "$CACHE_METADATA" ]; then
         echo "version=$CACHE_VERSION" > "$CACHE_METADATA"

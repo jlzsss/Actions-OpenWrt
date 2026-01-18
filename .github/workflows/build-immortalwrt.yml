@@ -84,6 +84,16 @@ jobs:
           ccache --set-config=max_size=$CCACHE_MAXSIZE
           ccache -s
 
+      # 清除旧缓存以避免构建错误
+      - name: Clear old cache
+        run: |
+          echo "清理旧的缓存目录以避免构建不一致问题"
+          sudo rm -rf /mnt/cache 2>/dev/null || true
+          sudo rm -rf /mnt/openwrt 2>/dev/null || true
+          sudo mkdir -p /mnt/cache
+          sudo chmod 777 /mnt/cache
+          echo "旧缓存已清理"
+
       # 新增缓存系统初始化
       - name: Initialize cache system
         run: |
