@@ -104,6 +104,7 @@ jobs:
       # 尝试恢复缓存
       - name: Restore cached build artifacts
         run: |
+          sudo mkdir -p -m 777 /mnt/openwrt/dl /mnt/openwrt/build_dir /mnt/openwrt/staging_dir /mnt/openwrt/tmp /mnt/ccache 2>/dev/null || true
           ${GITHUB_WORKSPACE}/scripts/cache-manager.sh restore dl /mnt/openwrt/dl || true
           ${GITHUB_WORKSPACE}/scripts/cache-manager.sh restore build_dir /mnt/openwrt/build_dir || true
           ${GITHUB_WORKSPACE}/scripts/cache-manager.sh restore staging_dir /mnt/openwrt/staging_dir || true
@@ -304,6 +305,7 @@ jobs:
       # 尝试恢复缓存
       - name: Restore cached build artifacts
         run: |
+          sudo mkdir -p -m 777 /mnt/openwrt/dl /mnt/openwrt/build_dir /mnt/openwrt/staging_dir /mnt/openwrt/tmp /mnt/ccache 2>/dev/null || true
           ${GITHUB_WORKSPACE}/scripts/cache-manager.sh restore dl /mnt/openwrt/dl || true
           ${GITHUB_WORKSPACE}/scripts/cache-manager.sh restore build_dir /mnt/openwrt/build_dir || true
           ${GITHUB_WORKSPACE}/scripts/cache-manager.sh restore staging_dir /mnt/openwrt/staging_dir || true
@@ -490,6 +492,7 @@ jobs:
       # 尝试恢复缓存
       - name: Restore cached build artifacts
         run: |
+          sudo mkdir -p -m 777 /mnt/openwrt/dl /mnt/openwrt/build_dir /mnt/openwrt/staging_dir /mnt/openwrt/tmp /mnt/ccache 2>/dev/null || true
           ${GITHUB_WORKSPACE}/scripts/cache-manager.sh restore dl /mnt/openwrt/dl || true
           ${GITHUB_WORKSPACE}/scripts/cache-manager.sh restore build_dir /mnt/openwrt/build_dir || true
           ${GITHUB_WORKSPACE}/scripts/cache-manager.sh restore staging_dir /mnt/openwrt/staging_dir || true

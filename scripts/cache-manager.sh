@@ -159,7 +159,35 @@ restore_cache() {
     local dest_path="$2"
     local identifier="${3:-default}"
     
-    mkdir -p "$dest_path"
+    local dest_parent
+    dest_parent=$(dirname "$dest_path")
+    
+    if [ ! -d "$dest_parent" ]; then
+        log "INFO" "Creating parent directory: ${dest_parent}"
+        mkdir -p "$dest_parent" 2>/dev/null || {
+            log "WARN" "Failed to create parent directory, trying with sudo"
+            sudo mkdir -p "$dest_parent" 2>/dev/null || {
+                log "ERROR" "Cannot create parent directory: ${dest_parent}"
+                return 1
+            }
+        }
+    fi
+    
+    if [ ! -d "$dest_path" ]; then
+        log "INFO" "Creating destination directory: ${dest_path}"
+        mkdir -p "$dest_path" 2>/dev/null || {
+            log "WARN" "Failed to create directory, trying with sudo"
+            sudo mkdir -p "$dest_path" 2>/dev/null || {
+                log "ERROR" "Cannot create destination directory: ${dest_path}"
+                return 1
+            }
+        }
+        
+        if [ -d "$dest_path" ]; then
+            sudo chown -R $USER:$GROUPS "$dest_path" 2>/dev/null || true
+            sudo chmod -R 755 "$dest_path" 2>/dev/null || true
+        fi
+    fi
     
     local cache_key
     cache_key=$(get_cache_key "$cache_type" "$identifier")
