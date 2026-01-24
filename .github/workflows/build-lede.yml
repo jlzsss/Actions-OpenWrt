@@ -79,17 +79,18 @@ jobs:
           ccache --set-config=max_size=$CCACHE_MAXSIZE
           ccache -s
 
-      - name: Delete all caches
+      - name: Delete lede caches
         run: |
-          # 获取所有缓存 ID
-          CACHE_IDS=$(curl -s -H "Authorization: token ${{ github.token }}" \
+          # 获取所有缓存
+          CACHES=$(curl -s -H "Authorization: token ${{ github.token }}" \
             "https://api.github.com/repos/${{ github.repository }}/actions/caches" \
-            | jq -r '.actions_caches[].id')
+            | jq -r '.actions_caches[] | select(.key | contains("lede")) | .id')
           
-          # 逐个删除缓存
-          for id in $CACHE_IDS; do
+          # 逐个删除 lede 相关的缓存
+          for id in $CACHES; do
             curl -s -X DELETE -H "Authorization: token ${{ github.token }}" \
               "https://api.github.com/repos/${{ github.repository }}/actions/caches/$id"
+            echo "Deleted cache ID: $id"
           done
         env:
           GITHUB_TOKEN: ${{ github.token }}
@@ -354,17 +355,18 @@ jobs:
           ln -sf /mnt/openwrt/staging_dir /workdir/openwrt/staging_dir
           df -hT
 
-      - name: Delete all caches
+      - name: Delete lede caches
         run: |
-          # 获取所有缓存 ID
-          CACHE_IDS=$(curl -s -H "Authorization: token ${{ github.token }}" \
+          # 获取所有缓存
+          CACHES=$(curl -s -H "Authorization: token ${{ github.token }}" \
             "https://api.github.com/repos/${{ github.repository }}/actions/caches" \
-            | jq -r '.actions_caches[].id')
+            | jq -r '.actions_caches[] | select(.key | contains("lede")) | .id')
           
-          # 逐个删除缓存
-          for id in $CACHE_IDS; do
+          # 逐个删除 lede 相关的缓存
+          for id in $CACHES; do
             curl -s -X DELETE -H "Authorization: token ${{ github.token }}" \
               "https://api.github.com/repos/${{ github.repository }}/actions/caches/$id"
+            echo "Deleted cache ID: $id"
           done
         env:
           GITHUB_TOKEN: ${{ github.token }}
@@ -576,17 +578,18 @@ jobs:
           ln -sf /mnt/openwrt/staging_dir /workdir/openwrt/staging_dir
           df -hT
 
-      - name: Delete all caches
+      - name: Delete lede caches
         run: |
-          # 获取所有缓存 ID
-          CACHE_IDS=$(curl -s -H "Authorization: token ${{ github.token }}" \
+          # 获取所有缓存
+          CACHES=$(curl -s -H "Authorization: token ${{ github.token }}" \
             "https://api.github.com/repos/${{ github.repository }}/actions/caches" \
-            | jq -r '.actions_caches[].id')
+            | jq -r '.actions_caches[] | select(.key | contains("lede")) | .id')
           
-          # 逐个删除缓存
-          for id in $CACHE_IDS; do
+          # 逐个删除 lede 相关的缓存
+          for id in $CACHES; do
             curl -s -X DELETE -H "Authorization: token ${{ github.token }}" \
               "https://api.github.com/repos/${{ github.repository }}/actions/caches/$id"
+            echo "Deleted cache ID: $id"
           done
         env:
           GITHUB_TOKEN: ${{ github.token }}
