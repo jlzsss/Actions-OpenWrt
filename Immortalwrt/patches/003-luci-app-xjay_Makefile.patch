@@ -1,0 +1,11 @@
+--- a/package/feeds/kenzok8/luci-app-xjay/Makefile
++++ b/package/feeds/kenzok8/luci-app-xjay/Makefile
+@@ -15,7 +15,7 @@ define Package/$(PKG_NAME)
+ 	SECTION:=Custom
+ 	CATEGORY:=Extra packages
+ 	TITLE:=LuCI Support for Xray
+-	DEPENDS:=+luci-base +xray-core +xray-geodata +jsonfilter \
++	DEPENDS:=+luci-base +xray-core +v2ray-geosite +v2ray-geoip +jsonfilter \
+ 		 +PACKAGE_XRAY_INCLUDE_IPTABLES_SUPPORT:kmod-nft-tproxy \
+ 		 +PACKAGE_XRAY_INCLUDE_IPTABLES_SUPPORT:kmod-nft-socket
+ 	PKGARCH:=all

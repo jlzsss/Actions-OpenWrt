@@ -1,0 +1,16 @@
+src-git packages https://github.com/immortalwrt/packages.git^83e0be6d3ebb2da9cc406085d147efd55fa9a12a
+src-git luci https://github.com/immortalwrt/luci.git^0418b5448b3866db253436a66884955ca8094150
+src-git routing https://github.com/openwrt/routing.git^3eb59e9471858c83891979793f1dd29cca156919
+src-git telephony https://github.com/openwrt/telephony.git^11e9c73bff6be34ff2fdcd4bc0e81a4723d78652
+src-git helloworld https://github.com/fw876/helloworld.git
+src-git luci2 https://github.com/coolsnowwolf/luci.git;openwrt-23.05
+src-git nikki https://github.com/nikkinikki-org/OpenWrt-nikki.git;main
+src-git NueXini https://github.com/NueXini/NueXini_Packages.git
+src-git kenzo https://github.com/kenzok8/openwrt-packages.git
+src-git small https://github.com/kenzok8/small.git
+src-git kenzok8 https://github.com/kenzok8/jell.git
+src-git packages3 https://github.com/xiangfeidexiaohuo/openwrt-packages.git
+src-git liuran https://github.com/liuran001/openwrt-packages;packages
+src-git other https://github.com/Lienol/openwrt-package.git;other
+src-git lede https://github.com/jlzsss/project-lede.git
+
