@@ -1,0 +1,31 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Shell Script Expert <shell@expert.com>
+Date: Fri, 24 Jan 2025 22:40:00 +0000
+Subject: [PATCH] Disable download-ci-llvm to fix 404 error
+
+This patch disables the download-ci-llvm option in the bootstrap configuration
+which causes 404 errors when trying to download LLVM tools from Rust's CI server.
+The error occurs because either the host triple is not supported or old builds
+get deleted after a certain time.
+
+By setting download-ci-llvm = false, the build will use locally built LLVM tools
+instead of trying to download them from the CI server.
+
+Fixes: https://github.com/openwrt/packages/issues/XXXXX
+---
+ src/bootstrap/defaults/config.toml | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/src/bootstrap/defaults/config.toml b/src/bootstrap/defaults/config.toml
+index 1234567..abcdefg 100644
+--- a/src/bootstrap/defaults/config.toml
++++ b/src/bootstrap/defaults/config.toml
+@@ -123,7 +123,7 @@ changelog-seen = 2
+ # downloading LLVM from the CI server.
+ #
+ # Defaults to false if an LLVM from the ci is not available for your target.
+-#download-ci-llvm = false
++download-ci-llvm = false
+ 
+ # =============================================================================
+ # General build configuration
