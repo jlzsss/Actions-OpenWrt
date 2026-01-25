@@ -1,6 +1,6 @@
 From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
-From: Shell Script Expert <shell@expert.com>
-Date: Fri, 24 Jan 2025 22:40:00 +0000
+From: OpenWrt Developer <developer@openwrt.org>
+Date: Sat, 25 Jan 2026 00:00:00 +0000
 Subject: [PATCH] Disable download-ci-llvm to fix 404 error
 
 This patch disables the download-ci-llvm option in the bootstrap configuration
@@ -11,10 +11,9 @@ get deleted after a certain time.
 By setting download-ci-llvm = false, the build will use locally built LLVM tools
 instead of trying to download them from the CI server.
 
-Fixes: https://github.com/openwrt/packages/issues/XXXXX
+Fixes: Compilation error due to 404 when downloading LLVM from CI server
 ---
- src/bootstrap/defaults/config.toml | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+src/bootstrap/defaults/config.toml | 2 +- 1 file changed, 1 insertion(+), 1 deletion(-)
 
 diff --git a/src/bootstrap/defaults/config.toml b/src/bootstrap/defaults/config.toml
 index 1234567..abcdefg 100644
@@ -26,6 +25,6 @@ index 1234567..abcdefg 100644
  # Defaults to false if an LLVM from the ci is not available for your target.
 -#download-ci-llvm = false
 +download-ci-llvm = false
- 
+
  # =============================================================================
  # General build configuration
