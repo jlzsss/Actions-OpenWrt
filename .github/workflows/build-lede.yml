@@ -144,7 +144,6 @@ jobs:
           chmod +x $DIY_P3_SH
           cd openwrt
           $GITHUB_WORKSPACE/$DIY_P3_SH
-          mv ${GITHUB_WORKSPACE}/lede/patches/0002-Disable-download-ci-llvm.patch ${GITHUB_WORKSPACE}/openwrt/feeds/packages/lang/rust/patches
           mv ${GITHUB_WORKSPACE}/lede/patches/002-dapnet-gateway_Conf.cpp.patch ${GITHUB_WORKSPACE}/openwrt/feeds/kenzok8/dapnet-gateway/patches
           find "${GITHUB_WORKSPACE}/lede/patches" -type f -name '*.patch' -print0 | sort -z | xargs -I % -t -0 -n 1 sh -c "cat '%' | patch -d '${GITHUB_WORKSPACE}/openwrt' -p1 --forward"
 
@@ -174,7 +173,7 @@ jobs:
           make -j$(($(nproc) + 1)) tools/compile CC="$CC" CXX="$CXX"
           make -j$(($(nproc) + 1)) toolchain/compile CC="$CC" CXX="$CXX"
           make -j$(($(nproc) + 1)) target/linux/compile CC="$CC" CXX="$CXX"
-          make -j$(($(nproc) + 1)) package/{rust,node,python3,jq,docker}/compile CC="$CC" CXX="$CXX"
+          make -j$(($(nproc) + 1)) package/{node,python3,jq,docker}/compile CC="$CC" CXX="$CXX"
           echo "status=success" >> $GITHUB_OUTPUT
           grep '^CONFIG_TARGET.*DEVICE.*=y' .config | sed -r 's/.*DEVICE_(.*)=y/\1/' > DEVICE_NAME
           [ -s DEVICE_NAME ] && echo "DEVICE_NAME=_$(cat DEVICE_NAME)" >> $GITHUB_ENV
@@ -193,7 +192,7 @@ jobs:
           make -j1 tools/compile V=s CC="$CC" CXX="$CXX"
           make -j1 toolchain/compile V=s CC="$CC" CXX="$CXX"
           make -j1 target/linux/compile V=s CC="$CC" CXX="$CXX"
-          make -j1 package/{rust,node,python3,jq,docker}/compile V=s CC="$CC" CXX="$CXX"
+          make -j1 package/{node,python3,jq,docker}/compile V=s CC="$CC" CXX="$CXX"
           echo "status=success" >> $GITHUB_OUTPUT
           grep '^CONFIG_TARGET.*DEVICE.*=y' .config | sed -r 's/.*DEVICE_(.*)=y/\1/' > DEVICE_NAME
           [ -s DEVICE_NAME ] && echo "DEVICE_NAME=_$(cat DEVICE_NAME)" >> $GITHUB_ENV
