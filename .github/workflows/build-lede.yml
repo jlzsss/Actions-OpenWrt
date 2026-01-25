@@ -144,7 +144,7 @@ jobs:
           chmod +x $DIY_P3_SH
           cd openwrt
           $GITHUB_WORKSPACE/$DIY_P3_SH
-          mv ${GITHUB_WORKSPACE}/Immortalwrt/patches/0002-Disable-download-ci-llvm.patch ${GITHUB_WORKSPACE}/openwrt/feeds/packages/lang/rust/patches
+          mv ${GITHUB_WORKSPACE}/lede/patches/0002-Disable-download-ci-llvm.patch ${GITHUB_WORKSPACE}/openwrt/feeds/packages/lang/rust/patches
           mv ${GITHUB_WORKSPACE}/lede/patches/002-dapnet-gateway_Conf.cpp.patch ${GITHUB_WORKSPACE}/openwrt/feeds/kenzok8/dapnet-gateway/patches
           find "${GITHUB_WORKSPACE}/lede/patches" -type f -name '*.patch' -print0 | sort -z | xargs -I % -t -0 -n 1 sh -c "cat '%' | patch -d '${GITHUB_WORKSPACE}/openwrt' -p1 --forward"
 
