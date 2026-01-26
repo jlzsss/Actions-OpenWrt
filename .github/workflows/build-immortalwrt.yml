@@ -610,8 +610,12 @@ jobs:
            # 确保 kernel 配置文件存在
            if [ ! -f "${KERNEL_CONFIG_DIR}/.config" ]; then
            echo "Kernel .config 文件缺失，尝试重新生成"
-           make target/linux/clean
-           make package/linux/clean
+           make tools/clean V=s
+           make toolchain/clean V=s
+           make target/linux/clean V=s
+           make package/linux/clean V=s
+           make -j$(($(nproc) + 1)) tools/compile CC="$CC" CXX="$CXX"
+           make -j$(($(nproc) + 1)) toolchain/compile CC="$CC" CXX="$CXX"
            make -j$(($(nproc) + 1)) target/linux/compile CC="$CC" CXX="$CXX"
            make -j$(($(nproc) + 1)) package/linux/compile CC="$CC" CXX="$CXX"
            ccache -s
