@@ -82,17 +82,30 @@ jobs:
 
       - name: Delete immortalwrt caches
         run: |
-          # 获取所有缓存
+          # 定义本工作流生成的三个特定缓存key
+          CACHE_KEYS=(
+            "immortalwrt-dl-${{ github.run_id }}"
+            "immortalwrt-staging-dir-${{ github.run_id }}"
+            "immortalwrt-tmp-${{ github.run_id }}"
+          )
+          
+          # 获取所有缓存并过滤出本工作流的三个特定缓存
           CACHES=$(curl -s -H "Authorization: token ${{ github.token }}" \
             "https://api.github.com/repos/${{ github.repository }}/actions/caches" \
-            | jq -r '.actions_caches[] | select(.key | contains("immortalwrt")) | .id')
+            | jq -r ".actions_caches[] | select(.key == \"immortalwrt-dl-${{ github.run_id }}\" or .key == \"immortalwrt-staging-dir-${{ github.run_id }}\" or .key == \"immortalwrt-tmp-${{ github.run_id }}\") | .id")
           
-          # 逐个删除 immortalwrt 相关的缓存
-          for id in $CACHES; do
-            curl -s -X DELETE -H "Authorization: token ${{ github.token }}" \
-              "https://api.github.com/repos/${{ github.repository }}/actions/caches/$id"
-            echo "Deleted cache ID: $id"
-          done
+          if [ -z "$CACHES" ]; then
+            echo "No caches found for current run ${{ github.run_id }}"
+            echo "Expected cache keys: ${CACHE_KEYS[*]}"
+          else
+            # 逐个删除本工作流的三个特定缓存
+            for id in $CACHES; do
+              curl -s -X DELETE -H "Authorization: token ${{ github.token }}" \
+                "https://api.github.com/repos/${{ github.repository }}/actions/caches/$id"
+              echo "Deleted cache ID: $id (Run: ${{ github.run_id }})"
+            done
+            echo "Successfully deleted caches for current run ${{ github.run_id }}"
+          fi
         env:
           GITHUB_TOKEN: ${{ github.token }}
 
@@ -362,17 +375,30 @@ jobs:
 
       - name: Delete immortalwrt caches
         run: |
-          # 获取所有缓存
+          # 定义本工作流生成的三个特定缓存key
+          CACHE_KEYS=(
+            "immortalwrt-dl-${{ github.run_id }}"
+            "immortalwrt-staging-dir-${{ github.run_id }}"
+            "immortalwrt-tmp-${{ github.run_id }}"
+          )
+          
+          # 获取所有缓存并过滤出本工作流的三个特定缓存
           CACHES=$(curl -s -H "Authorization: token ${{ github.token }}" \
             "https://api.github.com/repos/${{ github.repository }}/actions/caches" \
-            | jq -r '.actions_caches[] | select(.key | contains("immortalwrt")) | .id')
+            | jq -r ".actions_caches[] | select(.key == \"immortalwrt-dl-${{ github.run_id }}\" or .key == \"immortalwrt-staging-dir-${{ github.run_id }}\" or .key == \"immortalwrt-tmp-${{ github.run_id }}\") | .id")
           
-          # 逐个删除 immortalwrt 相关的缓存
-          for id in $CACHES; do
-            curl -s -X DELETE -H "Authorization: token ${{ github.token }}" \
-              "https://api.github.com/repos/${{ github.repository }}/actions/caches/$id"
-            echo "Deleted cache ID: $id"
-          done
+          if [ -z "$CACHES" ]; then
+            echo "No caches found for current run ${{ github.run_id }}"
+            echo "Expected cache keys: ${CACHE_KEYS[*]}"
+          else
+            # 逐个删除本工作流的三个特定缓存
+            for id in $CACHES; do
+              curl -s -X DELETE -H "Authorization: token ${{ github.token }}" \
+                "https://api.github.com/repos/${{ github.repository }}/actions/caches/$id"
+              echo "Deleted cache ID: $id (Run: ${{ github.run_id }})"
+            done
+            echo "Successfully deleted caches for current run ${{ github.run_id }}"
+          fi
         env:
           GITHUB_TOKEN: ${{ github.token }}
 
@@ -584,17 +610,30 @@ jobs:
 
       - name: Delete immortalwrt caches
         run: |
-          # 获取所有缓存
+          # 定义本工作流生成的三个特定缓存key
+          CACHE_KEYS=(
+            "immortalwrt-dl-${{ github.run_id }}"
+            "immortalwrt-staging-dir-${{ github.run_id }}"
+            "immortalwrt-tmp-${{ github.run_id }}"
+          )
+          
+          # 获取所有缓存并过滤出本工作流的三个特定缓存
           CACHES=$(curl -s -H "Authorization: token ${{ github.token }}" \
             "https://api.github.com/repos/${{ github.repository }}/actions/caches" \
-            | jq -r '.actions_caches[] | select(.key | contains("immortalwrt")) | .id')
+            | jq -r ".actions_caches[] | select(.key == \"immortalwrt-dl-${{ github.run_id }}\" or .key == \"immortalwrt-staging-dir-${{ github.run_id }}\" or .key == \"immortalwrt-tmp-${{ github.run_id }}\") | .id")
           
-          # 逐个删除 immortalwrt 相关的缓存
-          for id in $CACHES; do
-            curl -s -X DELETE -H "Authorization: token ${{ github.token }}" \
-              "https://api.github.com/repos/${{ github.repository }}/actions/caches/$id"
-            echo "Deleted cache ID: $id"
-          done
+          if [ -z "$CACHES" ]; then
+            echo "No caches found for current run ${{ github.run_id }}"
+            echo "Expected cache keys: ${CACHE_KEYS[*]}"
+          else
+            # 逐个删除本工作流的三个特定缓存
+            for id in $CACHES; do
+              curl -s -X DELETE -H "Authorization: token ${{ github.token }}" \
+                "https://api.github.com/repos/${{ github.repository }}/actions/caches/$id"
+              echo "Deleted cache ID: $id (Run: ${{ github.run_id }})"
+            done
+            echo "Successfully deleted caches for current run ${{ github.run_id }}"
+          fi
         env:
           GITHUB_TOKEN: ${{ github.token }}
 
