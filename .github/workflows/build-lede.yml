@@ -84,14 +84,14 @@ jobs:
           # 定义本工作流生成的三个特定缓存key
           CACHE_KEYS=(
             "lede-dl-${{ github.run_id }}"
-            "lede-staging-dir-${{ github.run_id }}"
+            "lede-build-dir-${{ github.run_id }}"
             "lede-tmp-${{ github.run_id }}"
           )
           
           # 获取所有缓存并过滤出本工作流的三个特定缓存
           CACHES=$(curl -s -H "Authorization: token ${{ github.token }}" \
             "https://api.github.com/repos/${{ github.repository }}/actions/caches" \
-            | jq -r ".actions_caches[] | select(.key == \"lede-dl-${{ github.run_id }}\" or .key == \"lede-staging-dir-${{ github.run_id }}\" or .key == \"lede-tmp-${{ github.run_id }}\") | .id")
+            | jq -r ".actions_caches[] | select(.key == \"lede-dl-${{ github.run_id }}\" or .key == \"lede-build-dir-${{ github.run_id }}\" or .key == \"lede-tmp-${{ github.run_id }}\") | .id")
           
           if [ -z "$CACHES" ]; then
             echo "No caches found for current run ${{ github.run_id }}"
@@ -220,12 +220,12 @@ jobs:
           key: lede-dl-${{ github.run_id }}
           enableCrossOsArchive: true
 
-      - name: Save staging_dir cache
+      - name: Save build_dir cache
         uses: actions/cache/save@v4
         if: steps.Multi-thread.outputs.status == 'success' || steps.Single-thread.outputs.status == 'success'
         with:
-          path: /mnt/openwrt/staging_dir
-          key: lede-staging-dir-${{ github.run_id }}
+          path: /mnt/openwrt/build_dir
+          key: lede-build-dir-${{ github.run_id }}
           enableCrossOsArchive: true
 
       - name: Save tmp cache
@@ -239,16 +239,16 @@ jobs:
       - name: Compress directory
         run: |
           sudo rm -rf /workdir/openwrt/dl /workdir/openwrt/tmp /workdir/openwrt/build_dir /workdir/openwrt/staging_dir
-          bsdtar -czlf build_dir.tar.gz /mnt/openwrt/build_dir && sudo rm -rf /mnt/openwrt/build_dir
+          bsdtar -czlf staging_dir.tar.gz /mnt/openwrt/staging_dir && sudo rm -rf /mnt/openwrt/staging_dir
           bsdtar -czlf openwrt.tar.gz /workdir/openwrt && sudo rm -rf /workdir/openwrt
           df -hT
 
       - name: Store build artifacts
         uses: actions/upload-artifact@v4
         with:
-          name: prepare-build-output
+          name: build1-build-output
           path: |
-            build_dir.tar.gz
+            staging_dir.tar.gz
             openwrt.tar.gz
 
       - name: WeChat notification
@@ -335,11 +335,11 @@ jobs:
           key: lede-dl-${{ github.run_id }}
           fail-on-cache-miss: false
 
-      - name: Restore staging_dir cache
+      - name: Restore build_dir cache
         uses: actions/cache/restore@v4
         with:
-          path: /mnt/openwrt/staging_dir
-          key: lede-staging-dir-${{ github.run_id }}
+          path: /mnt/openwrt/build_dir
+          key: lede-build-dir-${{ github.run_id }}
           fail-on-cache-miss: false
 
       - name: Restore tmp cache
@@ -352,7 +352,7 @@ jobs:
 
       - name: Unzip artifact
         run: |
-          cd /workdir && bsdtar -xzf build_dir.tar.gz -C /mnt/openwrt/build_dir --strip-components=3 && rm build_dir.tar.gz
+          cd /workdir && bsdtar -xzf staging_dir.tar.gz -C /mnt/openwrt/staging_dir --strip-components=3 && rm staging_dir.tar.gz
 
       - name: Move files
         run: |
@@ -373,14 +373,14 @@ jobs:
           # 定义本工作流生成的三个特定缓存key
           CACHE_KEYS=(
             "lede-dl-${{ github.run_id }}"
-            "lede-staging-dir-${{ github.run_id }}"
+            "lede-build-dir-${{ github.run_id }}"
             "lede-tmp-${{ github.run_id }}"
           )
           
           # 获取所有缓存并过滤出本工作流的三个特定缓存
           CACHES=$(curl -s -H "Authorization: token ${{ github.token }}" \
             "https://api.github.com/repos/${{ github.repository }}/actions/caches" \
-            | jq -r ".actions_caches[] | select(.key == \"lede-dl-${{ github.run_id }}\" or .key == \"lede-staging-dir-${{ github.run_id }}\" or .key == \"lede-tmp-${{ github.run_id }}\") | .id")
+            | jq -r ".actions_caches[] | select(.key == \"lede-dl-${{ github.run_id }}\" or .key == \"lede-build-dir-${{ github.run_id }}\" or .key == \"lede-tmp-${{ github.run_id }}\") | .id")
           
           if [ -z "$CACHES" ]; then
             echo "No caches found for current run ${{ github.run_id }}"
@@ -457,12 +457,12 @@ jobs:
           key: lede-dl-${{ github.run_id }}
           enableCrossOsArchive: true
 
-      - name: Save staging_dir cache
+      - name: Save build_dir cache
         uses: actions/cache/save@v4
         if: steps.Multi-thread.outputs.status == 'success' || steps.Single-thread.outputs.status == 'success'
         with:
-          path: /mnt/openwrt/staging_dir
-          key: lede-staging-dir-${{ github.run_id }}
+          path: /mnt/openwrt/build_dir
+          key: lede-build-dir-${{ github.run_id }}
           enableCrossOsArchive: true
 
       - name: Save tmp cache
@@ -476,7 +476,7 @@ jobs:
       - name: Compress directory
         run: |
           sudo rm -rf /workdir/openwrt/dl /workdir/openwrt/tmp /workdir/openwrt/build_dir /workdir/openwrt/staging_dir
-          bsdtar -czlf build_dir.tar.gz /mnt/openwrt/build_dir && sudo rm -rf /mnt/openwrt/build_dir
+          bsdtar -czlf staging_dir.tar.gz /mnt/openwrt/staging_dir && sudo rm -rf /mnt/openwrt/staging_dir
           bsdtar -czlf openwrt.tar.gz /workdir/openwrt && sudo rm -rf /workdir/openwrt
           df -hT
 
@@ -485,7 +485,7 @@ jobs:
         with:
           name: build1-build-output
           path: |
-            build_dir.tar.gz
+            staging_dir.tar.gz
             openwrt.tar.gz
 
       - name: WeChat notification
@@ -572,11 +572,11 @@ jobs:
           key: lede-dl-${{ github.run_id }}
           fail-on-cache-miss: false
 
-      - name: Restore staging_dir cache
+      - name: Restore build_dir cache
         uses: actions/cache/restore@v4
         with:
-          path: /mnt/openwrt/staging_dir
-          key: lede-staging-dir-${{ github.run_id }}
+          path: /mnt/openwrt/build_dir
+          key: lede-build-dir-${{ github.run_id }}
           fail-on-cache-miss: false
 
       - name: Restore tmp cache
@@ -588,7 +588,7 @@ jobs:
 
       - name: Unzip artifact
         run: |
-          cd /workdir && bsdtar -xzf build_dir.tar.gz -C /mnt/openwrt/build_dir --strip-components=3 && rm build_dir.tar.gz
+          cd /workdir && bsdtar -xzf staging_dir.tar.gz -C /mnt/openwrt/staging_dir --strip-components=3 && rm staging_dir.tar.gz
 
       - name: Move files
         run: |
@@ -609,14 +609,14 @@ jobs:
           # 定义本工作流生成的三个特定缓存key
           CACHE_KEYS=(
             "lede-dl-${{ github.run_id }}"
-            "lede-staging-dir-${{ github.run_id }}"
+            "lede-build-dir-${{ github.run_id }}"
             "lede-tmp-${{ github.run_id }}"
           )
           
           # 获取所有缓存并过滤出本工作流的三个特定缓存
           CACHES=$(curl -s -H "Authorization: token ${{ github.token }}" \
             "https://api.github.com/repos/${{ github.repository }}/actions/caches" \
-            | jq -r ".actions_caches[] | select(.key == \"lede-dl-${{ github.run_id }}\" or .key == \"lede-staging-dir-${{ github.run_id }}\" or .key == \"lede-tmp-${{ github.run_id }}\") | .id")
+            | jq -r ".actions_caches[] | select(.key == \"lede-dl-${{ github.run_id }}\" or .key == \"lede-build-dir-${{ github.run_id }}\" or .key == \"lede-tmp-${{ github.run_id }}\") | .id")
           
           if [ -z "$CACHES" ]; then
             echo "No caches found for current run ${{ github.run_id }}"
@@ -645,12 +645,8 @@ jobs:
            # 确保 kernel 配置文件存在
            if [ ! -f "${KERNEL_CONFIG_DIR}/.config" ]; then
            echo "Kernel .config 文件缺失，尝试重新生成"
-           make tools/clean V=s
-           make toolchain/clean V=s
-           make target/linux/clean V=s
-           make package/linux/clean V=s
-           make -j$(($(nproc) + 1)) tools/compile CC="$CC" CXX="$CXX"
-           make -j$(($(nproc) + 1)) toolchain/compile CC="$CC" CXX="$CXX"
+           make target/linux/clean
+           make package/linux/clean
            make -j$(($(nproc) + 1)) target/linux/compile CC="$CC" CXX="$CXX"
            make -j$(($(nproc) + 1)) package/linux/compile CC="$CC" CXX="$CXX"
            ccache -s
