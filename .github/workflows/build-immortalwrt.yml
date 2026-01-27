@@ -252,7 +252,7 @@ jobs:
       - name: Store build artifacts
         uses: actions/upload-artifact@v4
         with:
-          name: build1-build-output
+          name: prepare-build-output
           path: |
             staging_dir.tar.gz
             openwrt.tar.gz
