@@ -9,8 +9,8 @@ on:
         required: false
         default: 'false'
   push:
-  schedule:
-    - cron: "0 17 * * *" # 每天 UTC 时间 17:00 (北京时间次日 1:00) 触发
+  # schedule:
+   # - cron: "0 17 * * *" # 每天 UTC 时间 17:00 (北京时间次日 1:00) 触发
 
 permissions:
   packages: write
@@ -648,8 +648,8 @@ jobs:
         run: |
           cd openwrt
           # 执行最终的安装和固件生成步骤
-          make -j$(($(nproc) + 1)) tools/install CC="$CC" CXX="$CXX"
-          make -j$(($(nproc) + 1)) toolchain/install CC="$CC" CXX="$CXX"
+          make tools/install -j$(($(nproc) + 1)) CC="$CC" CXX="$CXX"
+          make toolchain/install -j$(($(nproc) + 1)) CC="$CC" CXX="$CXX"
           make package/install -j$(($(nproc) + 1)) V=s CC="$CC" CXX="$CXX"
           make target/install -j$(($(nproc) + 1)) V=s CC="$CC" CXX="$CXX"
           make buildinfo CC="$CC" CXX="$CXX"

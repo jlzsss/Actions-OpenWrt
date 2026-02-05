@@ -9,8 +9,8 @@ on:
         required: false
         default: 'false'
   push:
-  schedule:
-    - cron: "0 17 * * *" # 每天 UTC 时间 17:00 (北京时间次日 1:00) 触发
+  # schedule:
+   # - cron: "0 17 * * *" # 每天 UTC 时间 17:00 (北京时间次日 1:00) 触发
 
 permissions:
   packages: write
